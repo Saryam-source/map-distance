@@ -6,68 +6,120 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<style>
-#map {
-    height: 400px;
-}
-</style>
-
 </head>
 
 <body>
 
 <h3>Select Start and End Location</h3>
 
-<div id="map"></div>
+<div id="map" style="height:400px;"></div>
 
 <br>
 
-Start: <input type="text" id="start" readonly><br><br>
-End: <input type="text" id="end" readonly><br><br>
+<form method="POST" 
+action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request">
 
-<button onclick="sendData()">Submit</button>
+Start: <input type="text" name="Start_Location" id="start"><br><br>
+End: <input type="text" name="End_Location" id="end"><br><br>
+
+Distance (km): <input type="text" name="Distance" id="distance"><br><br>
+
+<button type="submit">Submit</button>
+
+</form>
 
 <script>
 
 var map = L.map('map').setView([13.0827, 80.2707], 10);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
     maxZoom: 19
 }).addTo(map);
 
 var start = null;
 var end = null;
+var startName = "";
+var endName = "";
 
-map.on('click', function(e) {
+// -------------------------
+// 🔥 Reverse Geocoding
+// -------------------------
+async function getPlaceName(lat, lng) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    return data.display_name;
+}
+
+// -------------------------
+// 🔥 Distance Calculation
+// -------------------------
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI/180) *
+        Math.cos(lat2 * Math.PI/180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c;
+}
+
+// -------------------------
+// 🔥 Map Click Logic
+// -------------------------
+map.on('click', async function(e) {
+
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    const placeName = await getPlaceName(lat, lng);
+
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(placeName)
+      .openPopup();
 
     if (!start) {
-        start = e.latlng;
-        document.getElementById("start").value = start.lat + "," + start.lng;
-        alert("Start selected");
+
+        start = { lat, lng };
+        startName = placeName;
+
+        document.getElementById("start").value =
+            placeName + " (" + lat + "," + lng + ")";
+
+        alert("Start selected:\n" + placeName);
+
     } 
     else if (!end) {
-        end = e.latlng;
-        document.getElementById("end").value = end.lat + "," + end.lng;
-        alert("End selected");
-    } 
-});
 
-function sendData() {
+        end = { lat, lng };
+        endName = placeName;
 
-    var startVal = document.getElementById("start").value;
-    var endVal = document.getElementById("end").value;
+        document.getElementById("end").value =
+            placeName + " (" + lat + "," + lng + ")";
 
-    if(startVal === "" || endVal === "") {
-        alert("Please select both locations");
-        return;
+        alert("End selected:\n" + placeName);
+
+        // Calculate distance
+        const dist = getDistance(
+            start.lat, start.lng,
+            end.lat, end.lng
+        );
+
+        document.getElementById("distance").value =
+            dist.toFixed(2);
+
     }
-
-    var url = "https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request"
-        + "?Start_Location=" + encodeURIComponent(startVal)
-        + "&End_Location=" + encodeURIComponent(endVal);
-
-    window.location.href = url;
-}
+});
 
 </script>
 
