@@ -6,29 +6,32 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+<style>
+#map {
+    height: 400px;
+}
+</style>
+
 </head>
 
 <body>
 
 <h3>Select Start and End Location</h3>
 
-<div id="map" style="height:400px;"></div>
+<div id="map"></div>
 
 <br>
 
-<form method="POST" action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request"
+Start: <input type="text" id="start" readonly><br><br>
+End: <input type="text" id="end" readonly><br><br>
 
-Start: <input type="text" name="Start_Location" id="start"><br><br>
-End: <input type="text" name="End_Location" id="end"><br><br>
-
-<button type="submit">Submit</button>
-
-</form>
+<button onclick="sendData()">Submit</button>
 
 <script>
+
 var map = L.map('map').setView([13.0827, 80.2707], 10);
 
-L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
 }).addTo(map);
 
@@ -41,12 +44,31 @@ map.on('click', function(e) {
         start = e.latlng;
         document.getElementById("start").value = start.lat + "," + start.lng;
         alert("Start selected");
-    } else {
+    } 
+    else if (!end) {
         end = e.latlng;
         document.getElementById("end").value = end.lat + "," + end.lng;
         alert("End selected");
-    }
+    } 
 });
+
+function sendData() {
+
+    var startVal = document.getElementById("start").value;
+    var endVal = document.getElementById("end").value;
+
+    if(startVal === "" || endVal === "") {
+        alert("Please select both locations");
+        return;
+    }
+
+    var url = "https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request"
+        + "?Start_Location=" + encodeURIComponent(startVal)
+        + "&End_Location=" + encodeURIComponent(endVal);
+
+    window.location.href = url;
+}
+
 </script>
 
 </body>
