@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Map Selector</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+</head>
+
+<body>
+
+<h3>Select Start and End Location</h3>
+
+<div id="map" style="height:400px;"></div>
+
+<br>
+
+<form method="POST" action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request"
+
+Start: <input type="text" name="Start_Location" id="start"><br><br>
+End: <input type="text" name="End_Location" id="end"><br><br>
+
+<button type="submit">Submit</button>
+
+</form>
+
+<script>
+var map = L.map('map').setView([13.0827, 80.2707], 10);
+
+L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
+
+var start = null;
+var end = null;
+
+map.on('click', function(e) {
+
+    if (!start) {
+        start = e.latlng;
+        document.getElementById("start").value = start.lat + "," + start.lng;
+        alert("Start selected");
+    } else {
+        end = e.latlng;
+        document.getElementById("end").value = end.lat + "," + end.lng;
+        alert("End selected");
+    }
+});
+</script>
+
+</body>
+</html>
