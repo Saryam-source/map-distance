@@ -118,6 +118,14 @@ map.on('click', async function(e) {
         document.getElementById("distance").value =
             dist.toFixed(2);
 
+        function sendToZoho(start, end, distance) {
+
+    window.parent.postMessage({
+        start: start,
+        end: end,
+        distance: distance
+        sendToZoho(startName, endName, dist);
+
     }
 });
 
