@@ -21,8 +21,7 @@ action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#F
 
 Start: <input type="text" name="Start_Location" id="start"><br><br>
 End: <input type="text" name="End_Location" id="end"><br><br>
-
-Distance (km): <input type="text" name="Distance" id="distance"><br><br>
+Distance (km): <input type="text" name="Distance_in_KM" id="distance"><br><br>
 
 <button type="submit">Submit</button>
 
@@ -42,7 +41,7 @@ var startName = "";
 var endName = "";
 
 // -------------------------
-// 🔥 Reverse Geocoding
+// Reverse Geocoding
 // -------------------------
 async function getPlaceName(lat, lng) {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
@@ -54,7 +53,7 @@ async function getPlaceName(lat, lng) {
 }
 
 // -------------------------
-// 🔥 Distance Calculation
+// Distance Calculation
 // -------------------------
 function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
@@ -74,7 +73,18 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 // -------------------------
-// 🔥 Map Click Logic
+// SEND DATA TO ZOHO (IMPORTANT FIX)
+// -------------------------
+function sendToZoho() {
+    window.parent.postMessage({
+        Start: document.getElementById("start").value,
+        End: document.getElementById("end").value,
+        "Distance(km)": document.getElementById("distance").value
+    }, "*");
+}
+
+// -------------------------
+// Map Click Logic
 // -------------------------
 map.on('click', async function(e) {
 
@@ -118,6 +128,8 @@ map.on('click', async function(e) {
         document.getElementById("distance").value =
             dist.toFixed(2);
 
+        // 🔥 SEND AUTOMATICALLY TO ZOHO PAGE
+        sendToZoho();
     }
 });
 
