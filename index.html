@@ -1,251 +1,140 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+<title>Map Selector</title>
 
-    <title>Distance Map</title>
-
-    <meta charset="utf-8"/>
-
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <style>
-
-        body{
-            margin:0;
-            font-family:Arial;
-        }
-
-        #map{
-            height:500px;
-            width:100%;
-        }
-
-        .container{
-            padding:20px;
-        }
-
-        input{
-            width:300px;
-            padding:10px;
-            margin-bottom:15px;
-            font-size:16px;
-        }
-
-        button{
-            padding:10px 20px;
-            font-size:16px;
-            margin-left:10px;
-            cursor:pointer;
-        }
-
-    </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 </head>
 
 <body>
 
-<div id="map"></div>
+<h3>Select Start and End Location</h3>
 
-<div class="container">
+<div id="map" style="height:400px;"></div>
 
-    <h3>Start Location</h3>
+<br>
 
-    <input type="text"
-           id="start"
-           placeholder="Enter Start Location">
+<form method="POST" 
+action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request">
 
-    <button onclick="searchStart()">
-        Search
-    </button>
+Start: <input type="text" name="Start_Location" id="start"><br><br>
+End: <input type="text" name="End_Location" id="end"><br><br>
+Distance (km): <input type="text" name="Distance_in_KM" id="distance"><br><br>
 
-    <br><br>
+<button type="submit">Submit</button>
 
-    <h3>End Location</h3>
-
-    <input type="text"
-           id="end"
-           placeholder="Enter End Location">
-
-    <button onclick="searchEnd()">
-        Search
-    </button>
-
-    <br><br>
-
-    <h3>Distance (KM)</h3>
-
-    <input type="text"
-           id="distance"
-           readonly>
-
-</div>
+</form>
 
 <script>
 
 var map = L.map('map').setView([13.0827, 80.2707], 10);
 
-L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-        maxZoom: 19
-    }
-).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
 
-var startMarker = null;
-var endMarker = null;
-var line = null;
+var start = null;
+var end = null;
+var startName = "";
+var endName = "";
 
-var startLatLng = null;
-var endLatLng = null;
+// -------------------------
+// Reverse Geocoding
+// -------------------------
+async function getPlaceName(lat, lng) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
 
-// SEARCH START
+    const res = await fetch(url);
+    const data = await res.json();
 
-async function searchStart(){
-
-    var location =
-        document.getElementById("start").value;
-
-    if(location == ""){
-        alert("Enter Start Location");
-        return;
-    }
-
-    var url =
-        "https://nominatim.openstreetmap.org/search?format=json&q="
-        + encodeURIComponent(location);
-
-    var response = await fetch(url);
-
-    var data = await response.json();
-
-    if(data.length == 0){
-        alert("Location not found");
-        return;
-    }
-
-    var lat = parseFloat(data[0].lat);
-    var lon = parseFloat(data[0].lon);
-
-    startLatLng = [lat, lon];
-
-    if(startMarker){
-        map.removeLayer(startMarker);
-    }
-
-    startMarker = L.marker(startLatLng)
-        .addTo(map)
-        .bindPopup("Start Location")
-        .openPopup();
-
-    map.setView(startLatLng, 13);
-
-    calculateDistance();
+    return data.display_name;
 }
 
-// SEARCH END
+// -------------------------
+// Distance Calculation
+// -------------------------
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
 
-async function searchEnd(){
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
 
-    var location =
-        document.getElementById("end").value;
+    const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI/180) *
+        Math.cos(lat2 * Math.PI/180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
 
-    if(location == ""){
-        alert("Enter End Location");
-        return;
-    }
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-    var url =
-        "https://nominatim.openstreetmap.org/search?format=json&q="
-        + encodeURIComponent(location);
-
-    var response = await fetch(url);
-
-    var data = await response.json();
-
-    if(data.length == 0){
-        alert("Location not found");
-        return;
-    }
-
-    var lat = parseFloat(data[0].lat);
-    var lon = parseFloat(data[0].lon);
-
-    endLatLng = [lat, lon];
-
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
-
-    endMarker = L.marker(endLatLng)
-        .addTo(map)
-        .bindPopup("End Location")
-        .openPopup();
-
-    map.setView(endLatLng, 13);
-
-    calculateDistance();
+    return R * c;
 }
 
-// CALCULATE DISTANCE
+// -------------------------
+// SEND DATA TO ZOHO (IMPORTANT FIX)
+// -------------------------
+function sendToZoho() {
+    window.parent.postMessage({
+        Start: document.getElementById("start").value,
+        End: document.getElementById("end").value,
+        "Distance(km)": document.getElementById("distance").value
+    }, "*");
+}
 
-function calculateDistance(){
+// -------------------------
+// Map Click Logic
+// -------------------------
+map.on('click', async function(e) {
 
-    if(startLatLng && endLatLng){
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
 
-        var point1 = L.latLng(
-            startLatLng[0],
-            startLatLng[1]
+    const placeName = await getPlaceName(lat, lng);
+
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(placeName)
+      .openPopup();
+
+    if (!start) {
+
+        start = { lat, lng };
+        startName = placeName;
+
+        document.getElementById("start").value =
+            placeName + " (" + lat + "," + lng + ")";
+
+        alert("Start selected:\n" + placeName);
+
+    } 
+    else if (!end) {
+
+        end = { lat, lng };
+        endName = placeName;
+
+        document.getElementById("end").value =
+            placeName + " (" + lat + "," + lng + ")";
+
+        alert("End selected:\n" + placeName);
+
+        // Calculate distance
+        const dist = getDistance(
+            start.lat, start.lng,
+            end.lat, end.lng
         );
-
-        var point2 = L.latLng(
-            endLatLng[0],
-            endLatLng[1]
-        );
-
-        var distance =
-            point1.distanceTo(point2) / 1000;
 
         document.getElementById("distance").value =
-            distance.toFixed(2);
+            dist.toFixed(2);
 
-        if(line){
-            map.removeLayer(line);
-        }
-
-        line = L.polyline(
-            [startLatLng, endLatLng],
-            {
-                color:'blue'
-            }
-        ).addTo(map);
-
-        map.fitBounds(line.getBounds());
-
-        // SEND TO ZOHO
-
-        window.parent.postMessage({
-
-            start:
-                document.getElementById("start").value,
-
-            end:
-                document.getElementById("end").value,
-
-            distance:
-                distance.toFixed(2)
-
-        }, "*");
+        // 🔥 SEND AUTOMATICALLY TO ZOHO PAGE
+        sendToZoho();
     }
-}
+});
 
 </script>
 
 </body>
 </html>
-      
-           
-             
+
