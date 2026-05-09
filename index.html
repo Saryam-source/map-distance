@@ -31,18 +31,24 @@
         }
 
         input{
-            width:350px;
+            width:400px;
             padding:10px;
             margin-bottom:15px;
             font-size:16px;
         }
 
         button{
-            padding:10px 20px;
-            margin-left:10px;
-            margin-bottom:15px;
+            padding:12px 25px;
             font-size:16px;
             cursor:pointer;
+            background:#007bff;
+            color:white;
+            border:none;
+            border-radius:5px;
+        }
+
+        button:hover{
+            background:#0056b3;
         }
 
     </style>
@@ -60,11 +66,7 @@
     <input
         type="text"
         id="start"
-        placeholder="Type start location">
-
-    <button onclick="setStartLocation()">
-        Submit Start
-    </button>
+        placeholder="Enter start location / street / house name">
 
     <br><br>
 
@@ -73,10 +75,12 @@
     <input
         type="text"
         id="end"
-        placeholder="Type end location">
+        placeholder="Enter end location / street / house name">
 
-    <button onclick="setEndLocation()">
-        Submit End
+    <br><br>
+
+    <button onclick="searchLocations()">
+        Search & Calculate Distance
     </button>
 
     <br><br>
@@ -92,13 +96,25 @@
 
 <script>
 
+// ----------------------
+// CREATE MAP
+// ----------------------
+
 var map = L.map('map').setView([13.0827, 80.2707], 10);
+
+// ----------------------
+// MAP LAYER
+// ----------------------
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
     maxZoom:19
 }).addTo(map);
+
+// ----------------------
+// VARIABLES
+// ----------------------
 
 var startMarker = null;
 var endMarker = null;
@@ -108,101 +124,98 @@ var startLatLng = null;
 var endLatLng = null;
 
 // ----------------------
-// SEARCH START
+// SEARCH BOTH LOCATIONS
 // ----------------------
 
-async function setStartLocation(){
+async function searchLocations(){
 
-    var location =
+    var startLocation =
     document.getElementById("start").value;
 
-    if(location == ""){
-        alert("Enter Start Location");
+    var endLocation =
+    document.getElementById("end").value;
+
+    if(startLocation == "" || endLocation == ""){
+
+        alert("Enter both Start and End locations");
         return;
     }
 
-    var url =
-    "https://nominatim.openstreetmap.org/search?format=json&q="
-    + encodeURIComponent(location + ", Chennai, Tamil Nadu, India");
+    // BETTER SEARCH QUERY
 
-    var response = await fetch(url);
+    var startUrl =
+    "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
+    + encodeURIComponent(startLocation + ", Chennai, Tamil Nadu, India");
 
-    var data = await response.json();
+    var endUrl =
+    "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
+    + encodeURIComponent(endLocation + ", Chennai, Tamil Nadu, India");
 
-    if(data.length == 0){
-        alert("Location not found");
+    var startResponse = await fetch(startUrl);
+    var endResponse = await fetch(endUrl);
+
+    var startData = await startResponse.json();
+    var endData = await endResponse.json();
+
+    if(startData.length == 0){
+
+        alert("Start Location not found");
         return;
     }
 
-    var lat = parseFloat(data[0].lat);
-    var lon = parseFloat(data[0].lon);
+    if(endData.length == 0){
 
-    startLatLng = L.latLng(lat, lon);
+        alert("End Location not found");
+        return;
+    }
+
+    // STORE LAT LNG
+
+    startLatLng =
+    L.latLng(startData[0].lat, startData[0].lon);
+
+    endLatLng =
+    L.latLng(endData[0].lat, endData[0].lon);
+
+    // REMOVE OLD ITEMS
 
     if(startMarker){
         map.removeLayer(startMarker);
     }
 
-    startMarker =
-    L.marker(startLatLng)
-    .addTo(map)
-    .bindPopup(data[0].display_name)
-    .openPopup();
-
-    document.getElementById("start").value =
-    data[0].display_name;
-
-    map.setView(startLatLng, 15);
-
-    calculateDistance();
-}
-
-// ----------------------
-// SEARCH END
-// ----------------------
-
-async function setEndLocation(){
-
-    var location =
-    document.getElementById("end").value;
-
-    if(location == ""){
-        alert("Enter End Location");
-        return;
-    }
-
-    var url =
-    "https://nominatim.openstreetmap.org/search?format=json&q="
-    + encodeURIComponent(location + ", Chennai, Tamil Nadu, India");
-
-    var response = await fetch(url);
-
-    var data = await response.json();
-
-    if(data.length == 0){
-        alert("Location not found");
-        return;
-    }
-
-    var lat = parseFloat(data[0].lat);
-    var lon = parseFloat(data[0].lon);
-
-    endLatLng = L.latLng(lat, lon);
-
     if(endMarker){
         map.removeLayer(endMarker);
     }
 
+    if(routeLine){
+        map.removeLayer(routeLine);
+    }
+
+    // ADD START MARKER
+
+    startMarker =
+    L.marker(startLatLng)
+    .addTo(map)
+    .bindPopup(startData[0].display_name)
+    .openPopup();
+
+    // ADD END MARKER
+
     endMarker =
     L.marker(endLatLng)
     .addTo(map)
-    .bindPopup(data[0].display_name)
+    .bindPopup(endData[0].display_name)
     .openPopup();
 
-    document.getElementById("end").value =
-    data[0].display_name;
+    // AUTO FILL FULL ADDRESS
 
-    map.setView(endLatLng, 15);
+    document.getElementById("start").value =
+    startData[0].display_name;
+
+    document.getElementById("end").value =
+    endData[0].display_name;
+
+    // CALCULATE DISTANCE
 
     calculateDistance();
 }
@@ -226,6 +239,8 @@ map.on('click', async function(e){
 
     var data = await response.json();
 
+    // START LOCATION
+
     if(!startLatLng){
 
         startLatLng = e.latlng;
@@ -240,11 +255,12 @@ map.on('click', async function(e){
         .bindPopup("Start Location")
         .openPopup();
 
-        // AUTO FILL START LOCATION
-
         document.getElementById("start").value =
         data.display_name;
     }
+
+    // END LOCATION
+
     else if(!endLatLng){
 
         endLatLng = e.latlng;
@@ -259,16 +275,15 @@ map.on('click', async function(e){
         .bindPopup("End Location")
         .openPopup();
 
-        // AUTO FILL END LOCATION
-
         document.getElementById("end").value =
         data.display_name;
 
         calculateDistance();
     }
-    else{
 
-        // RESET EVERYTHING
+    // RESET
+
+    else{
 
         if(startMarker){
             map.removeLayer(startMarker);
@@ -302,7 +317,7 @@ map.on('click', async function(e){
 });
 
 // ----------------------
-// DISTANCE
+// CALCULATE DISTANCE
 // ----------------------
 
 function calculateDistance(){
@@ -315,21 +330,28 @@ function calculateDistance(){
         document.getElementById("distance").value =
         distance.toFixed(2);
 
+        // REMOVE OLD ROUTE
+
         if(routeLine){
             map.removeLayer(routeLine);
         }
+
+        // DRAW ROUTE LINE
 
         routeLine =
         L.polyline(
             [startLatLng, endLatLng],
             {
-                color:'blue'
+                color:'blue',
+                weight:4
             }
         ).addTo(map);
 
+        // FIT MAP
+
         map.fitBounds(routeLine.getBounds());
 
-        // SEND TO ZOHO
+        // SEND TO ZOHO CREATOR
 
         window.parent.postMessage({
 
@@ -350,4 +372,7 @@ function calculateDistance(){
 
 </body>
 </html>
+
+      
+   
 
