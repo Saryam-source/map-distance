@@ -42,7 +42,7 @@
             border: 1px solid #ccc;
             z-index: 2000;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         .dropdown div { padding: 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #eee; }
@@ -66,6 +66,14 @@
             font-size: 14px;
             font-weight: 500;
         }
+        
+        /* Added helper text */
+        .map-hint {
+            font-size: 10px;
+            color: #1a73e8;
+            margin-top: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -74,18 +82,20 @@
     <div class="search-card">
         <div class="input-group">
             <label>START LOCATION</label>
-            <input type="text" id="start" class="search-box" placeholder="Type or select start..." onkeyup="searchSuggestions('start')">
+            <input type="text" id="start" class="search-box" placeholder="Type or click on map..." onkeyup="searchSuggestions('start')">
             <div id="startSuggestions" class="dropdown"></div>
         </div>
 
         <div class="input-group">
             <label>END LOCATION</label>
-            <input type="text" id="end" class="search-box" placeholder="Type or select destination..." onkeyup="searchSuggestions('end')">
+            <input type="text" id="end" class="search-box" placeholder="Type or click on map..." onkeyup="searchSuggestions('end')">
             <div id="endSuggestions" class="dropdown"></div>
         </div>
 
-        <button class="btn-calculate" onclick="handleManualAndCalculate()">Search & Calculate</button>
+        <button class="btn-calculate" onclick="handleManualAndCalculate()">Calculate & Sync</button>
         
+        <div class="map-hint">Tip: Click anywhere on the map to set points.</div>
+
         <div class="distance-display">
             Distance: <span id="distance-text" style="color: #1a73e8;">0.00</span> KM
         </div>
@@ -99,8 +109,44 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 var startLatLng = null, endLatLng = null;
 var startMarker = null, endMarker = null, routeLine = null;
+var clickCount = 0;
 
-// Handle dropdown suggestions
+// --- NEW: CLICK ON MAP TO SELECT ---
+map.on('click', async function(e) {
+    var latlng = e.latlng;
+    
+    // Toggle between setting start and end
+    if (clickCount === 0) {
+        startLatLng = latlng;
+        updateMarker("start", latlng);
+        var address = await reverseGeocode(latlng);
+        document.getElementById("start").value = address;
+        clickCount = 1;
+    } else {
+        endLatLng = latlng;
+        updateMarker("end", latlng);
+        var address = await reverseGeocode(latlng);
+        document.getElementById("end").value = address;
+        clickCount = 0; // Reset for next pair
+        
+        // Auto-calculate after second click
+        handleManualAndCalculate();
+    }
+});
+
+// Helper to get Address Name from Clicks
+async function reverseGeocode(latlng) {
+    try {
+        var url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`;
+        var res = await fetch(url);
+        var data = await res.json();
+        return data.display_name || latlng.lat.toFixed(4) + ", " + latlng.lng.toFixed(4);
+    } catch (err) {
+        return latlng.lat.toFixed(4) + ", " + latlng.lng.toFixed(4);
+    }
+}
+// -----------------------------------
+
 async function searchSuggestions(type) {
     var input = document.getElementById(type).value;
     var suggestionBox = document.getElementById(type + "Suggestions");
@@ -133,7 +179,6 @@ async function searchSuggestions(type) {
     } catch (e) { console.log(e); }
 }
 
-// Update markers on map
 function updateMarker(type, latlng) {
     if (type == "start") {
         startLatLng = latlng;
@@ -144,10 +189,8 @@ function updateMarker(type, latlng) {
         if (endMarker) map.removeLayer(endMarker);
         endMarker = L.marker(latlng).addTo(map).bindPopup("End").openPopup();
     }
-    map.flyTo(latlng, 14);
 }
 
-// Helper to convert manual text to Coordinates
 async function geocodeAddress(address) {
     var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
     var response = await fetch(url);
@@ -158,26 +201,14 @@ async function geocodeAddress(address) {
     return null;
 }
 
-// MAIN FUNCTION: Handles both dropdown-selected and manually typed values
 async function handleManualAndCalculate() {
     var startVal = document.getElementById("start").value;
     var endVal = document.getElementById("end").value;
 
-    if (!startVal || !endVal) {
-        alert("Please enter both locations");
-        return;
-    }
+    if (!startVal || !endVal) return;
 
-    // If coordinates aren't set yet (manual entry), find them now
-    if (!startLatLng) {
-        startLatLng = await geocodeAddress(startVal);
-        if (startLatLng) updateMarker("start", startLatLng);
-    }
-    
-    if (!endLatLng) {
-        endLatLng = await geocodeAddress(endVal);
-        if (endLatLng) updateMarker("end", endLatLng);
-    }
+    if (!startLatLng) startLatLng = await geocodeAddress(startVal);
+    if (!endLatLng) endLatLng = await geocodeAddress(endVal);
 
     if (startLatLng && endLatLng) {
         var distance = startLatLng.distanceTo(endLatLng) / 1000;
@@ -193,12 +224,9 @@ async function handleManualAndCalculate() {
             end: endVal,
             distance: distance.toFixed(2)
         }, "*");
-    } else {
-        alert("Could not find one of the locations. Please check your spelling.");
     }
 }
 
-// Close dropdowns if clicking outside
 document.addEventListener("click", function(e) {
     if (!e.target.classList.contains('search-box')) {
         document.getElementById("startSuggestions").style.display = "none";
@@ -210,3 +238,4 @@ document.addEventListener("click", function(e) {
 </body>
 </html>
 
+       
