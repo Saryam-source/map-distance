@@ -47,6 +47,7 @@
         button{
             padding:10px 20px;
             margin-left:10px;
+            margin-bottom:15px;
             font-size:16px;
             cursor:pointer;
         }
@@ -68,6 +69,10 @@
         id="start"
         placeholder="Type start location">
 
+    <button onclick="setStartLocation()">
+        Submit Start
+    </button>
+
     <br><br>
 
     <h3>End Location</h3>
@@ -76,6 +81,10 @@
         type="text"
         id="end"
         placeholder="Type end location">
+
+    <button onclick="setEndLocation()">
+        Submit End
+    </button>
 
     <br><br>
 
@@ -109,28 +118,27 @@ var startLatLng = null;
 var endLatLng = null;
 
 // ---------------------
-// START AUTOCOMPLETE
+// SUBMIT START
 // ---------------------
 
-document
-.getElementById("start")
-.addEventListener("input", async function(){
+async function setStartLocation(){
 
-    var query = this.value;
+    var query =
+    document.getElementById("start").value;
 
-    if(query.length < 3){
+    if(query == ""){
+        alert("Enter Start Location");
         return;
     }
 
     const results =
-    await provider.search({ query: query });
+    await provider.search({
+        query: query + ", Chennai, Tamil Nadu, India"
+    });
 
     if(results.length > 0){
 
         var result = results[0];
-
-        document.getElementById("start").value =
-        result.label;
 
         startLatLng =
         L.latLng(result.y, result.x);
@@ -145,36 +153,38 @@ document
         .bindPopup(result.label)
         .openPopup();
 
-        map.setView(startLatLng, 13);
+        map.setView(startLatLng, 15);
 
-        calculateDistance();
+        document.getElementById("start").value =
+        result.label;
     }
-
-});
+    else{
+        alert("Location not found");
+    }
+}
 
 // ---------------------
-// END AUTOCOMPLETE
+// SUBMIT END
 // ---------------------
 
-document
-.getElementById("end")
-.addEventListener("input", async function(){
+async function setEndLocation(){
 
-    var query = this.value;
+    var query =
+    document.getElementById("end").value;
 
-    if(query.length < 3){
+    if(query == ""){
+        alert("Enter End Location");
         return;
     }
 
     const results =
-    await provider.search({ query: query });
+    await provider.search({
+        query: query + ", Chennai, Tamil Nadu, India"
+    });
 
     if(results.length > 0){
 
         var result = results[0];
-
-        document.getElementById("end").value =
-        result.label;
 
         endLatLng =
         L.latLng(result.y, result.x);
@@ -189,22 +199,31 @@ document
         .bindPopup(result.label)
         .openPopup();
 
-        map.setView(endLatLng, 13);
+        map.setView(endLatLng, 15);
+
+        document.getElementById("end").value =
+        result.label;
 
         calculateDistance();
     }
-
-});
+    else{
+        alert("Location not found");
+    }
+}
 
 // ---------------------
 // MAP CLICK
 // ---------------------
 
-map.on('click', function(e){
+map.on('click', async function(e){
 
     if(!startLatLng){
 
         startLatLng = e.latlng;
+
+        if(startMarker){
+            map.removeLayer(startMarker);
+        }
 
         startMarker =
         L.marker(startLatLng)
@@ -212,10 +231,19 @@ map.on('click', function(e){
         .bindPopup("Start Location")
         .openPopup();
 
+        document.getElementById("start").value =
+        startLatLng.lat.toFixed(5)
+        + ", " +
+        startLatLng.lng.toFixed(5);
+
     }
     else if(!endLatLng){
 
         endLatLng = e.latlng;
+
+        if(endMarker){
+            map.removeLayer(endMarker);
+        }
 
         endMarker =
         L.marker(endLatLng)
@@ -223,7 +251,46 @@ map.on('click', function(e){
         .bindPopup("End Location")
         .openPopup();
 
+        document.getElementById("end").value =
+        endLatLng.lat.toFixed(5)
+        + ", " +
+        endLatLng.lng.toFixed(5);
+
         calculateDistance();
+    }
+    else{
+
+        // RESET
+
+        if(startMarker){
+            map.removeLayer(startMarker);
+        }
+
+        if(endMarker){
+            map.removeLayer(endMarker);
+        }
+
+        if(routeLine){
+            map.removeLayer(routeLine);
+        }
+
+        startLatLng = e.latlng;
+        endLatLng = null;
+
+        startMarker =
+        L.marker(startLatLng)
+        .addTo(map)
+        .bindPopup("Start Location")
+        .openPopup();
+
+        document.getElementById("start").value =
+        startLatLng.lat.toFixed(5)
+        + ", " +
+        startLatLng.lng.toFixed(5);
+
+        document.getElementById("end").value = "";
+
+        document.getElementById("distance").value = "";
     }
 
 });
@@ -275,4 +342,6 @@ function calculateDistance(){
 
 </body>
 </html>
+   
+    
 
