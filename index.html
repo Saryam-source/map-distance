@@ -6,10 +6,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; }
         #map { height: 100vh; width: 100%; position: relative; }
 
-        /* Floating Search Card - Google Maps Style */
         .search-card {
             position: absolute;
             top: 20px;
@@ -22,8 +21,8 @@
             width: 350px;
         }
 
-        .input-group { margin-bottom: 15px; position: relative; }
-        .input-group label { display: block; font-size: 12px; font-weight: bold; color: #666; margin-bottom: 5px; }
+        .input-group { margin-bottom: 12px; position: relative; }
+        .input-group label { display: block; font-size: 11px; font-weight: bold; color: #666; margin-bottom: 4px; }
         
         .search-box {
             width: 100%;
@@ -34,26 +33,19 @@
             font-size: 14px;
         }
 
-        /* Dropdown styling */
         .dropdown {
             position: absolute;
             width: 100%;
-            max-height: 250px;
+            max-height: 200px;
             overflow-y: auto;
             background: white;
             border: 1px solid #ccc;
-            border-top: none;
             z-index: 2000;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none; /* Hidden by default */
         }
 
-        .dropdown div {
-            padding: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            border-bottom: 1px solid #eee;
-        }
-
+        .dropdown div { padding: 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #eee; }
         .dropdown div:hover { background: #f8f9fa; }
 
         .btn-calculate {
@@ -65,13 +57,14 @@
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 5px;
         }
 
         .distance-display {
-            margin-top: 10px;
+            margin-top: 12px;
             text-align: center;
             font-size: 14px;
-            color: #333;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -81,20 +74,20 @@
     <div class="search-card">
         <div class="input-group">
             <label>START LOCATION</label>
-            <input type="text" id="start" class="search-box" placeholder="Search Start..." onkeyup="searchSuggestions('start')">
+            <input type="text" id="start" class="search-box" placeholder="Type or select start..." onkeyup="searchSuggestions('start')">
             <div id="startSuggestions" class="dropdown"></div>
         </div>
 
         <div class="input-group">
             <label>END LOCATION</label>
-            <input type="text" id="end" class="search-box" placeholder="Search End..." onkeyup="searchSuggestions('end')">
+            <input type="text" id="end" class="search-box" placeholder="Type or select destination..." onkeyup="searchSuggestions('end')">
             <div id="endSuggestions" class="dropdown"></div>
         </div>
 
-        <button class="btn-calculate" onclick="calculateDistance()">Search & Calculate</button>
+        <button class="btn-calculate" onclick="handleManualAndCalculate()">Search & Calculate</button>
         
         <div class="distance-display">
-            Distance: <b id="distance-text">0.00</b> KM
+            Distance: <span id="distance-text" style="color: #1a73e8;">0.00</span> KM
         </div>
     </div>
 </div>
@@ -102,43 +95,45 @@
 <script>
 var map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
-
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 var startLatLng = null, endLatLng = null;
 var startMarker = null, endMarker = null, routeLine = null;
 
+// Handle dropdown suggestions
 async function searchSuggestions(type) {
     var input = document.getElementById(type).value;
     var suggestionBox = document.getElementById(type + "Suggestions");
 
     if (input.length < 3) {
-        suggestionBox.innerHTML = "";
+        suggestionBox.style.display = "none";
         return;
     }
 
-    // Search specifically in Chennai for better results
-    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}+Chennai&limit=5`;
+    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}&limit=5`;
     
     try {
         var response = await fetch(url);
         var data = await response.json();
-        suggestionBox.innerHTML = "";
-
-        data.forEach(function(place) {
-            var div = document.createElement("div");
-            div.innerHTML = place.display_name;
-            div.onclick = function() {
-                document.getElementById(type).value = place.display_name;
-                suggestionBox.innerHTML = "";
-                var latlng = L.latLng(place.lat, place.lon);
-                updateMarker(type, latlng);
-            };
-            suggestionBox.appendChild(div);
-        });
-    } catch (e) { console.log("Search error", e); }
+        
+        if(data.length > 0) {
+            suggestionBox.style.display = "block";
+            suggestionBox.innerHTML = "";
+            data.forEach(function(place) {
+                var div = document.createElement("div");
+                div.innerHTML = place.display_name;
+                div.onclick = function() {
+                    document.getElementById(type).value = place.display_name;
+                    suggestionBox.style.display = "none";
+                    updateMarker(type, L.latLng(place.lat, place.lon));
+                };
+                suggestionBox.appendChild(div);
+            });
+        }
+    } catch (e) { console.log(e); }
 }
 
+// Update markers on map
 function updateMarker(type, latlng) {
     if (type == "start") {
         startLatLng = latlng;
@@ -149,43 +144,65 @@ function updateMarker(type, latlng) {
         if (endMarker) map.removeLayer(endMarker);
         endMarker = L.marker(latlng).addTo(map).bindPopup("End").openPopup();
     }
-    map.flyTo(latlng, 15);
+    map.flyTo(latlng, 14);
 }
 
-function calculateDistance() {
-    if (!startLatLng || !endLatLng) {
-        alert("Please select both locations from the dropdown");
+// Helper to convert manual text to Coordinates
+async function geocodeAddress(address) {
+    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    var response = await fetch(url);
+    var data = await response.json();
+    if (data && data.length > 0) {
+        return L.latLng(data[0].lat, data[0].lon);
+    }
+    return null;
+}
+
+// MAIN FUNCTION: Handles both dropdown-selected and manually typed values
+async function handleManualAndCalculate() {
+    var startVal = document.getElementById("start").value;
+    var endVal = document.getElementById("end").value;
+
+    if (!startVal || !endVal) {
+        alert("Please enter both locations");
         return;
     }
 
-    var distance = startLatLng.distanceTo(endLatLng) / 1000;
-    document.getElementById("distance-text").innerText = distance.toFixed(2);
+    // If coordinates aren't set yet (manual entry), find them now
+    if (!startLatLng) {
+        startLatLng = await geocodeAddress(startVal);
+        if (startLatLng) updateMarker("start", startLatLng);
+    }
+    
+    if (!endLatLng) {
+        endLatLng = await geocodeAddress(endVal);
+        if (endLatLng) updateMarker("end", endLatLng);
+    }
 
-    if (routeLine) map.removeLayer(routeLine);
-    routeLine = L.polyline([startLatLng, endLatLng], { color: '#1a73e8', weight: 5 }).addTo(map);
-    map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+    if (startLatLng && endLatLng) {
+        var distance = startLatLng.distanceTo(endLatLng) / 1000;
+        document.getElementById("distance-text").innerText = distance.toFixed(2);
 
-    // Send to Zoho Parent
-    window.parent.postMessage({
-        start: document.getElementById("start").value,
-        end: document.getElementById("end").value,
-        distance: distance.toFixed(2)
-    }, "*");
+        if (routeLine) map.removeLayer(routeLine);
+        routeLine = L.polyline([startLatLng, endLatLng], { color: '#1a73e8', weight: 5 }).addTo(map);
+        map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+
+        // Send to Zoho
+        window.parent.postMessage({
+            start: startVal,
+            end: endVal,
+            distance: distance.toFixed(2)
+        }, "*");
+    } else {
+        alert("Could not find one of the locations. Please check your spelling.");
+    }
 }
 
-// Map Click functionality
-map.on('click', async function(e) {
-    var url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`;
-    var response = await fetch(url);
-    var data = await response.json();
-
-    if (!startLatLng) {
-        updateMarker("start", e.latlng);
-        document.getElementById("start").value = data.display_name;
-    } else if (!endLatLng) {
-        updateMarker("end", e.latlng);
-        document.getElementById("end").value = data.display_name;
-        calculateDistance();
+// Close dropdowns if clicking outside
+document.addEventListener("click", function(e) {
+    if (!e.target.classList.contains('search-box')) {
+        document.getElementById("startSuggestions").style.display = "none";
+        document.getElementById("endSuggestions").style.display = "none";
     }
 });
 </script>
