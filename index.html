@@ -3,19 +3,14 @@
 
 <head>
 
-    <title>Map Distance Selector</title>
+    <title>Distance Map</title>
 
-    <meta charset="utf-8" />
-
-    <link rel="stylesheet"
-        href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <meta charset="utf-8"/>
 
     <link rel="stylesheet"
-        href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+          href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
     <style>
 
@@ -34,10 +29,17 @@
         }
 
         input{
-            width:350px;
+            width:320px;
             padding:10px;
             margin-bottom:15px;
             font-size:16px;
+        }
+
+        button{
+            padding:10px 20px;
+            font-size:16px;
+            cursor:pointer;
+            margin-left:10px;
         }
 
         .label{
@@ -56,20 +58,31 @@
 <div class="container">
 
     <div class="label">Start Location</div>
+
     <input type="text"
            id="start"
-           placeholder="Search start location">
+           placeholder="Enter Start Location">
+
+    <button onclick="searchStart()">
+        Search
+    </button>
 
     <br>
 
     <div class="label">End Location</div>
+
     <input type="text"
            id="end"
-           placeholder="Search end location">
+           placeholder="Enter End Location">
 
-    <br>
+    <button onclick="searchEnd()">
+        Search
+    </button>
+
+    <br><br>
 
     <div class="label">Distance (KM)</div>
+
     <input type="text"
            id="distance"
            readonly>
@@ -79,7 +92,7 @@
 <script>
 
     // -------------------------
-    // CREATE MAP
+    // MAP
     // -------------------------
 
     var map = L.map('map').setView([13.0827, 80.2707], 10);
@@ -103,184 +116,95 @@
     var endLatLng = null;
 
     // -------------------------
-    // GEOCODER
-    // -------------------------
-
-    var geocoder = L.Control.Geocoder.nominatim();
-
-    // -------------------------
     // SEARCH START LOCATION
     // -------------------------
 
-    document
-        .getElementById("start")
-        .addEventListener("change", function(){
+    async function searchStart(){
 
-        var location = this.value;
+        var location =
+            document.getElementById("start").value;
 
-        geocoder.geocode(location, function(results){
-
-            if(results.length > 0){
-
-                var result = results[0];
-
-                startLatLng = result.center;
-
-                if(startMarker){
-                    map.removeLayer(startMarker);
-                }
-
-                startMarker = L.marker(startLatLng)
-                    .addTo(map)
-                    .bindPopup("Start Location")
-                    .openPopup();
-
-                map.setView(startLatLng, 13);
-
-                calculateDistance();
-            }
-
-        });
-
-    });
-
-    // -------------------------
-    // SEARCH END LOCATION
-    // -------------------------
-
-    document
-        .getElementById("end")
-        .addEventListener("change", function(){
-
-        var location = this.value;
-
-        geocoder.geocode(location, function(results){
-
-            if(results.length > 0){
-
-                var result = results[0];
-
-                endLatLng = result.center;
-
-                if(endMarker){
-                    map.removeLayer(endMarker);
-                }
-
-                endMarker = L.marker(endLatLng)
-                    .addTo(map)
-                    .bindPopup("End Location")
-                    .openPopup();
-
-                map.setView(endLatLng, 13);
-
-                calculateDistance();
-            }
-
-        });
-
-    });
-
-    // -------------------------
-    // CLICK MAP TO SELECT
-    // -------------------------
-
-    map.on("click", function(e){
-
-        if(!startLatLng){
-
-            startLatLng = e.latlng;
-
-            if(startMarker){
-                map.removeLayer(startMarker);
-            }
-
-            startMarker = L.marker(startLatLng)
-                .addTo(map)
-                .bindPopup("Start Location")
-                .openPopup();
-
-            reverseGeocode(startLatLng, "start");
+        if(location == ""){
+            alert("Enter Start Location");
+            return;
         }
-
-        else if(!endLatLng){
-
-            endLatLng = e.latlng;
-
-            if(endMarker){
-                map.removeLayer(endMarker);
-            }
-
-            endMarker = L.marker(endLatLng)
-                .addTo(map)
-                .bindPopup("End Location")
-                .openPopup();
-
-            reverseGeocode(endLatLng, "end");
-
-            calculateDistance();
-        }
-
-        else{
-
-            // RESET
-
-            if(startMarker){
-                map.removeLayer(startMarker);
-            }
-
-            if(endMarker){
-                map.removeLayer(endMarker);
-            }
-
-            if(line){
-                map.removeLayer(line);
-            }
-
-            startLatLng = e.latlng;
-            endLatLng = null;
-
-            startMarker = L.marker(startLatLng)
-                .addTo(map)
-                .bindPopup("Start Location")
-                .openPopup();
-
-            document.getElementById("end").value = "";
-            document.getElementById("distance").value = "";
-
-            reverseGeocode(startLatLng, "start");
-        }
-
-    });
-
-    // -------------------------
-    // REVERSE GEOCODING
-    // -------------------------
-
-    async function reverseGeocode(latlng, type){
 
         var url =
-            "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="
-            + latlng.lat
-            + "&lon="
-            + latlng.lng;
+            "https://nominatim.openstreetmap.org/search?format=json&q="
+            + encodeURIComponent(location);
 
         var response = await fetch(url);
 
         var data = await response.json();
 
-        if(type == "start"){
-
-            document.getElementById("start").value =
-                data.display_name;
-
-        }
-        else{
-
-            document.getElementById("end").value =
-                data.display_name;
-
+        if(data.length == 0){
+            alert("Location not found");
+            return;
         }
 
+        var lat = parseFloat(data[0].lat);
+        var lon = parseFloat(data[0].lon);
+
+        startLatLng = [lat, lon];
+
+        if(startMarker){
+            map.removeLayer(startMarker);
+        }
+
+        startMarker = L.marker(startLatLng)
+            .addTo(map)
+            .bindPopup("Start Location")
+            .openPopup();
+
+        map.setView(startLatLng, 13);
+
+        calculateDistance();
+    }
+
+    // -------------------------
+    // SEARCH END LOCATION
+    // -------------------------
+
+    async function searchEnd(){
+
+        var location =
+            document.getElementById("end").value;
+
+        if(location == ""){
+            alert("Enter End Location");
+            return;
+        }
+
+        var url =
+            "https://nominatim.openstreetmap.org/search?format=json&q="
+            + encodeURIComponent(location);
+
+        var response = await fetch(url);
+
+        var data = await response.json();
+
+        if(data.length == 0){
+            alert("Location not found");
+            return;
+        }
+
+        var lat = parseFloat(data[0].lat);
+        var lon = parseFloat(data[0].lon);
+
+        endLatLng = [lat, lon];
+
+        if(endMarker){
+            map.removeLayer(endMarker);
+        }
+
+        endMarker = L.marker(endLatLng)
+            .addTo(map)
+            .bindPopup("End Location")
+            .openPopup();
+
+        map.setView(endLatLng, 13);
+
+        calculateDistance();
     }
 
     // -------------------------
@@ -291,8 +215,18 @@
 
         if(startLatLng && endLatLng){
 
+            var point1 = L.latLng(
+                startLatLng[0],
+                startLatLng[1]
+            );
+
+            var point2 = L.latLng(
+                endLatLng[0],
+                endLatLng[1]
+            );
+
             var distance =
-                startLatLng.distanceTo(endLatLng) / 1000;
+                point1.distanceTo(point2) / 1000;
 
             document.getElementById("distance").value =
                 distance.toFixed(2);
@@ -334,3 +268,6 @@
 
 </body>
 </html>
+
+       
+             
