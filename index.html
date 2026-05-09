@@ -29,7 +29,7 @@
         }
 
         input{
-            width:320px;
+            width:300px;
             padding:10px;
             margin-bottom:15px;
             font-size:16px;
@@ -38,13 +38,8 @@
         button{
             padding:10px 20px;
             font-size:16px;
-            cursor:pointer;
             margin-left:10px;
-        }
-
-        .label{
-            font-size:18px;
-            margin-bottom:5px;
+            cursor:pointer;
         }
 
     </style>
@@ -57,7 +52,7 @@
 
 <div class="container">
 
-    <div class="label">Start Location</div>
+    <h3>Start Location</h3>
 
     <input type="text"
            id="start"
@@ -67,9 +62,9 @@
         Search
     </button>
 
-    <br>
+    <br><br>
 
-    <div class="label">End Location</div>
+    <h3>End Location</h3>
 
     <input type="text"
            id="end"
@@ -81,7 +76,7 @@
 
     <br><br>
 
-    <div class="label">Distance (KM)</div>
+    <h3>Distance (KM)</h3>
 
     <input type="text"
            id="distance"
@@ -91,183 +86,166 @@
 
 <script>
 
-    // -------------------------
-    // MAP
-    // -------------------------
+var map = L.map('map').setView([13.0827, 80.2707], 10);
 
-    var map = L.map('map').setView([13.0827, 80.2707], 10);
+L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        maxZoom: 19
+    }
+).addTo(map);
 
-    L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-            maxZoom: 19
-        }
-    ).addTo(map);
+var startMarker = null;
+var endMarker = null;
+var line = null;
 
-    // -------------------------
-    // VARIABLES
-    // -------------------------
+var startLatLng = null;
+var endLatLng = null;
 
-    var startMarker = null;
-    var endMarker = null;
-    var line = null;
+// SEARCH START
 
-    var startLatLng = null;
-    var endLatLng = null;
+async function searchStart(){
 
-    // -------------------------
-    // SEARCH START LOCATION
-    // -------------------------
+    var location =
+        document.getElementById("start").value;
 
-    async function searchStart(){
-
-        var location =
-            document.getElementById("start").value;
-
-        if(location == ""){
-            alert("Enter Start Location");
-            return;
-        }
-
-        var url =
-            "https://nominatim.openstreetmap.org/search?format=json&q="
-            + encodeURIComponent(location);
-
-        var response = await fetch(url);
-
-        var data = await response.json();
-
-        if(data.length == 0){
-            alert("Location not found");
-            return;
-        }
-
-        var lat = parseFloat(data[0].lat);
-        var lon = parseFloat(data[0].lon);
-
-        startLatLng = [lat, lon];
-
-        if(startMarker){
-            map.removeLayer(startMarker);
-        }
-
-        startMarker = L.marker(startLatLng)
-            .addTo(map)
-            .bindPopup("Start Location")
-            .openPopup();
-
-        map.setView(startLatLng, 13);
-
-        calculateDistance();
+    if(location == ""){
+        alert("Enter Start Location");
+        return;
     }
 
-    // -------------------------
-    // SEARCH END LOCATION
-    // -------------------------
+    var url =
+        "https://nominatim.openstreetmap.org/search?format=json&q="
+        + encodeURIComponent(location);
 
-    async function searchEnd(){
+    var response = await fetch(url);
 
-        var location =
-            document.getElementById("end").value;
+    var data = await response.json();
 
-        if(location == ""){
-            alert("Enter End Location");
-            return;
-        }
-
-        var url =
-            "https://nominatim.openstreetmap.org/search?format=json&q="
-            + encodeURIComponent(location);
-
-        var response = await fetch(url);
-
-        var data = await response.json();
-
-        if(data.length == 0){
-            alert("Location not found");
-            return;
-        }
-
-        var lat = parseFloat(data[0].lat);
-        var lon = parseFloat(data[0].lon);
-
-        endLatLng = [lat, lon];
-
-        if(endMarker){
-            map.removeLayer(endMarker);
-        }
-
-        endMarker = L.marker(endLatLng)
-            .addTo(map)
-            .bindPopup("End Location")
-            .openPopup();
-
-        map.setView(endLatLng, 13);
-
-        calculateDistance();
+    if(data.length == 0){
+        alert("Location not found");
+        return;
     }
 
-    // -------------------------
-    // CALCULATE DISTANCE
-    // -------------------------
+    var lat = parseFloat(data[0].lat);
+    var lon = parseFloat(data[0].lon);
 
-    function calculateDistance(){
+    startLatLng = [lat, lon];
 
-        if(startLatLng && endLatLng){
+    if(startMarker){
+        map.removeLayer(startMarker);
+    }
 
-            var point1 = L.latLng(
-                startLatLng[0],
-                startLatLng[1]
-            );
+    startMarker = L.marker(startLatLng)
+        .addTo(map)
+        .bindPopup("Start Location")
+        .openPopup();
 
-            var point2 = L.latLng(
-                endLatLng[0],
-                endLatLng[1]
-            );
+    map.setView(startLatLng, 13);
 
-            var distance =
-                point1.distanceTo(point2) / 1000;
+    calculateDistance();
+}
 
-            document.getElementById("distance").value =
-                distance.toFixed(2);
+// SEARCH END
 
-            // DRAW LINE
+async function searchEnd(){
 
-            if(line){
-                map.removeLayer(line);
+    var location =
+        document.getElementById("end").value;
+
+    if(location == ""){
+        alert("Enter End Location");
+        return;
+    }
+
+    var url =
+        "https://nominatim.openstreetmap.org/search?format=json&q="
+        + encodeURIComponent(location);
+
+    var response = await fetch(url);
+
+    var data = await response.json();
+
+    if(data.length == 0){
+        alert("Location not found");
+        return;
+    }
+
+    var lat = parseFloat(data[0].lat);
+    var lon = parseFloat(data[0].lon);
+
+    endLatLng = [lat, lon];
+
+    if(endMarker){
+        map.removeLayer(endMarker);
+    }
+
+    endMarker = L.marker(endLatLng)
+        .addTo(map)
+        .bindPopup("End Location")
+        .openPopup();
+
+    map.setView(endLatLng, 13);
+
+    calculateDistance();
+}
+
+// CALCULATE DISTANCE
+
+function calculateDistance(){
+
+    if(startLatLng && endLatLng){
+
+        var point1 = L.latLng(
+            startLatLng[0],
+            startLatLng[1]
+        );
+
+        var point2 = L.latLng(
+            endLatLng[0],
+            endLatLng[1]
+        );
+
+        var distance =
+            point1.distanceTo(point2) / 1000;
+
+        document.getElementById("distance").value =
+            distance.toFixed(2);
+
+        if(line){
+            map.removeLayer(line);
+        }
+
+        line = L.polyline(
+            [startLatLng, endLatLng],
+            {
+                color:'blue'
             }
+        ).addTo(map);
 
-            line = L.polyline(
-                [startLatLng, endLatLng],
-                {
-                    color: 'blue'
-                }
-            ).addTo(map);
+        map.fitBounds(line.getBounds());
 
-            map.fitBounds(line.getBounds());
+        // SEND TO ZOHO
 
-            // SEND TO ZOHO
+        window.parent.postMessage({
 
-            window.parent.postMessage({
+            start:
+                document.getElementById("start").value,
 
-                start:
-                    document.getElementById("start").value,
+            end:
+                document.getElementById("end").value,
 
-                end:
-                    document.getElementById("end").value,
+            distance:
+                distance.toFixed(2)
 
-                distance:
-                    distance.toFixed(2)
-
-            }, "*");
-        }
-
+        }, "*");
     }
+}
 
 </script>
 
 </body>
 </html>
-
-       
+      
+           
              
