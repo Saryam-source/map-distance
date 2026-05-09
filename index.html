@@ -7,11 +7,10 @@
 
     <meta charset="utf-8"/>
 
-    <!-- LEAFLET CSS -->
+    <!-- LEAFLET -->
     <link rel="stylesheet"
     href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-    <!-- LEAFLET JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <style>
@@ -30,25 +29,41 @@
             padding:20px;
         }
 
-        input{
+        .search-box{
             width:400px;
-            padding:10px;
-            margin-bottom:15px;
+            padding:12px;
             font-size:16px;
+        }
+
+        .dropdown{
+            width:425px;
+            max-height:200px;
+            overflow-y:auto;
+            border:1px solid #ccc;
+            background:white;
+            position:relative;
+            z-index:9999;
+        }
+
+        .dropdown div{
+            padding:10px;
+            cursor:pointer;
+            border-bottom:1px solid #eee;
+        }
+
+        .dropdown div:hover{
+            background:#f2f2f2;
         }
 
         button{
             padding:12px 25px;
             font-size:16px;
             cursor:pointer;
+            margin-top:20px;
             background:#007bff;
             color:white;
             border:none;
             border-radius:5px;
-        }
-
-        button:hover{
-            background:#0056b3;
         }
 
     </style>
@@ -66,7 +81,11 @@
     <input
         type="text"
         id="start"
-        placeholder="Enter start location / street / house name">
+        class="search-box"
+        placeholder="Search Start Location"
+        onkeyup="searchSuggestions('start')">
+
+    <div id="startSuggestions" class="dropdown"></div>
 
     <br><br>
 
@@ -75,12 +94,16 @@
     <input
         type="text"
         id="end"
-        placeholder="Enter end location / street / house name">
+        class="search-box"
+        placeholder="Search End Location"
+        onkeyup="searchSuggestions('end')">
+
+    <div id="endSuggestions" class="dropdown"></div>
 
     <br><br>
 
-    <button onclick="searchLocations()">
-        Search & Calculate Distance
+    <button onclick="calculateDistance()">
+        Calculate Distance
     </button>
 
     <br><br>
@@ -90,6 +113,7 @@
     <input
         type="text"
         id="distance"
+        class="search-box"
         readonly>
 
 </div>
@@ -97,14 +121,10 @@
 <script>
 
 // ----------------------
-// CREATE MAP
+// MAP
 // ----------------------
 
 var map = L.map('map').setView([13.0827, 80.2707], 10);
-
-// ----------------------
-// MAP LAYER
-// ----------------------
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -116,108 +136,93 @@ L.tileLayer(
 // VARIABLES
 // ----------------------
 
+var startLatLng = null;
+var endLatLng = null;
+
 var startMarker = null;
 var endMarker = null;
 var routeLine = null;
 
-var startLatLng = null;
-var endLatLng = null;
-
 // ----------------------
-// SEARCH BOTH LOCATIONS
+// SEARCH SUGGESTIONS
 // ----------------------
 
-async function searchLocations(){
+async function searchSuggestions(type){
 
-    var startLocation =
-    document.getElementById("start").value;
+    var input =
+    document.getElementById(type).value;
 
-    var endLocation =
-    document.getElementById("end").value;
-
-    if(startLocation == "" || endLocation == ""){
-
-        alert("Enter both Start and End locations");
+    if(input.length < 3){
         return;
     }
 
-    // BETTER SEARCH QUERY
+    var url =
+    "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q="
+    + encodeURIComponent(input + ", Chennai, Tamil Nadu, India");
 
-    var startUrl =
-    "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
-    + encodeURIComponent(startLocation + ", Chennai, Tamil Nadu, India");
+    var response = await fetch(url);
 
-    var endUrl =
-    "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
-    + encodeURIComponent(endLocation + ", Chennai, Tamil Nadu, India");
+    var data = await response.json();
 
-    var startResponse = await fetch(startUrl);
-    var endResponse = await fetch(endUrl);
+    var suggestionBox =
+    document.getElementById(type + "Suggestions");
 
-    var startData = await startResponse.json();
-    var endData = await endResponse.json();
+    suggestionBox.innerHTML = "";
 
-    if(startData.length == 0){
+    data.forEach(function(place){
 
-        alert("Start Location not found");
-        return;
-    }
+        var div =
+        document.createElement("div");
 
-    if(endData.length == 0){
+        div.innerHTML =
+        place.display_name;
 
-        alert("End Location not found");
-        return;
-    }
+        div.onclick = function(){
 
-    // STORE LAT LNG
+            document.getElementById(type).value =
+            place.display_name;
 
-    startLatLng =
-    L.latLng(startData[0].lat, startData[0].lon);
+            suggestionBox.innerHTML = "";
 
-    endLatLng =
-    L.latLng(endData[0].lat, endData[0].lon);
+            var latlng =
+            L.latLng(place.lat, place.lon);
 
-    // REMOVE OLD ITEMS
+            if(type == "start"){
 
-    if(startMarker){
-        map.removeLayer(startMarker);
-    }
+                startLatLng = latlng;
 
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
+                if(startMarker){
+                    map.removeLayer(startMarker);
+                }
 
-    if(routeLine){
-        map.removeLayer(routeLine);
-    }
+                startMarker =
+                L.marker(latlng)
+                .addTo(map)
+                .bindPopup("Start Location")
+                .openPopup();
+            }
+            else{
 
-    // ADD START MARKER
+                endLatLng = latlng;
 
-    startMarker =
-    L.marker(startLatLng)
-    .addTo(map)
-    .bindPopup(startData[0].display_name)
-    .openPopup();
+                if(endMarker){
+                    map.removeLayer(endMarker);
+                }
 
-    // ADD END MARKER
+                endMarker =
+                L.marker(latlng)
+                .addTo(map)
+                .bindPopup("End Location")
+                .openPopup();
+            }
 
-    endMarker =
-    L.marker(endLatLng)
-    .addTo(map)
-    .bindPopup(endData[0].display_name)
-    .openPopup();
+            map.setView(latlng, 15);
+        };
 
-    // AUTO FILL FULL ADDRESS
+        suggestionBox.appendChild(div);
 
-    document.getElementById("start").value =
-    startData[0].display_name;
+    });
 
-    document.getElementById("end").value =
-    endData[0].display_name;
-
-    // CALCULATE DISTANCE
-
-    calculateDistance();
 }
 
 // ----------------------
@@ -239,8 +244,6 @@ map.on('click', async function(e){
 
     var data = await response.json();
 
-    // START LOCATION
-
     if(!startLatLng){
 
         startLatLng = e.latlng;
@@ -258,8 +261,6 @@ map.on('click', async function(e){
         document.getElementById("start").value =
         data.display_name;
     }
-
-    // END LOCATION
 
     else if(!endLatLng){
 
@@ -281,43 +282,10 @@ map.on('click', async function(e){
         calculateDistance();
     }
 
-    // RESET
-
-    else{
-
-        if(startMarker){
-            map.removeLayer(startMarker);
-        }
-
-        if(endMarker){
-            map.removeLayer(endMarker);
-        }
-
-        if(routeLine){
-            map.removeLayer(routeLine);
-        }
-
-        startLatLng = e.latlng;
-        endLatLng = null;
-
-        startMarker =
-        L.marker(startLatLng)
-        .addTo(map)
-        .bindPopup("Start Location")
-        .openPopup();
-
-        document.getElementById("start").value =
-        data.display_name;
-
-        document.getElementById("end").value = "";
-
-        document.getElementById("distance").value = "";
-    }
-
 });
 
 // ----------------------
-// CALCULATE DISTANCE
+// DISTANCE
 // ----------------------
 
 function calculateDistance(){
@@ -330,13 +298,9 @@ function calculateDistance(){
         document.getElementById("distance").value =
         distance.toFixed(2);
 
-        // REMOVE OLD ROUTE
-
         if(routeLine){
             map.removeLayer(routeLine);
         }
-
-        // DRAW ROUTE LINE
 
         routeLine =
         L.polyline(
@@ -347,11 +311,9 @@ function calculateDistance(){
             }
         ).addTo(map);
 
-        // FIT MAP
-
         map.fitBounds(routeLine.getBounds());
 
-        // SEND TO ZOHO CREATOR
+        // SEND TO ZOHO
 
         window.parent.postMessage({
 
@@ -366,13 +328,14 @@ function calculateDistance(){
 
         }, "*");
     }
+    else{
+        alert("Select both Start and End locations");
+    }
 }
 
 </script>
 
 </body>
 </html>
-
-      
    
 
