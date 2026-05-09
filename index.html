@@ -1,341 +1,195 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
     <title>Map Distance Calculator</title>
-
     <meta charset="utf-8"/>
-
-    <!-- LEAFLET -->
-    <link rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
     <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { height: 100vh; width: 100%; position: relative; }
 
-        body{
-            margin:0;
-            font-family:Arial;
+        /* Floating Search Card - Google Maps Style */
+        .search-card {
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+            width: 350px;
         }
 
-        #map{
-            height:500px;
-            width:100%;
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group label { display: block; font-size: 12px; font-weight: bold; color: #666; margin-bottom: 5px; }
+        
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
         }
 
-        .container{
-            padding:20px;
+        /* Dropdown styling */
+        .dropdown {
+            position: absolute;
+            width: 100%;
+            max-height: 250px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            z-index: 2000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .search-box{
-            width:400px;
-            padding:12px;
-            font-size:16px;
+        .dropdown div {
+            padding: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
         }
 
-        .dropdown{
-            width:425px;
-            max-height:200px;
-            overflow-y:auto;
-            border:1px solid #ccc;
-            background:white;
-            position:relative;
-            z-index:9999;
+        .dropdown div:hover { background: #f8f9fa; }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 12px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
-        .dropdown div{
-            padding:10px;
-            cursor:pointer;
-            border-bottom:1px solid #eee;
+        .distance-display {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #333;
         }
-
-        .dropdown div:hover{
-            background:#f2f2f2;
-        }
-
-        button{
-            padding:12px 25px;
-            font-size:16px;
-            cursor:pointer;
-            margin-top:20px;
-            background:#007bff;
-            color:white;
-            border:none;
-            border-radius:5px;
-        }
-
     </style>
-
 </head>
-
 <body>
 
-<div id="map"></div>
+<div id="map">
+    <div class="search-card">
+        <div class="input-group">
+            <label>START LOCATION</label>
+            <input type="text" id="start" class="search-box" placeholder="Search Start..." onkeyup="searchSuggestions('start')">
+            <div id="startSuggestions" class="dropdown"></div>
+        </div>
 
-<div class="container">
+        <div class="input-group">
+            <label>END LOCATION</label>
+            <input type="text" id="end" class="search-box" placeholder="Search End..." onkeyup="searchSuggestions('end')">
+            <div id="endSuggestions" class="dropdown"></div>
+        </div>
 
-    <h3>Start Location</h3>
-
-    <input
-        type="text"
-        id="start"
-        class="search-box"
-        placeholder="Search Start Location"
-        onkeyup="searchSuggestions('start')">
-
-    <div id="startSuggestions" class="dropdown"></div>
-
-    <br><br>
-
-    <h3>End Location</h3>
-
-    <input
-        type="text"
-        id="end"
-        class="search-box"
-        placeholder="Search End Location"
-        onkeyup="searchSuggestions('end')">
-
-    <div id="endSuggestions" class="dropdown"></div>
-
-    <br><br>
-
-    <button onclick="calculateDistance()">
-        Calculate Distance
-    </button>
-
-    <br><br>
-
-    <h3>Distance (KM)</h3>
-
-    <input
-        type="text"
-        id="distance"
-        class="search-box"
-        readonly>
-
+        <button class="btn-calculate" onclick="calculateDistance()">Search & Calculate</button>
+        
+        <div class="distance-display">
+            Distance: <b id="distance-text">0.00</b> KM
+        </div>
+    </div>
 </div>
 
 <script>
+var map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// ----------------------
-// MAP
-// ----------------------
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-var map = L.map('map').setView([13.0827, 80.2707], 10);
+var startLatLng = null, endLatLng = null;
+var startMarker = null, endMarker = null, routeLine = null;
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    maxZoom:19
-}).addTo(map);
+async function searchSuggestions(type) {
+    var input = document.getElementById(type).value;
+    var suggestionBox = document.getElementById(type + "Suggestions");
 
-// ----------------------
-// VARIABLES
-// ----------------------
-
-var startLatLng = null;
-var endLatLng = null;
-
-var startMarker = null;
-var endMarker = null;
-var routeLine = null;
-
-// ----------------------
-// SEARCH SUGGESTIONS
-// ----------------------
-
-async function searchSuggestions(type){
-
-    var input =
-    document.getElementById(type).value;
-
-    if(input.length < 3){
+    if (input.length < 3) {
+        suggestionBox.innerHTML = "";
         return;
     }
 
-    var url =
-    "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q="
-    + encodeURIComponent(input + ", Chennai, Tamil Nadu, India");
+    // Search specifically in Chennai for better results
+    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}+Chennai&limit=5`;
+    
+    try {
+        var response = await fetch(url);
+        var data = await response.json();
+        suggestionBox.innerHTML = "";
 
-    var response = await fetch(url);
-
-    var data = await response.json();
-
-    var suggestionBox =
-    document.getElementById(type + "Suggestions");
-
-    suggestionBox.innerHTML = "";
-
-    data.forEach(function(place){
-
-        var div =
-        document.createElement("div");
-
-        div.innerHTML =
-        place.display_name;
-
-        div.onclick = function(){
-
-            document.getElementById(type).value =
-            place.display_name;
-
-            suggestionBox.innerHTML = "";
-
-            var latlng =
-            L.latLng(place.lat, place.lon);
-
-            if(type == "start"){
-
-                startLatLng = latlng;
-
-                if(startMarker){
-                    map.removeLayer(startMarker);
-                }
-
-                startMarker =
-                L.marker(latlng)
-                .addTo(map)
-                .bindPopup("Start Location")
-                .openPopup();
-            }
-            else{
-
-                endLatLng = latlng;
-
-                if(endMarker){
-                    map.removeLayer(endMarker);
-                }
-
-                endMarker =
-                L.marker(latlng)
-                .addTo(map)
-                .bindPopup("End Location")
-                .openPopup();
-            }
-
-            map.setView(latlng, 15);
-        };
-
-        suggestionBox.appendChild(div);
-
-    });
-
+        data.forEach(function(place) {
+            var div = document.createElement("div");
+            div.innerHTML = place.display_name;
+            div.onclick = function() {
+                document.getElementById(type).value = place.display_name;
+                suggestionBox.innerHTML = "";
+                var latlng = L.latLng(place.lat, place.lon);
+                updateMarker(type, latlng);
+            };
+            suggestionBox.appendChild(div);
+        });
+    } catch (e) { console.log("Search error", e); }
 }
 
-// ----------------------
-// MAP CLICK
-// ----------------------
+function updateMarker(type, latlng) {
+    if (type == "start") {
+        startLatLng = latlng;
+        if (startMarker) map.removeLayer(startMarker);
+        startMarker = L.marker(latlng).addTo(map).bindPopup("Start").openPopup();
+    } else {
+        endLatLng = latlng;
+        if (endMarker) map.removeLayer(endMarker);
+        endMarker = L.marker(latlng).addTo(map).bindPopup("End").openPopup();
+    }
+    map.flyTo(latlng, 15);
+}
 
-map.on('click', async function(e){
-
-    var lat = e.latlng.lat;
-    var lon = e.latlng.lng;
-
-    var url =
-    "https://nominatim.openstreetmap.org/reverse?format=json&lat="
-    + lat +
-    "&lon=" +
-    lon;
-
-    var response = await fetch(url);
-
-    var data = await response.json();
-
-    if(!startLatLng){
-
-        startLatLng = e.latlng;
-
-        if(startMarker){
-            map.removeLayer(startMarker);
-        }
-
-        startMarker =
-        L.marker(startLatLng)
-        .addTo(map)
-        .bindPopup("Start Location")
-        .openPopup();
-
-        document.getElementById("start").value =
-        data.display_name;
+function calculateDistance() {
+    if (!startLatLng || !endLatLng) {
+        alert("Please select both locations from the dropdown");
+        return;
     }
 
-    else if(!endLatLng){
+    var distance = startLatLng.distanceTo(endLatLng) / 1000;
+    document.getElementById("distance-text").innerText = distance.toFixed(2);
 
-        endLatLng = e.latlng;
+    if (routeLine) map.removeLayer(routeLine);
+    routeLine = L.polyline([startLatLng, endLatLng], { color: '#1a73e8', weight: 5 }).addTo(map);
+    map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
 
-        if(endMarker){
-            map.removeLayer(endMarker);
-        }
+    // Send to Zoho Parent
+    window.parent.postMessage({
+        start: document.getElementById("start").value,
+        end: document.getElementById("end").value,
+        distance: distance.toFixed(2)
+    }, "*");
+}
 
-        endMarker =
-        L.marker(endLatLng)
-        .addTo(map)
-        .bindPopup("End Location")
-        .openPopup();
+// Map Click functionality
+map.on('click', async function(e) {
+    var url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`;
+    var response = await fetch(url);
+    var data = await response.json();
 
-        document.getElementById("end").value =
-        data.display_name;
-
+    if (!startLatLng) {
+        updateMarker("start", e.latlng);
+        document.getElementById("start").value = data.display_name;
+    } else if (!endLatLng) {
+        updateMarker("end", e.latlng);
+        document.getElementById("end").value = data.display_name;
         calculateDistance();
     }
-
 });
-
-// ----------------------
-// DISTANCE
-// ----------------------
-
-function calculateDistance(){
-
-    if(startLatLng && endLatLng){
-
-        var distance =
-        startLatLng.distanceTo(endLatLng) / 1000;
-
-        document.getElementById("distance").value =
-        distance.toFixed(2);
-
-        if(routeLine){
-            map.removeLayer(routeLine);
-        }
-
-        routeLine =
-        L.polyline(
-            [startLatLng, endLatLng],
-            {
-                color:'blue',
-                weight:4
-            }
-        ).addTo(map);
-
-        map.fitBounds(routeLine.getBounds());
-
-        // SEND TO ZOHO
-
-        window.parent.postMessage({
-
-            start:
-            document.getElementById("start").value,
-
-            end:
-            document.getElementById("end").value,
-
-            distance:
-            distance.toFixed(2)
-
-        }, "*");
-    }
-    else{
-        alert("Select both Start and End locations");
-    }
-}
-
 </script>
 
 </body>
 </html>
-   
 
