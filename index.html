@@ -1,142 +1,357 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Map Selector</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<head>
+
+    <title>Map Distance Calculator</title>
+
+    <meta charset="utf-8"/>
+
+    <!-- LEAFLET CSS -->
+    <link rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <!-- LEAFLET JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+
+        body{
+            margin:0;
+            font-family:Arial;
+        }
+
+        #map{
+            height:500px;
+            width:100%;
+        }
+
+        .container{
+            padding:20px;
+        }
+
+        input{
+            width:350px;
+            padding:10px;
+            margin-bottom:15px;
+            font-size:16px;
+        }
+
+        button{
+            padding:10px 20px;
+            margin-left:10px;
+            margin-bottom:15px;
+            font-size:16px;
+            cursor:pointer;
+        }
+
+    </style>
 
 </head>
 
 <body>
 
-<h3>Select Start and End Location</h3>
+<div id="map"></div>
 
-<div id="map" style="height:400px;"></div>
+<div class="container">
 
-<br>
+    <h3>Start Location</h3>
 
-<form method="POST" 
-action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request">
+    <input
+        type="text"
+        id="start"
+        placeholder="Type start location">
 
-Start: <input type="text" name="Start_Location" id="start"><br><br>
-End: <input type="text" name="End_Location" id="end"><br><br>
-Distance (km): <input type="text" name="Distance_in_KM" id="distance"><br><br>
+    <button onclick="setStartLocation()">
+        Submit Start
+    </button>
 
-<button type="submit">Submit</button>
+    <br><br>
 
-</form>
+    <h3>End Location</h3>
+
+    <input
+        type="text"
+        id="end"
+        placeholder="Type end location">
+
+    <button onclick="setEndLocation()">
+        Submit End
+    </button>
+
+    <br><br>
+
+    <h3>Distance (KM)</h3>
+
+    <input
+        type="text"
+        id="distance"
+        readonly>
+
+</div>
 
 <script>
 
 var map = L.map('map').setView([13.0827, 80.2707], 10);
 
-L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    maxZoom: 19
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+    maxZoom:19
 }).addTo(map);
 
-var start = null;
-var end = null;
-var startName = "";
-var endName = "";
+var startMarker = null;
+var endMarker = null;
+var routeLine = null;
 
-// -------------------------
-// Reverse Geocoding
-// -------------------------
-async function getPlaceName(lat, lng) {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+var startLatLng = null;
+var endLatLng = null;
 
-    const res = await fetch(url);
-    const data = await res.json();
+// ----------------------
+// SEARCH START
+// ----------------------
 
-    return data.display_name;
+async function setStartLocation(){
+
+    var location =
+    document.getElementById("start").value;
+
+    if(location == ""){
+        alert("Enter Start Location");
+        return;
+    }
+
+    var url =
+    "https://nominatim.openstreetmap.org/search?format=json&q="
+    + encodeURIComponent(location + ", Chennai, Tamil Nadu, India");
+
+    var response = await fetch(url);
+
+    var data = await response.json();
+
+    if(data.length == 0){
+        alert("Location not found");
+        return;
+    }
+
+    var lat = parseFloat(data[0].lat);
+    var lon = parseFloat(data[0].lon);
+
+    startLatLng = L.latLng(lat, lon);
+
+    if(startMarker){
+        map.removeLayer(startMarker);
+    }
+
+    startMarker =
+    L.marker(startLatLng)
+    .addTo(map)
+    .bindPopup(data[0].display_name)
+    .openPopup();
+
+    document.getElementById("start").value =
+    data[0].display_name;
+
+    map.setView(startLatLng, 15);
+
+    calculateDistance();
 }
 
-// -------------------------
-// Distance Calculation
-// -------------------------
-function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
+// ----------------------
+// SEARCH END
+// ----------------------
 
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
+async function setEndLocation(){
 
-    const a =
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI/180) *
-        Math.cos(lat2 * Math.PI/180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
+    var location =
+    document.getElementById("end").value;
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    if(location == ""){
+        alert("Enter End Location");
+        return;
+    }
 
-    return R * c;
+    var url =
+    "https://nominatim.openstreetmap.org/search?format=json&q="
+    + encodeURIComponent(location + ", Chennai, Tamil Nadu, India");
+
+    var response = await fetch(url);
+
+    var data = await response.json();
+
+    if(data.length == 0){
+        alert("Location not found");
+        return;
+    }
+
+    var lat = parseFloat(data[0].lat);
+    var lon = parseFloat(data[0].lon);
+
+    endLatLng = L.latLng(lat, lon);
+
+    if(endMarker){
+        map.removeLayer(endMarker);
+    }
+
+    endMarker =
+    L.marker(endLatLng)
+    .addTo(map)
+    .bindPopup(data[0].display_name)
+    .openPopup();
+
+    document.getElementById("end").value =
+    data[0].display_name;
+
+    map.setView(endLatLng, 15);
+
+    calculateDistance();
 }
 
-// -------------------------
-// SEND DATA TO ZOHO (IMPORTANT FIX)
-// -------------------------
-function sendToZoho() {
-    window.parent.postMessage({
-        Start: document.getElementById("start").value,
-        End: document.getElementById("end").value,
-        "Distance(km)": document.getElementById("distance").value
-    }, "*");
-}
+// ----------------------
+// MAP CLICK
+// ----------------------
 
-// -------------------------
-// Map Click Logic
-// -------------------------
-map.on('click', async function(e) {
+map.on('click', async function(e){
 
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
+    var lat = e.latlng.lat;
+    var lon = e.latlng.lng;
 
-    const placeName = await getPlaceName(lat, lng);
+    var url =
+    "https://nominatim.openstreetmap.org/reverse?format=json&lat="
+    + lat +
+    "&lon=" +
+    lon;
 
-    L.marker([lat, lng])
-      .addTo(map)
-      .bindPopup(placeName)
-      .openPopup();
+    var response = await fetch(url);
 
-    if (!start) {
+    var data = await response.json();
 
-        start = { lat, lng };
-        startName = placeName;
+    if(!startLatLng){
+
+        startLatLng = e.latlng;
+
+        if(startMarker){
+            map.removeLayer(startMarker);
+        }
+
+        startMarker =
+        L.marker(startLatLng)
+        .addTo(map)
+        .bindPopup("Start Location")
+        .openPopup();
+
+        // AUTO FILL START LOCATION
 
         document.getElementById("start").value =
-            placeName + " (" + lat + "," + lng + ")";
+        data.display_name;
+    }
+    else if(!endLatLng){
 
-        alert("Start selected:\n" + placeName);
+        endLatLng = e.latlng;
 
-    } 
-    else if (!end) {
+        if(endMarker){
+            map.removeLayer(endMarker);
+        }
 
-        end = { lat, lng };
-        endName = placeName;
+        endMarker =
+        L.marker(endLatLng)
+        .addTo(map)
+        .bindPopup("End Location")
+        .openPopup();
+
+        // AUTO FILL END LOCATION
 
         document.getElementById("end").value =
-            placeName + " (" + lat + "," + lng + ")";
+        data.display_name;
 
-        alert("End selected:\n" + placeName);
+        calculateDistance();
+    }
+    else{
 
-        // Calculate distance
-        const dist = getDistance(
-            start.lat, start.lng,
-            end.lat, end.lng
-        );
+        // RESET EVERYTHING
+
+        if(startMarker){
+            map.removeLayer(startMarker);
+        }
+
+        if(endMarker){
+            map.removeLayer(endMarker);
+        }
+
+        if(routeLine){
+            map.removeLayer(routeLine);
+        }
+
+        startLatLng = e.latlng;
+        endLatLng = null;
+
+        startMarker =
+        L.marker(startLatLng)
+        .addTo(map)
+        .bindPopup("Start Location")
+        .openPopup();
+
+        document.getElementById("start").value =
+        data.display_name;
+
+        document.getElementById("end").value = "";
+
+        document.getElementById("distance").value = "";
+    }
+
+});
+
+// ----------------------
+// DISTANCE
+// ----------------------
+
+function calculateDistance(){
+
+    if(startLatLng && endLatLng){
+
+        var distance =
+        startLatLng.distanceTo(endLatLng) / 1000;
 
         document.getElementById("distance").value =
-            dist.toFixed(2);
+        distance.toFixed(2);
 
-        // 🔥 SEND AUTOMATICALLY TO ZOHO PAGE
-        sendToZoho();
+        if(routeLine){
+            map.removeLayer(routeLine);
+        }
+
+        routeLine =
+        L.polyline(
+            [startLatLng, endLatLng],
+            {
+                color:'blue'
+            }
+        ).addTo(map);
+
+        map.fitBounds(routeLine.getBounds());
+
+        // SEND TO ZOHO
+
+        window.parent.postMessage({
+
+            start:
+            document.getElementById("start").value,
+
+            end:
+            document.getElementById("end").value,
+
+            distance:
+            distance.toFixed(2)
+
+        }, "*");
     }
-});
+}
 
 </script>
 
 </body>
 </html>
+
+
 
 
 
