@@ -7,11 +7,10 @@
 
     <meta charset="utf-8"/>
 
-    <!-- LEAFLET CSS -->
+    <!-- LEAFLET -->
     <link rel="stylesheet"
     href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-    <!-- LEAFLET JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <style>
@@ -30,19 +29,41 @@
             padding:20px;
         }
 
-        input{
-            width:350px;
-            padding:10px;
-            margin-bottom:15px;
+        .search-box{
+            width:400px;
+            padding:12px;
             font-size:16px;
         }
 
+        .dropdown{
+            width:425px;
+            max-height:200px;
+            overflow-y:auto;
+            border:1px solid #ccc;
+            background:white;
+            position:relative;
+            z-index:9999;
+        }
+
+        .dropdown div{
+            padding:10px;
+            cursor:pointer;
+            border-bottom:1px solid #eee;
+        }
+
+        .dropdown div:hover{
+            background:#f2f2f2;
+        }
+
         button{
-            padding:10px 20px;
-            margin-left:10px;
-            margin-bottom:15px;
+            padding:12px 25px;
             font-size:16px;
             cursor:pointer;
+            margin-top:20px;
+            background:#007bff;
+            color:white;
+            border:none;
+            border-radius:5px;
         }
 
     </style>
@@ -60,11 +81,11 @@
     <input
         type="text"
         id="start"
-        placeholder="Type start location">
+        class="search-box"
+        placeholder="Search Start Location"
+        onkeyup="searchSuggestions('start')">
 
-    <button onclick="setStartLocation()">
-        Submit Start
-    </button>
+    <div id="startSuggestions" class="dropdown"></div>
 
     <br><br>
 
@@ -73,10 +94,16 @@
     <input
         type="text"
         id="end"
-        placeholder="Type end location">
+        class="search-box"
+        placeholder="Search End Location"
+        onkeyup="searchSuggestions('end')">
 
-    <button onclick="setEndLocation()">
-        Submit End
+    <div id="endSuggestions" class="dropdown"></div>
+
+    <br><br>
+
+    <button onclick="calculateDistance()">
+        Calculate Distance
     </button>
 
     <br><br>
@@ -86,11 +113,16 @@
     <input
         type="text"
         id="distance"
+        class="search-box"
         readonly>
 
 </div>
 
 <script>
+
+// ----------------------
+// MAP
+// ----------------------
 
 var map = L.map('map').setView([13.0827, 80.2707], 10);
 
@@ -100,111 +132,97 @@ L.tileLayer(
     maxZoom:19
 }).addTo(map);
 
-var startMarker = null;
-var endMarker = null;
-var routeLine = null;
+// ----------------------
+// VARIABLES
+// ----------------------
 
 var startLatLng = null;
 var endLatLng = null;
 
+var startMarker = null;
+var endMarker = null;
+var routeLine = null;
+
 // ----------------------
-// SEARCH START
+// SEARCH SUGGESTIONS
 // ----------------------
 
-async function setStartLocation(){
+async function searchSuggestions(type){
 
-    var location =
-    document.getElementById("start").value;
+    var input =
+    document.getElementById(type).value;
 
-    if(location == ""){
-        alert("Enter Start Location");
+    if(input.length < 3){
         return;
     }
 
     var url =
-    "https://nominatim.openstreetmap.org/search?format=json&q="
-    + encodeURIComponent(location + ", Chennai, Tamil Nadu, India");
+    "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q="
+    + encodeURIComponent(input + ", Chennai, Tamil Nadu, India");
 
     var response = await fetch(url);
 
     var data = await response.json();
 
-    if(data.length == 0){
-        alert("Location not found");
-        return;
-    }
+    var suggestionBox =
+    document.getElementById(type + "Suggestions");
 
-    var lat = parseFloat(data[0].lat);
-    var lon = parseFloat(data[0].lon);
+    suggestionBox.innerHTML = "";
 
-    startLatLng = L.latLng(lat, lon);
+    data.forEach(function(place){
 
-    if(startMarker){
-        map.removeLayer(startMarker);
-    }
+        var div =
+        document.createElement("div");
 
-    startMarker =
-    L.marker(startLatLng)
-    .addTo(map)
-    .bindPopup(data[0].display_name)
-    .openPopup();
+        div.innerHTML =
+        place.display_name;
 
-    document.getElementById("start").value =
-    data[0].display_name;
+        div.onclick = function(){
 
-    map.setView(startLatLng, 15);
+            document.getElementById(type).value =
+            place.display_name;
 
-    calculateDistance();
-}
+            suggestionBox.innerHTML = "";
 
-// ----------------------
-// SEARCH END
-// ----------------------
+            var latlng =
+            L.latLng(place.lat, place.lon);
 
-async function setEndLocation(){
+            if(type == "start"){
 
-    var location =
-    document.getElementById("end").value;
+                startLatLng = latlng;
 
-    if(location == ""){
-        alert("Enter End Location");
-        return;
-    }
+                if(startMarker){
+                    map.removeLayer(startMarker);
+                }
 
-    var url =
-    "https://nominatim.openstreetmap.org/search?format=json&q="
-    + encodeURIComponent(location + ", Chennai, Tamil Nadu, India");
+                startMarker =
+                L.marker(latlng)
+                .addTo(map)
+                .bindPopup("Start Location")
+                .openPopup();
+            }
+            else{
 
-    var response = await fetch(url);
+                endLatLng = latlng;
 
-    var data = await response.json();
+                if(endMarker){
+                    map.removeLayer(endMarker);
+                }
 
-    if(data.length == 0){
-        alert("Location not found");
-        return;
-    }
+                endMarker =
+                L.marker(latlng)
+                .addTo(map)
+                .bindPopup("End Location")
+                .openPopup();
+            }
 
-    var lat = parseFloat(data[0].lat);
-    var lon = parseFloat(data[0].lon);
+            map.setView(latlng, 15);
+        };
 
-    endLatLng = L.latLng(lat, lon);
+        suggestionBox.appendChild(div);
 
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
+    });
 
-    endMarker =
-    L.marker(endLatLng)
-    .addTo(map)
-    .bindPopup(data[0].display_name)
-    .openPopup();
-
-    document.getElementById("end").value =
-    data[0].display_name;
-
-    map.setView(endLatLng, 15);
-
-    calculateDistance();
 }
 
 // ----------------------
@@ -240,11 +258,10 @@ map.on('click', async function(e){
         .bindPopup("Start Location")
         .openPopup();
 
-        // AUTO FILL START LOCATION
-
         document.getElementById("start").value =
         data.display_name;
     }
+
     else if(!endLatLng){
 
         endLatLng = e.latlng;
@@ -259,44 +276,10 @@ map.on('click', async function(e){
         .bindPopup("End Location")
         .openPopup();
 
-        // AUTO FILL END LOCATION
-
         document.getElementById("end").value =
         data.display_name;
 
         calculateDistance();
-    }
-    else{
-
-        // RESET EVERYTHING
-
-        if(startMarker){
-            map.removeLayer(startMarker);
-        }
-
-        if(endMarker){
-            map.removeLayer(endMarker);
-        }
-
-        if(routeLine){
-            map.removeLayer(routeLine);
-        }
-
-        startLatLng = e.latlng;
-        endLatLng = null;
-
-        startMarker =
-        L.marker(startLatLng)
-        .addTo(map)
-        .bindPopup("Start Location")
-        .openPopup();
-
-        document.getElementById("start").value =
-        data.display_name;
-
-        document.getElementById("end").value = "";
-
-        document.getElementById("distance").value = "";
     }
 
 });
@@ -323,7 +306,8 @@ function calculateDistance(){
         L.polyline(
             [startLatLng, endLatLng],
             {
-                color:'blue'
+                color:'blue',
+                weight:4
             }
         ).addTo(map);
 
@@ -344,14 +328,15 @@ function calculateDistance(){
 
         }, "*");
     }
+    else{
+        alert("Select both Start and End locations");
+    }
 }
 
 </script>
 
 </body>
+
 </html>
-
-
-
 
 
