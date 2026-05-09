@@ -1,166 +1,142 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Map Distance Calculator</title>
-    <meta charset="utf-8"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; }
-        #map { height: 100vh; width: 100%; position: relative; }
+<title>Map Selector</title>
 
-        .search-card {
-            position: absolute; top: 20px; left: 20px; z-index: 1000;
-            background: white; padding: 15px; border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2); width: 320px;
-        }
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-        .input-group { margin-bottom: 12px; position: relative; }
-        .input-group label { display: block; font-size: 10px; font-weight: bold; color: #1a73e8; margin-bottom: 4px; text-transform: uppercase; }
-        
-        .search-box {
-            width: 100%; padding: 10px; box-sizing: border-box;
-            border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none;
-        }
-
-        /* Suggestions Dropdown Style */
-        .suggestions {
-            position: absolute; width: 100%; background: white;
-            border: 1px solid #ddd; border-top: none; border-radius: 0 0 6px 6px;
-            max-height: 150px; overflow-y: auto; z-index: 2000; display: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .suggestions div { padding: 8px 12px; cursor: pointer; font-size: 12px; border-bottom: 1px solid #eee; }
-        .suggestions div:hover { background: #f1f3f4; }
-
-        .distance-display {
-            margin-top: 10px; text-align: center; font-size: 14px;
-            font-weight: bold; padding-top: 10px; border-top: 1px solid #eee;
-        }
-        .hint { font-size: 10px; color: #666; text-align: center; margin-top: 5px; }
-    </style>
 </head>
+
 <body>
 
-<div id="map">
-    <div class="search-card">
-        <div class="input-group">
-            <label>Start Location</label>
-            <input type="text" id="start" class="search-box" placeholder="Type or tap map..." onkeyup="getSuggestions(this, 'start')">
-            <div id="start-list" class="suggestions"></div>
-        </div>
+<h3>Select Start and End Location</h3>
 
-        <div class="input-group">
-            <label>End Location</label>
-            <input type="text" id="end" class="search-box" placeholder="Type or tap map..." onkeyup="getSuggestions(this, 'end')">
-            <div id="end-list" class="suggestions"></div>
-        </div>
+<div id="map" style="height:400px;"></div>
 
-        <div class="distance-display">
-            Distance: <span id="distance-text" style="color: #1a73e8;">0.00</span> KM
-        </div>
-        <div class="hint">Type for suggestions or tap map to set points.</div>
-    </div>
-</div>
+<br>
+
+<form method="POST" 
+action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request">
+
+Start: <input type="text" name="Start_Location" id="start"><br><br>
+End: <input type="text" name="End_Location" id="end"><br><br>
+Distance (km): <input type="text" name="Distance_in_KM" id="distance"><br><br>
+
+<button type="submit">Submit</button>
+
+</form>
 
 <script>
-var map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
-L.control.zoom({ position: 'bottomright' }).addTo(map);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-var startLatLng = null, endLatLng = null;
-var startMarker = null, endMarker = null, routeLine = null;
-var selectionStep = 0; 
+var map = L.map('map').setView([13.0827, 80.2707], 10);
 
-// --- SUGGESTIONS LOGIC ---
-async function getSuggestions(input, type) {
-    let query = input.value;
-    let list = document.getElementById(type + '-list');
-    if (query.length < 3) { list.style.display = 'none'; return; }
+L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
 
-    try {
-        let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=5`);
-        let data = await res.json();
-        list.innerHTML = '';
-        list.style.display = 'block';
-        
-        data.forEach(place => {
-            let item = document.createElement('div');
-            item.innerText = place.display_name;
-            item.onclick = () => {
-                input.value = place.display_name;
-                list.style.display = 'none';
-                let latlng = L.latLng(place.lat, place.lon);
-                
-                if(type === 'start') { startLatLng = latlng; setMarker('start', latlng); }
-                else { endLatLng = latlng; setMarker('end', latlng); }
-                
-                map.flyTo(latlng, 14);
-                calculateDistance();
-            };
-            list.appendChild(item);
-        });
-    } catch (e) {}
+var start = null;
+var end = null;
+var startName = "";
+var endName = "";
+
+// -------------------------
+// Reverse Geocoding
+// -------------------------
+async function getPlaceName(lat, lng) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    return data.display_name;
 }
 
-// --- CLICK TO SELECT LOGIC ---
+// -------------------------
+// Distance Calculation
+// -------------------------
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI/180) *
+        Math.cos(lat2 * Math.PI/180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c;
+}
+
+// -------------------------
+// SEND DATA TO ZOHO (IMPORTANT FIX)
+// -------------------------
+function sendToZoho() {
+    window.parent.postMessage({
+        Start: document.getElementById("start").value,
+        End: document.getElementById("end").value,
+        "Distance(km)": document.getElementById("distance").value
+    }, "*");
+}
+
+// -------------------------
+// Map Click Logic
+// -------------------------
 map.on('click', async function(e) {
-    var latlng = e.latlng;
-    if (selectionStep === 0) {
-        startLatLng = latlng;
-        setMarker('start', latlng);
-        document.getElementById("start").value = await getAddress(latlng);
-        selectionStep = 1;
-    } else {
-        endLatLng = latlng;
-        setMarker('end', latlng);
-        document.getElementById("end").value = await getAddress(latlng);
-        selectionStep = 0;
-    }
-    calculateDistance();
-});
 
-async function getAddress(latlng) {
-    try {
-        var res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`);
-        var data = await res.json();
-        return data.display_name.split(',').slice(0,3).join(',');
-    } catch (err) { return latlng.lat.toFixed(4) + ", " + latlng.lng.toFixed(4); }
-}
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
 
-function setMarker(type, latlng) {
-    if (type == 'start') {
-        if (startMarker) map.removeLayer(startMarker);
-        startMarker = L.marker(latlng).addTo(map);
-    } else {
-        if (endMarker) map.removeLayer(endMarker);
-        endMarker = L.marker(latlng).addTo(map);
-    }
-}
+    const placeName = await getPlaceName(lat, lng);
 
-function calculateDistance() {
-    if (startLatLng && endLatLng) {
-        var distance = (startLatLng.distanceTo(endLatLng) / 1000).toFixed(2);
-        document.getElementById("distance-text").innerText = distance;
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(placeName)
+      .openPopup();
 
-        if (routeLine) map.removeLayer(routeLine);
-        routeLine = L.polyline([startLatLng, endLatLng], { color: '#1a73e8', weight: 4, dashArray: '5, 10' }).addTo(map);
-        map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+    if (!start) {
 
-        window.parent.postMessage({
-            start: document.getElementById("start").value,
-            end: document.getElementById("end").value,
-            distance: distance
-        }, "*");
-    }
-}
+        start = { lat, lng };
+        startName = placeName;
 
-// Hide dropdowns when clicking elsewhere
-document.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('search-box')) {
-        document.querySelectorAll('.suggestions').forEach(el => el.style.display = 'none');
+        document.getElementById("start").value =
+            placeName + " (" + lat + "," + lng + ")";
+
+        alert("Start selected:\n" + placeName);
+
+    } 
+    else if (!end) {
+
+        end = { lat, lng };
+        endName = placeName;
+
+        document.getElementById("end").value =
+            placeName + " (" + lat + "," + lng + ")";
+
+        alert("End selected:\n" + placeName);
+
+        // Calculate distance
+        const dist = getDistance(
+            start.lat, start.lng,
+            end.lat, end.lng
+        );
+
+        document.getElementById("distance").value =
+            dist.toFixed(2);
+
+        // 🔥 SEND AUTOMATICALLY TO ZOHO PAGE
+        sendToZoho();
     }
 });
+
 </script>
+
 </body>
 </html>
+
+
+
