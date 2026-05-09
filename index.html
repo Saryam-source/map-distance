@@ -1,137 +1,334 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Map Selector</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<head>
+
+    <title>Map Distance Selector</title>
+
+    <meta charset="utf-8" />
+
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <style>
+
+        body{
+            margin:0;
+            font-family:Arial;
+        }
+
+        #map{
+            height:500px;
+            width:100%;
+        }
+
+        .container{
+            padding:20px;
+        }
+
+        input{
+            width:350px;
+            padding:10px;
+            margin-bottom:15px;
+            font-size:16px;
+        }
+
+        .label{
+            font-size:18px;
+            margin-bottom:5px;
+        }
+
+    </style>
 
 </head>
 
 <body>
 
-<h3>Select Start and End Location</h3>
+<div id="map"></div>
 
-<div id="map" style="height:400px;"></div>
+<div class="container">
 
-<br>
+    <div class="label">Start Location</div>
+    <input type="text"
+           id="start"
+           placeholder="Search start location">
 
-<form method="POST" 
-action="https://creatorapp.zoho.com/sarathynds_saryam/distance-calculator-app/#Form:Distance_Calculation_Request">
+    <br>
 
-Start: <input type="text" name="Start_Location" id="start"><br><br>
-End: <input type="text" name="End_Location" id="end"><br><br>
-Distance (km): <input type="text" name="Distance_in_KM" id="distance"><br><br>
+    <div class="label">End Location</div>
+    <input type="text"
+           id="end"
+           placeholder="Search end location">
 
-<button type="submit">Submit</button>
+    <br>
 
-</form>
+    <div class="label">Distance (KM)</div>
+    <input type="text"
+           id="distance"
+           readonly>
+
+</div>
 
 <script>
 
-var map = L.map('map').setView([13.0827, 80.2707], 10);
+    // -------------------------
+    // CREATE MAP
+    // -------------------------
 
-L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    maxZoom: 19
-}).addTo(map);
+    var map = L.map('map').setView([13.0827, 80.2707], 10);
 
-var start = null;
-var end = null;
-var startName = "";
-var endName = "";
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            maxZoom: 19
+        }
+    ).addTo(map);
 
-// -------------------------
-// Reverse Geocoding
-// -------------------------
-async function getPlaceName(lat, lng) {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+    // -------------------------
+    // VARIABLES
+    // -------------------------
 
-    const res = await fetch(url);
-    const data = await res.json();
+    var startMarker = null;
+    var endMarker = null;
+    var line = null;
 
-    return data.display_name;
-}
+    var startLatLng = null;
+    var endLatLng = null;
 
-// -------------------------
-// Distance Calculation
-// -------------------------
-function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
+    // -------------------------
+    // GEOCODER
+    // -------------------------
 
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
+    var geocoder = L.Control.Geocoder.nominatim();
 
-    const a =
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI/180) *
-        Math.cos(lat2 * Math.PI/180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
+    // -------------------------
+    // SEARCH START LOCATION
+    // -------------------------
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    document
+        .getElementById("start")
+        .addEventListener("change", function(){
 
-    return R * c;
-}
+        var location = this.value;
 
-// -------------------------
-// SEND DATA TO ZOHO (IMPORTANT FIX)
-// -------------------------
-function sendToZoho() {
-    window.parent.postMessage({
-        Start: document.getElementById("start").value,
-        End: document.getElementById("end").value,
-        "Distance(km)": document.getElementById("distance").value
-    }, "*");
-}
+        geocoder.geocode(location, function(results){
 
-// -------------------------
-// Map Click Logic
-// -------------------------
-map.on('click', async function(e) {
+            if(results.length > 0){
 
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
+                var result = results[0];
 
-    const placeName = await getPlaceName(lat, lng);
+                startLatLng = result.center;
 
-    L.marker([lat, lng])
-      .addTo(map)
-      .bindPopup(placeName)
-      .openPopup();
+                if(startMarker){
+                    map.removeLayer(startMarker);
+                }
 
-    if (!start) {
+                startMarker = L.marker(startLatLng)
+                    .addTo(map)
+                    .bindPopup("Start Location")
+                    .openPopup();
 
-        start = { lat, lng };
-        startName = placeName;
+                map.setView(startLatLng, 13);
 
-        document.getElementById("start").value =
-            placeName + " (" + lat + "," + lng + ")";
+                calculateDistance();
+            }
 
-        alert("Start selected:\n" + placeName);
+        });
 
-    } 
-    else if (!end) {
+    });
 
-        end = { lat, lng };
-        endName = placeName;
+    // -------------------------
+    // SEARCH END LOCATION
+    // -------------------------
 
-        document.getElementById("end").value =
-            placeName + " (" + lat + "," + lng + ")";
+    document
+        .getElementById("end")
+        .addEventListener("change", function(){
 
-        alert("End selected:\n" + placeName);
+        var location = this.value;
 
-        // Calculate distance
-        const dist = getDistance(
-            start.lat, start.lng,
-            end.lat, end.lng
-        );
+        geocoder.geocode(location, function(results){
 
-        document.getElementById("distance").value =
-            dist.toFixed(2);
+            if(results.length > 0){
 
-        // 🔥 SEND AUTOMATICALLY TO ZOHO PAGE
-        sendToZoho();
+                var result = results[0];
+
+                endLatLng = result.center;
+
+                if(endMarker){
+                    map.removeLayer(endMarker);
+                }
+
+                endMarker = L.marker(endLatLng)
+                    .addTo(map)
+                    .bindPopup("End Location")
+                    .openPopup();
+
+                map.setView(endLatLng, 13);
+
+                calculateDistance();
+            }
+
+        });
+
+    });
+
+    // -------------------------
+    // CLICK MAP TO SELECT
+    // -------------------------
+
+    map.on("click", function(e){
+
+        if(!startLatLng){
+
+            startLatLng = e.latlng;
+
+            if(startMarker){
+                map.removeLayer(startMarker);
+            }
+
+            startMarker = L.marker(startLatLng)
+                .addTo(map)
+                .bindPopup("Start Location")
+                .openPopup();
+
+            reverseGeocode(startLatLng, "start");
+        }
+
+        else if(!endLatLng){
+
+            endLatLng = e.latlng;
+
+            if(endMarker){
+                map.removeLayer(endMarker);
+            }
+
+            endMarker = L.marker(endLatLng)
+                .addTo(map)
+                .bindPopup("End Location")
+                .openPopup();
+
+            reverseGeocode(endLatLng, "end");
+
+            calculateDistance();
+        }
+
+        else{
+
+            // RESET
+
+            if(startMarker){
+                map.removeLayer(startMarker);
+            }
+
+            if(endMarker){
+                map.removeLayer(endMarker);
+            }
+
+            if(line){
+                map.removeLayer(line);
+            }
+
+            startLatLng = e.latlng;
+            endLatLng = null;
+
+            startMarker = L.marker(startLatLng)
+                .addTo(map)
+                .bindPopup("Start Location")
+                .openPopup();
+
+            document.getElementById("end").value = "";
+            document.getElementById("distance").value = "";
+
+            reverseGeocode(startLatLng, "start");
+        }
+
+    });
+
+    // -------------------------
+    // REVERSE GEOCODING
+    // -------------------------
+
+    async function reverseGeocode(latlng, type){
+
+        var url =
+            "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="
+            + latlng.lat
+            + "&lon="
+            + latlng.lng;
+
+        var response = await fetch(url);
+
+        var data = await response.json();
+
+        if(type == "start"){
+
+            document.getElementById("start").value =
+                data.display_name;
+
+        }
+        else{
+
+            document.getElementById("end").value =
+                data.display_name;
+
+        }
+
     }
-});
+
+    // -------------------------
+    // CALCULATE DISTANCE
+    // -------------------------
+
+    function calculateDistance(){
+
+        if(startLatLng && endLatLng){
+
+            var distance =
+                startLatLng.distanceTo(endLatLng) / 1000;
+
+            document.getElementById("distance").value =
+                distance.toFixed(2);
+
+            // DRAW LINE
+
+            if(line){
+                map.removeLayer(line);
+            }
+
+            line = L.polyline(
+                [startLatLng, endLatLng],
+                {
+                    color: 'blue'
+                }
+            ).addTo(map);
+
+            map.fitBounds(line.getBounds());
+
+            // SEND TO ZOHO
+
+            window.parent.postMessage({
+
+                start:
+                    document.getElementById("start").value,
+
+                end:
+                    document.getElementById("end").value,
+
+                distance:
+                    distance.toFixed(2)
+
+            }, "*");
+        }
+
+    }
 
 </script>
 
