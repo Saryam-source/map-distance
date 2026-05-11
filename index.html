@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-
-    <title>Map Distance Calculator</title>
-
+    <title>House-to-House Distance Calculator</title>
     <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <meta name="viewport"
-    content="width=device-width, initial-scale=1.0"/>
-
-    <!-- LEAFLET CSS -->
+    <!-- Leaflet -->
     <link rel="stylesheet"
     href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-    <!-- LEAFLET JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <style>
-
         body{
             margin:0;
-            font-family:Arial,sans-serif;
+            font-family:Arial;
             background:#f5f5f5;
         }
 
@@ -35,508 +27,174 @@
             background:white;
         }
 
-        h2{
-            margin-top:0;
-            color:#333;
-        }
-
-        h3{
-            margin-bottom:8px;
-            color:#444;
-        }
-
-        .input-group{
-            display:flex;
-            gap:10px;
-            margin-bottom:20px;
-        }
-
         input{
-            flex:1;
+            width:100%;
             padding:12px;
-            font-size:15px;
+            margin-bottom:15px;
+            font-size:16px;
             border:1px solid #ccc;
             border-radius:8px;
-            outline:none;
-        }
-
-        input:focus{
-            border-color:#4285f4;
+            box-sizing:border-box;
         }
 
         button{
             padding:12px 20px;
-            font-size:15px;
+            background:#4285f4;
+            color:white;
             border:none;
             border-radius:8px;
             cursor:pointer;
-            background:#4285f4;
-            color:white;
-        }
-
-        button:hover{
-            background:#2f6fe4;
+            margin-right:10px;
         }
 
         #distance{
-            background:#f0f0f0;
+            background:#eee;
             font-weight:bold;
         }
-
-        .btn-group{
-            display:flex;
-            gap:10px;
-            margin-top:20px;
-        }
-
-        @media(max-width:768px){
-
-            .input-group{
-                flex-direction:column;
-            }
-
-            .btn-group{
-                flex-direction:column;
-            }
-
-            button{
-                width:100%;
-            }
-        }
-
     </style>
-
 </head>
-
 <body>
 
 <div id="map"></div>
 
 <div class="container">
 
-    <h2>Map Distance Calculator</h2>
-
-    <!-- START LOCATION -->
-
     <h3>Start Location</h3>
-
-    <div class="input-group">
-
-        <input
-            type="text"
-            id="start"
-            placeholder="Enter Start Location">
-
-    </div>
-
-    <!-- END LOCATION -->
+    <input id="start" placeholder="Enter house address">
 
     <h3>End Location</h3>
-
-    <div class="input-group">
-
-        <input
-            type="text"
-            id="end"
-            placeholder="Enter End Location">
-
-    </div>
-
-    <!-- DISTANCE -->
+    <input id="end" placeholder="Enter house address">
 
     <h3>Distance</h3>
+    <input id="distance" readonly>
 
-    <input
-        type="text"
-        id="distance"
-        readonly
-        placeholder="Distance will appear here">
+    <button onclick="calculateDistance()">
+        Calculate Distance
+    </button>
 
-    <!-- BUTTONS -->
-
-    <div class="btn-group">
-
-        <button onclick="calculateFromInput()">
-            Calculate Distance
-        </button>
-
-        <button onclick="resetMap()">
-            Reset Map
-        </button>
-
-    </div>
+    <button onclick="resetMap()">
+        Reset
+    </button>
 
 </div>
 
 <script>
 
-// -------------------------------------
-// INITIALIZE MAP
-// -------------------------------------
+const API_KEY = "YOUR_GOOGLE_API_KEY";
 
-var map = L.map('map').setView([13.0827, 80.2707], 11);
+var map = L.map('map').setView([13.0827,80.2707],11);
 
 L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    maxZoom:19,
-    attribution:'© OpenStreetMap'
-}).addTo(map);
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map);
 
-// -------------------------------------
-// VARIABLES
-// -------------------------------------
+var startMarker=null;
+var endMarker=null;
+var routeLine=null;
 
-var startMarker = null;
-var endMarker = null;
-var routeLine = null;
+async function geocode(address){
 
-var startLatLng = null;
-var endLatLng = null;
+    let url =
+    "https://maps.googleapis.com/maps/api/geocode/json?address="
+    + encodeURIComponent(address)
+    + "&key="
+    + API_KEY;
 
-// -------------------------------------
-// SEARCH LOCATION FUNCTION
-// -------------------------------------
+    let response = await fetch(url);
+    let data = await response.json();
 
-async function searchLocation(location){
-
-    try{
-
-        // CLEAN INPUT
-
-        location = location
-        .replace(/no\./gi, "")
-        .replace(/,/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-        // MULTIPLE SEARCH ATTEMPTS
-
-        var searchQueries = [
-
-            location,
-
-            location + " Chennai",
-
-            location + " Tamil Nadu",
-
-            location + " Chennai Tamil Nadu India",
-
-            location + " India"
-        ];
-
-        for(var i = 0; i < searchQueries.length; i++){
-
-            var url =
-            "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=10&q="
-            + encodeURIComponent(searchQueries[i]);
-
-            var response = await fetch(url, {
-
-                headers:{
-                    "Accept":"application/json"
-                }
-
-            });
-
-            var data = await response.json();
-
-            if(data && data.length > 0){
-
-                return data[0];
-            }
-        }
-
-        return null;
-
-    }catch(error){
-
-        console.log(error);
-
-        return null;
+    if(data.status==="OK"){
+        return data.results[0];
     }
+
+    return null;
 }
 
-// -------------------------------------
-// CALCULATE FROM INPUT
-// -------------------------------------
+async function calculateDistance(){
 
-async function calculateFromInput(){
+    let start =
+    document.getElementById("start").value;
 
-    var startLocation =
-    document.getElementById("start").value.trim();
+    let end =
+    document.getElementById("end").value;
 
-    var endLocation =
-    document.getElementById("end").value.trim();
-
-    if(startLocation === "" || endLocation === ""){
-
-        alert("Enter both Start and End Locations");
+    if(!start || !end){
+        alert("Enter both addresses");
         return;
     }
 
-    // SEARCH START
-
-    var startResult =
-    await searchLocation(startLocation);
+    let startResult = await geocode(start);
+    let endResult = await geocode(end);
 
     if(!startResult){
-
-        alert("Start Location not found");
+        alert("Start address not found");
         return;
     }
-
-    // SEARCH END
-
-    var endResult =
-    await searchLocation(endLocation);
 
     if(!endResult){
-
-        alert("End Location not found");
+        alert("End address not found");
         return;
     }
 
-    // LAT LNG
+    let s =
+    startResult.geometry.location;
 
-    startLatLng = L.latLng(
-        parseFloat(startResult.lat),
-        parseFloat(startResult.lon)
-    );
+    let e =
+    endResult.geometry.location;
 
-    endLatLng = L.latLng(
-        parseFloat(endResult.lat),
-        parseFloat(endResult.lon)
-    );
+    let startLatLng =
+    L.latLng(s.lat,s.lng);
 
-    // REMOVE OLD
+    let endLatLng =
+    L.latLng(e.lat,e.lng);
 
-    if(startMarker){
-        map.removeLayer(startMarker);
-    }
-
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
-
-    if(routeLine){
-        map.removeLayer(routeLine);
-    }
-
-    // START MARKER
+    if(startMarker) map.removeLayer(startMarker);
+    if(endMarker) map.removeLayer(endMarker);
+    if(routeLine) map.removeLayer(routeLine);
 
     startMarker =
     L.marker(startLatLng)
-    .addTo(map)
-    .bindPopup("Start Location")
-    .openPopup();
-
-    // END MARKER
+    .addTo(map);
 
     endMarker =
     L.marker(endLatLng)
-    .addTo(map)
-    .bindPopup("End Location");
+    .addTo(map);
 
-    // UPDATE INPUTS
+    routeLine =
+    L.polyline(
+        [startLatLng,endLatLng],
+        {color:'blue'}
+    ).addTo(map);
 
-    document.getElementById("start").value =
-    startResult.display_name;
+    map.fitBounds(routeLine.getBounds());
 
-    document.getElementById("end").value =
-    endResult.display_name;
+    let distance =
+    startLatLng.distanceTo(endLatLng)/1000;
 
-    // CALCULATE DISTANCE
+    document.getElementById("distance").value =
+    distance.toFixed(2) + " KM";
 
-    calculateDistance();
+    window.parent.postMessage({
+
+        start:startResult.formatted_address,
+        end:endResult.formatted_address,
+        distance:distance.toFixed(2)
+
+    },"*");
 }
-
-// -------------------------------------
-// MAP CLICK
-// -------------------------------------
-
-map.on('click', async function(e){
-
-    var lat = e.latlng.lat;
-    var lon = e.latlng.lng;
-
-    try{
-
-        var url =
-        "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="
-        + lat +
-        "&lon=" +
-        lon;
-
-        var response = await fetch(url);
-
-        var data = await response.json();
-
-        var address =
-        data.display_name || lat + "," + lon;
-
-        // START LOCATION
-
-        if(!startLatLng){
-
-            startLatLng = e.latlng;
-
-            if(startMarker){
-                map.removeLayer(startMarker);
-            }
-
-            startMarker =
-            L.marker(startLatLng)
-            .addTo(map)
-            .bindPopup("Start Location")
-            .openPopup();
-
-            document.getElementById("start").value =
-            address;
-        }
-
-        // END LOCATION
-
-        else if(!endLatLng){
-
-            endLatLng = e.latlng;
-
-            if(endMarker){
-                map.removeLayer(endMarker);
-            }
-
-            endMarker =
-            L.marker(endLatLng)
-            .addTo(map)
-            .bindPopup("End Location")
-            .openPopup();
-
-            document.getElementById("end").value =
-            address;
-
-            calculateDistance();
-        }
-
-        // RESET + NEW START
-
-        else{
-
-            resetMap();
-
-            startLatLng = e.latlng;
-
-            startMarker =
-            L.marker(startLatLng)
-            .addTo(map)
-            .bindPopup("Start Location")
-            .openPopup();
-
-            document.getElementById("start").value =
-            address;
-        }
-
-    }catch(error){
-
-        console.log(error);
-    }
-
-});
-
-// -------------------------------------
-// DISTANCE CALCULATION
-// -------------------------------------
-
-function calculateDistance(){
-
-    if(startLatLng && endLatLng){
-
-        var distance =
-        startLatLng.distanceTo(endLatLng) / 1000;
-
-        document.getElementById("distance").value =
-        distance.toFixed(2) + " KM";
-
-        // DRAW ROUTE
-
-        routeLine =
-        L.polyline(
-            [startLatLng, endLatLng],
-            {
-                color:'blue',
-                weight:5
-            }
-        ).addTo(map);
-
-        map.fitBounds(routeLine.getBounds());
-
-        // SEND TO ZOHO
-
-        window.parent.postMessage({
-
-            start:
-            document.getElementById("start").value,
-
-            end:
-            document.getElementById("end").value,
-
-            distance:
-            distance.toFixed(2)
-
-        }, "*");
-    }
-}
-
-// -------------------------------------
-// RESET MAP
-// -------------------------------------
 
 function resetMap(){
 
-    if(startMarker){
-        map.removeLayer(startMarker);
-    }
+    if(startMarker) map.removeLayer(startMarker);
+    if(endMarker) map.removeLayer(endMarker);
+    if(routeLine) map.removeLayer(routeLine);
 
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
+    document.getElementById("start").value="";
+    document.getElementById("end").value="";
+    document.getElementById("distance").value="";
 
-    if(routeLine){
-        map.removeLayer(routeLine);
-    }
-
-    startMarker = null;
-    endMarker = null;
-    routeLine = null;
-
-    startLatLng = null;
-    endLatLng = null;
-
-    document.getElementById("start").value = "";
-    document.getElementById("end").value = "";
-    document.getElementById("distance").value = "";
-
-    map.setView([13.0827, 80.2707], 11);
+    map.setView([13.0827,80.2707],11);
 }
-
-// -------------------------------------
-// ENTER KEY SUPPORT
-// -------------------------------------
-
-document.getElementById("start")
-.addEventListener("keypress", function(e){
-
-    if(e.key === "Enter"){
-        calculateFromInput();
-    }
-});
-
-document.getElementById("end")
-.addEventListener("keypress", function(e){
-
-    if(e.key === "Enter"){
-        calculateFromInput();
-    }
-});
 
 </script>
 
