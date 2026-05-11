@@ -116,7 +116,7 @@
 
     <h2>Map Distance Calculator</h2>
 
-    <!-- START -->
+    <!-- START LOCATION -->
 
     <h3>Start Location</h3>
 
@@ -129,7 +129,7 @@
 
     </div>
 
-    <!-- END -->
+    <!-- END LOCATION -->
 
     <h3>End Location</h3>
 
@@ -170,9 +170,9 @@
 
 <script>
 
-// -----------------------------
-// MAP INITIALIZATION
-// -----------------------------
+// -------------------------------------
+// INITIALIZE MAP
+// -------------------------------------
 
 var map = L.map('map').setView([13.0827, 80.2707], 11);
 
@@ -183,9 +183,9 @@ L.tileLayer(
     attribution:'© OpenStreetMap'
 }).addTo(map);
 
-// -----------------------------
+// -------------------------------------
 // VARIABLES
-// -----------------------------
+// -------------------------------------
 
 var startMarker = null;
 var endMarker = null;
@@ -194,57 +194,72 @@ var routeLine = null;
 var startLatLng = null;
 var endLatLng = null;
 
-// -----------------------------
-// SEARCH LOCATION
-// -----------------------------
+// -------------------------------------
+// SEARCH LOCATION FUNCTION
+// -------------------------------------
 
 async function searchLocation(location){
 
     try{
 
-        // MORE POWERFUL SEARCH
+        // CLEAN INPUT
 
-        var url =
-        "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q="
-        + encodeURIComponent(location);
+        location = location
+        .replace(/no\./gi, "")
+        .replace(/,/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-        var response = await fetch(url, {
-            headers:{
-                "Accept":"application/json"
+        // MULTIPLE SEARCH ATTEMPTS
+
+        var searchQueries = [
+
+            location,
+
+            location + " Chennai",
+
+            location + " Tamil Nadu",
+
+            location + " Chennai Tamil Nadu India",
+
+            location + " India"
+        ];
+
+        for(var i = 0; i < searchQueries.length; i++){
+
+            var url =
+            "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=10&q="
+            + encodeURIComponent(searchQueries[i]);
+
+            var response = await fetch(url, {
+
+                headers:{
+                    "Accept":"application/json"
+                }
+
+            });
+
+            var data = await response.json();
+
+            if(data && data.length > 0){
+
+                return data[0];
             }
-        });
-
-        var data = await response.json();
-
-        // IF NOT FOUND TRY WITH CHENNAI
-
-        if(data.length === 0){
-
-            url =
-            "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q="
-            + encodeURIComponent(location + ", Chennai");
-
-            response = await fetch(url);
-
-            data = await response.json();
         }
 
-        if(data.length === 0){
-            return null;
-        }
-
-        return data[0];
+        return null;
 
     }catch(error){
 
         console.log(error);
+
         return null;
     }
 }
 
-// -----------------------------
+// -------------------------------------
 // CALCULATE FROM INPUT
-// -----------------------------
+// -------------------------------------
 
 async function calculateFromInput(){
 
@@ -294,7 +309,7 @@ async function calculateFromInput(){
         parseFloat(endResult.lon)
     );
 
-    // REMOVE OLD MARKERS
+    // REMOVE OLD
 
     if(startMarker){
         map.removeLayer(startMarker);
@@ -308,7 +323,7 @@ async function calculateFromInput(){
         map.removeLayer(routeLine);
     }
 
-    // ADD START MARKER
+    // START MARKER
 
     startMarker =
     L.marker(startLatLng)
@@ -316,7 +331,7 @@ async function calculateFromInput(){
     .bindPopup("Start Location")
     .openPopup();
 
-    // ADD END MARKER
+    // END MARKER
 
     endMarker =
     L.marker(endLatLng)
@@ -336,9 +351,9 @@ async function calculateFromInput(){
     calculateDistance();
 }
 
-// -----------------------------
+// -------------------------------------
 // MAP CLICK
-// -----------------------------
+// -------------------------------------
 
 map.on('click', async function(e){
 
@@ -402,7 +417,7 @@ map.on('click', async function(e){
             calculateDistance();
         }
 
-        // RESET AUTOMATICALLY
+        // RESET + NEW START
 
         else{
 
@@ -427,9 +442,9 @@ map.on('click', async function(e){
 
 });
 
-// -----------------------------
+// -------------------------------------
 // DISTANCE CALCULATION
-// -----------------------------
+// -------------------------------------
 
 function calculateDistance(){
 
@@ -441,7 +456,7 @@ function calculateDistance(){
         document.getElementById("distance").value =
         distance.toFixed(2) + " KM";
 
-        // DRAW LINE
+        // DRAW ROUTE
 
         routeLine =
         L.polyline(
@@ -471,9 +486,9 @@ function calculateDistance(){
     }
 }
 
-// -----------------------------
+// -------------------------------------
 // RESET MAP
-// -----------------------------
+// -------------------------------------
 
 function resetMap(){
 
@@ -503,9 +518,9 @@ function resetMap(){
     map.setView([13.0827, 80.2707], 11);
 }
 
-// -----------------------------
+// -------------------------------------
 // ENTER KEY SUPPORT
-// -----------------------------
+// -------------------------------------
 
 document.getElementById("start")
 .addEventListener("keypress", function(e){
@@ -527,5 +542,4 @@ document.getElementById("end")
 
 </body>
 </html>
-          
 
