@@ -103,9 +103,12 @@ Reset
 let map;
 let directionsService;
 let directionsRenderer;
+let geocoder;
 
-let startAutocomplete;
-let endAutocomplete;
+let startMarker = null;
+let endMarker = null;
+
+let clickCount = 0;
 
 function initMap(){
 
@@ -121,31 +124,58 @@ new google.maps.DirectionsService();
 
 directionsRenderer =
 new google.maps.DirectionsRenderer({
-draggable:false
+suppressMarkers:true
 });
 
 directionsRenderer.setMap(map);
 
+geocoder =
+new google.maps.Geocoder();
+
 
 // AUTOCOMPLETE
 
-startAutocomplete =
+const startAutocomplete =
 new google.maps.places.Autocomplete(
+document.getElementById("start"),
+{
+types:["geocode"]
+}
+);
+
+const endAutocomplete =
+new google.maps.places.Autocomplete(
+document.getElementById("end"),
+{
+types:["geocode"]
+}
+);
+
+
+// ENTER KEY SUPPORT
+
 document.getElementById("start")
-);
+.addEventListener("keydown",function(e){
 
-endAutocomplete =
-new google.maps.places.Autocomplete(
+if(e.key==="Enter"){
+calculateRoute();
+}
+
+});
+
 document.getElementById("end")
-);
+.addEventListener("keydown",function(e){
+
+if(e.key==="Enter"){
+calculateRoute();
+}
+
+});
 
 
-// CLICK MAP TO AUTO FILL
+// MAP CLICK SUPPORT
 
 map.addListener("click",function(event){
-
-let geocoder =
-new google.maps.Geocoder();
 
 geocoder.geocode({
 
@@ -153,24 +183,53 @@ location:event.latLng
 
 },function(results,status){
 
-if(status==="OK"){
+if(status==="OK" && results[0]){
 
-if(results[0]){
+let address =
+results[0].formatted_address;
 
-if(document.getElementById("start").value===""){
+if(clickCount===0){
 
 document.getElementById("start").value =
-results[0].formatted_address;
+address;
+
+if(startMarker){
+startMarker.setMap(null);
+}
+
+startMarker =
+new google.maps.Marker({
+
+position:event.latLng,
+map:map,
+label:"S"
+
+});
+
+clickCount = 1;
 
 }
 else{
 
 document.getElementById("end").value =
-results[0].formatted_address;
+address;
+
+if(endMarker){
+endMarker.setMap(null);
+}
+
+endMarker =
+new google.maps.Marker({
+
+position:event.latLng,
+map:map,
+label:"E"
+
+});
+
+clickCount = 0;
 
 calculateRoute();
-
-}
 
 }
 
@@ -188,10 +247,10 @@ calculateRoute();
 function calculateRoute(){
 
 let start =
-document.getElementById("start").value;
+document.getElementById("start").value.trim();
 
 let end =
-document.getElementById("end").value;
+document.getElementById("end").value.trim();
 
 if(start==="" || end===""){
 
@@ -204,7 +263,7 @@ directionsService.route({
 
 origin:start,
 destination:end,
-travelMode:"DRIVING"
+travelMode:google.maps.TravelMode.DRIVING
 
 },
 function(result,status){
@@ -213,17 +272,46 @@ if(status==="OK"){
 
 directionsRenderer.setDirections(result);
 
-let route =
-result.routes[0];
-
-let distance =
-route.legs[0].distance.text;
-
-let duration =
-route.legs[0].duration.text;
+let leg =
+result.routes[0].legs[0];
 
 document.getElementById("distance").value =
-distance + " (" + duration + ")";
+leg.distance.text +
+" (" +
+leg.duration.text +
+")";
+
+
+// START MARKER
+
+if(startMarker){
+startMarker.setMap(null);
+}
+
+startMarker =
+new google.maps.Marker({
+
+position:leg.start_location,
+map:map,
+label:"S"
+
+});
+
+
+// END MARKER
+
+if(endMarker){
+endMarker.setMap(null);
+}
+
+endMarker =
+new google.maps.Marker({
+
+position:leg.end_location,
+map:map,
+label:"E"
+
+});
 
 
 // SEND TO ZOHO
@@ -232,15 +320,17 @@ window.parent.postMessage({
 
 start:start,
 end:end,
-distance:distance,
-duration:duration
+distance:leg.distance.text,
+duration:leg.duration.text
 
 },"*");
 
 }
 else{
 
-alert("Location not found");
+alert(
+"Google Maps could not find this location.\n\nPlease select from autocomplete suggestions."
+);
 
 }
 
@@ -257,6 +347,14 @@ document.getElementById("start").value="";
 document.getElementById("end").value="";
 document.getElementById("distance").value="";
 
+if(startMarker){
+startMarker.setMap(null);
+}
+
+if(endMarker){
+endMarker.setMap(null);
+}
+
 directionsRenderer.setDirections({
 routes:[]
 });
@@ -268,12 +366,14 @@ lng:80.2707
 
 map.setZoom(11);
 
+clickCount = 0;
+
 }
 
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv3g7NZzSJ1-iZ_emEuHSHqvuSezwma_8&libraries=places&callback=initMap">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv3g7NZzSJ1-iZ_emEuHSHqvuSezwma_8 &libraries=places&callback=initMap">
 </script>
 
 </body>
