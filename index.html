@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>Map Distance Calculator</title>
+    <title>Auto Distance Calculator</title>
 
     <meta charset="utf-8"/>
 
@@ -18,6 +18,7 @@
         body{
             margin:0;
             font-family:Arial;
+            background:#f5f5f5;
         }
 
         #map{
@@ -29,10 +30,16 @@
             padding:20px;
         }
 
+        h2{
+            margin-bottom:20px;
+        }
+
         .search-box{
             width:400px;
             padding:12px;
             font-size:16px;
+            border-radius:5px;
+            border:1px solid #ccc;
         }
 
         .dropdown{
@@ -43,6 +50,7 @@
             background:white;
             position:relative;
             z-index:9999;
+            border-radius:5px;
         }
 
         .dropdown div{
@@ -55,15 +63,15 @@
             background:#f2f2f2;
         }
 
-        button{
-            padding:12px 25px;
-            font-size:16px;
-            cursor:pointer;
-            margin-top:20px;
-            background:#007bff;
-            color:white;
-            border:none;
+        .distance-box{
+            width:200px;
+            padding:12px;
+            font-size:20px;
+            font-weight:bold;
+            color:#007bff;
+            border:2px solid #007bff;
             border-radius:5px;
+            background:white;
         }
 
     </style>
@@ -76,13 +84,15 @@
 
 <div class="container">
 
+    <h2>Map Distance Calculator</h2>
+
     <h3>Start Location</h3>
 
     <input
         type="text"
         id="start"
         class="search-box"
-        placeholder="Search Start Location"
+        placeholder="Type Start Location"
         onkeyup="searchSuggestions('start')">
 
     <div id="startSuggestions" class="dropdown"></div>
@@ -95,26 +105,21 @@
         type="text"
         id="end"
         class="search-box"
-        placeholder="Search End Location"
+        placeholder="Type End Location"
         onkeyup="searchSuggestions('end')">
 
     <div id="endSuggestions" class="dropdown"></div>
 
     <br><br>
 
-    <button onclick="calculateDistance()">
-        Calculate Distance
-    </button>
-
-    <br><br>
-
-    <h3>Distance (KM)</h3>
+    <h3>Distance</h3>
 
     <input
         type="text"
         id="distance"
-        class="search-box"
-        readonly>
+        class="distance-box"
+        readonly
+        placeholder="0 KM">
 
 </div>
 
@@ -152,20 +157,21 @@ async function searchSuggestions(type){
     var input =
     document.getElementById(type).value;
 
+    var suggestionBox =
+    document.getElementById(type + "Suggestions");
+
     if(input.length < 3){
+        suggestionBox.innerHTML = "";
         return;
     }
 
     var url =
-    "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q="
-    + encodeURIComponent(input + ", Chennai, Tamil Nadu, India");
+    "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
+    + encodeURIComponent(input);
 
     var response = await fetch(url);
 
     var data = await response.json();
-
-    var suggestionBox =
-    document.getElementById(type + "Suggestions");
 
     suggestionBox.innerHTML = "";
 
@@ -198,8 +204,8 @@ async function searchSuggestions(type){
                 startMarker =
                 L.marker(latlng)
                 .addTo(map)
-                .bindPopup("Start Location")
-                .openPopup();
+                .bindPopup("Start Location");
+
             }
             else{
 
@@ -212,11 +218,13 @@ async function searchSuggestions(type){
                 endMarker =
                 L.marker(latlng)
                 .addTo(map)
-                .bindPopup("End Location")
-                .openPopup();
+                .bindPopup("End Location");
             }
 
-            map.setView(latlng, 15);
+            map.setView(latlng, 13);
+
+            // AUTO CALCULATE
+            calculateDistance();
         };
 
         suggestionBox.appendChild(div);
@@ -244,6 +252,7 @@ map.on('click', async function(e){
 
     var data = await response.json();
 
+    // FIRST CLICK = START
     if(!startLatLng){
 
         startLatLng = e.latlng;
@@ -255,14 +264,14 @@ map.on('click', async function(e){
         startMarker =
         L.marker(startLatLng)
         .addTo(map)
-        .bindPopup("Start Location")
-        .openPopup();
+        .bindPopup("Start Location");
 
         document.getElementById("start").value =
         data.display_name;
     }
 
-    else if(!endLatLng){
+    // SECOND CLICK = END
+    else{
 
         endLatLng = e.latlng;
 
@@ -273,19 +282,19 @@ map.on('click', async function(e){
         endMarker =
         L.marker(endLatLng)
         .addTo(map)
-        .bindPopup("End Location")
-        .openPopup();
+        .bindPopup("End Location");
 
         document.getElementById("end").value =
         data.display_name;
-
-        calculateDistance();
     }
+
+    // AUTO CALCULATE
+    calculateDistance();
 
 });
 
 // ----------------------
-// DISTANCE
+// DISTANCE CALCULATION
 // ----------------------
 
 function calculateDistance(){
@@ -296,25 +305,27 @@ function calculateDistance(){
         startLatLng.distanceTo(endLatLng) / 1000;
 
         document.getElementById("distance").value =
-        distance.toFixed(2);
+        distance.toFixed(2) + " KM";
 
+        // REMOVE OLD LINE
         if(routeLine){
             map.removeLayer(routeLine);
         }
 
+        // DRAW ROUTE LINE
         routeLine =
         L.polyline(
             [startLatLng, endLatLng],
             {
                 color:'blue',
-                weight:4
+                weight:5
             }
         ).addTo(map);
 
+        // FIT MAP
         map.fitBounds(routeLine.getBounds());
 
-        // SEND TO ZOHO
-
+        // SEND TO PARENT (ZOHO)
         window.parent.postMessage({
 
             start:
@@ -327,10 +338,9 @@ function calculateDistance(){
             distance.toFixed(2)
 
         }, "*");
+
     }
-    else{
-        alert("Select both Start and End locations");
-    }
+
 }
 
 </script>
@@ -338,5 +348,5 @@ function calculateDistance(){
 </body>
 
 </html>
-
+    
 
