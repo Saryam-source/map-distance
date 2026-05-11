@@ -1,128 +1,3 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-    <title>Auto Distance Calculator</title>
-
-    <meta charset="utf-8"/>
-
-    <!-- LEAFLET -->
-    <link rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <style>
-
-        body{
-            margin:0;
-            font-family:Arial;
-            background:#f5f5f5;
-        }
-
-        #map{
-            height:500px;
-            width:100%;
-        }
-
-        .container{
-            padding:20px;
-        }
-
-        h2{
-            margin-bottom:20px;
-        }
-
-        .search-box{
-            width:400px;
-            padding:12px;
-            font-size:16px;
-            border-radius:5px;
-            border:1px solid #ccc;
-        }
-
-        .dropdown{
-            width:425px;
-            max-height:200px;
-            overflow-y:auto;
-            border:1px solid #ccc;
-            background:white;
-            position:relative;
-            z-index:9999;
-            border-radius:5px;
-        }
-
-        .dropdown div{
-            padding:10px;
-            cursor:pointer;
-            border-bottom:1px solid #eee;
-        }
-
-        .dropdown div:hover{
-            background:#f2f2f2;
-        }
-
-        .distance-box{
-            width:200px;
-            padding:12px;
-            font-size:20px;
-            font-weight:bold;
-            color:#007bff;
-            border:2px solid #007bff;
-            border-radius:5px;
-            background:white;
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-<div id="map"></div>
-
-<div class="container">
-
-    <h2>Map Distance Calculator</h2>
-
-    <h3>Start Location</h3>
-
-    <input
-        type="text"
-        id="start"
-        class="search-box"
-        placeholder="Type Start Location"
-        onkeyup="searchSuggestions('start')">
-
-    <div id="startSuggestions" class="dropdown"></div>
-
-    <br><br>
-
-    <h3>End Location</h3>
-
-    <input
-        type="text"
-        id="end"
-        class="search-box"
-        placeholder="Type End Location"
-        onkeyup="searchSuggestions('end')">
-
-    <div id="endSuggestions" class="dropdown"></div>
-
-    <br><br>
-
-    <h3>Distance</h3>
-
-    <input
-        type="text"
-        id="distance"
-        class="distance-box"
-        readonly
-        placeholder="0 KM">
-
-</div>
-
 <script>
 
 // ----------------------
@@ -190,41 +65,8 @@ async function searchSuggestions(type){
 
             suggestionBox.innerHTML = "";
 
-            var latlng =
-            L.latLng(place.lat, place.lon);
+            setLocation(type, place.lat, place.lon);
 
-            if(type == "start"){
-
-                startLatLng = latlng;
-
-                if(startMarker){
-                    map.removeLayer(startMarker);
-                }
-
-                startMarker =
-                L.marker(latlng)
-                .addTo(map)
-                .bindPopup("Start Location");
-
-            }
-            else{
-
-                endLatLng = latlng;
-
-                if(endMarker){
-                    map.removeLayer(endMarker);
-                }
-
-                endMarker =
-                L.marker(latlng)
-                .addTo(map)
-                .bindPopup("End Location");
-            }
-
-            map.setView(latlng, 13);
-
-            // AUTO CALCULATE
-            calculateDistance();
         };
 
         suggestionBox.appendChild(div);
@@ -234,71 +76,116 @@ async function searchSuggestions(type){
 }
 
 // ----------------------
-// MAP CLICK
+// SET LOCATION
 // ----------------------
 
-map.on('click', async function(e){
+function setLocation(type, lat, lon){
 
-    var lat = e.latlng.lat;
-    var lon = e.latlng.lng;
+    var latlng = L.latLng(lat, lon);
 
-    var url =
-    "https://nominatim.openstreetmap.org/reverse?format=json&lat="
-    + lat +
-    "&lon=" +
-    lon;
+    if(type == "start"){
 
-    var response = await fetch(url);
-
-    var data = await response.json();
-
-    // FIRST CLICK = START
-    if(!startLatLng){
-
-        startLatLng = e.latlng;
+        startLatLng = latlng;
 
         if(startMarker){
             map.removeLayer(startMarker);
         }
 
         startMarker =
-        L.marker(startLatLng)
+        L.marker(latlng)
         .addTo(map)
         .bindPopup("Start Location");
 
-        document.getElementById("start").value =
-        data.display_name;
     }
-
-    // SECOND CLICK = END
     else{
 
-        endLatLng = e.latlng;
+        endLatLng = latlng;
 
         if(endMarker){
             map.removeLayer(endMarker);
         }
 
         endMarker =
-        L.marker(endLatLng)
+        L.marker(latlng)
         .addTo(map)
         .bindPopup("End Location");
-
-        document.getElementById("end").value =
-        data.display_name;
     }
 
-    // AUTO CALCULATE
+    map.setView(latlng, 13);
+
     calculateDistance();
-
-});
+}
 
 // ----------------------
-// DISTANCE CALCULATION
+// MANUAL ADDRESS SEARCH
 // ----------------------
 
-function calculateDistance(){
+async function getCoordinates(address){
 
+    var url =
+    "https://nominatim.openstreetmap.org/search?format=json&limit=1&q="
+    + encodeURIComponent(address);
+
+    var response = await fetch(url);
+
+    var data = await response.json();
+
+    if(data.length > 0){
+
+        return {
+            lat: data[0].lat,
+            lon: data[0].lon
+        };
+    }
+
+    return null;
+}
+
+// ----------------------
+// AUTO CALCULATE
+// ----------------------
+
+async function calculateDistance(){
+
+    var startInput =
+    document.getElementById("start").value;
+
+    var endInput =
+    document.getElementById("end").value;
+
+    // GET START COORDINATES
+    if(startInput && !startLatLng){
+
+        var startCoords =
+        await getCoordinates(startInput);
+
+        if(startCoords){
+
+            setLocation(
+                "start",
+                startCoords.lat,
+                startCoords.lon
+            );
+        }
+    }
+
+    // GET END COORDINATES
+    if(endInput && !endLatLng){
+
+        var endCoords =
+        await getCoordinates(endInput);
+
+        if(endCoords){
+
+            setLocation(
+                "end",
+                endCoords.lat,
+                endCoords.lon
+            );
+        }
+    }
+
+    // CALCULATE DISTANCE
     if(startLatLng && endLatLng){
 
         var distance =
@@ -312,7 +199,7 @@ function calculateDistance(){
             map.removeLayer(routeLine);
         }
 
-        // DRAW ROUTE LINE
+        // DRAW LINE
         routeLine =
         L.polyline(
             [startLatLng, endLatLng],
@@ -322,20 +209,14 @@ function calculateDistance(){
             }
         ).addTo(map);
 
-        // FIT MAP
         map.fitBounds(routeLine.getBounds());
 
-        // SEND TO PARENT (ZOHO)
+        // SEND TO ZOHO
         window.parent.postMessage({
 
-            start:
-            document.getElementById("start").value,
-
-            end:
-            document.getElementById("end").value,
-
-            distance:
-            distance.toFixed(2)
+            start: startInput,
+            end: endInput,
+            distance: distance.toFixed(2)
 
         }, "*");
 
@@ -343,10 +224,60 @@ function calculateDistance(){
 
 }
 
+// ----------------------
+// AUTO WHEN USER TYPES
+// ----------------------
+
+document
+.getElementById("start")
+.addEventListener("change", function(){
+
+    startLatLng = null;
+
+    calculateDistance();
+
+});
+
+document
+.getElementById("end")
+.addEventListener("change", function(){
+
+    endLatLng = null;
+
+    calculateDistance();
+
+});
+
+// ----------------------
+// MAP CLICK
+// ----------------------
+
+map.on('click', async function(e){
+
+    var latlng = e.latlng;
+
+    if(!startLatLng){
+
+        setLocation(
+            "start",
+            latlng.lat,
+            latlng.lng
+        );
+
+    }
+    else{
+
+        setLocation(
+            "end",
+            latlng.lat,
+            latlng.lng
+        );
+
+    }
+
+});
+
 </script>
 
-</body>
-
-</html>
     
 
