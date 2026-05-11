@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>Advanced Map Distance Calculator</title>
+    <title>Map Distance Calculator</title>
 
     <meta charset="utf-8"/>
 
@@ -47,14 +47,12 @@
 
         .input-group{
             display:flex;
-            flex-wrap:wrap;
             gap:10px;
             margin-bottom:20px;
         }
 
         input{
             flex:1;
-            min-width:250px;
             padding:12px;
             font-size:15px;
             border:1px solid #ccc;
@@ -67,7 +65,7 @@
         }
 
         button{
-            padding:12px 18px;
+            padding:12px 20px;
             font-size:15px;
             border:none;
             border-radius:8px;
@@ -85,12 +83,10 @@
             font-weight:bold;
         }
 
-        .info-box{
-            background:#eef4ff;
-            padding:12px;
-            border-radius:8px;
-            margin-bottom:20px;
-            color:#333;
+        .btn-group{
+            display:flex;
+            gap:10px;
+            margin-top:20px;
         }
 
         @media(max-width:768px){
@@ -99,11 +95,11 @@
                 flex-direction:column;
             }
 
-            button{
-                width:100%;
+            .btn-group{
+                flex-direction:column;
             }
 
-            input{
+            button{
                 width:100%;
             }
         }
@@ -120,12 +116,6 @@
 
     <h2>Map Distance Calculator</h2>
 
-    <div class="info-box">
-        • Click directly on the map OR type locations manually.<br>
-        • Supports area names, street names, landmarks, house addresses and pin codes.<br>
-        • Third click resets the map automatically.
-    </div>
-
     <!-- START -->
 
     <h3>Start Location</h3>
@@ -136,10 +126,6 @@
             type="text"
             id="start"
             placeholder="Enter Start Location">
-
-        <button onclick="setStartLocation()">
-            Set Start
-        </button>
 
     </div>
 
@@ -154,10 +140,6 @@
             id="end"
             placeholder="Enter End Location">
 
-        <button onclick="setEndLocation()">
-            Set End
-        </button>
-
     </div>
 
     <!-- DISTANCE -->
@@ -170,19 +152,27 @@
         readonly
         placeholder="Distance will appear here">
 
-    <br><br>
+    <!-- BUTTONS -->
 
-    <button onclick="resetMap()">
-        Reset Map
-    </button>
+    <div class="btn-group">
+
+        <button onclick="calculateFromInput()">
+            Calculate Distance
+        </button>
+
+        <button onclick="resetMap()">
+            Reset Map
+        </button>
+
+    </div>
 
 </div>
 
 <script>
 
-// ------------------------------
-// INITIALIZE MAP
-// ------------------------------
+// -----------------------------
+// MAP INITIALIZATION
+// -----------------------------
 
 var map = L.map('map').setView([13.0827, 80.2707], 11);
 
@@ -193,9 +183,9 @@ L.tileLayer(
     attribution:'© OpenStreetMap'
 }).addTo(map);
 
-// ------------------------------
+// -----------------------------
 // VARIABLES
-// ------------------------------
+// -----------------------------
 
 var startMarker = null;
 var endMarker = null;
@@ -204,19 +194,19 @@ var routeLine = null;
 var startLatLng = null;
 var endLatLng = null;
 
-// ------------------------------
-// SEARCH FUNCTION
-// ------------------------------
+// -----------------------------
+// SEARCH LOCATION
+// -----------------------------
 
 async function searchLocation(location){
 
     try{
 
-        // PRIORITY SEARCH WITH CHENNAI
+        // MORE POWERFUL SEARCH
 
         var url =
-        "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
-        + encodeURIComponent(location + ", Chennai, Tamil Nadu, India");
+        "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q="
+        + encodeURIComponent(location);
 
         var response = await fetch(url, {
             headers:{
@@ -226,13 +216,13 @@ async function searchLocation(location){
 
         var data = await response.json();
 
-        // FALLBACK SEARCH
+        // IF NOT FOUND TRY WITH CHENNAI
 
         if(data.length === 0){
 
             url =
-            "https://nominatim.openstreetmap.org/search?format=json&limit=5&q="
-            + encodeURIComponent(location);
+            "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q="
+            + encodeURIComponent(location + ", Chennai");
 
             response = await fetch(url);
 
@@ -240,8 +230,6 @@ async function searchLocation(location){
         }
 
         if(data.length === 0){
-
-            alert("Location not found");
             return null;
         }
 
@@ -250,40 +238,77 @@ async function searchLocation(location){
     }catch(error){
 
         console.log(error);
-
-        alert("Error finding location");
-
         return null;
     }
 }
 
-// ------------------------------
-// SET START LOCATION
-// ------------------------------
+// -----------------------------
+// CALCULATE FROM INPUT
+// -----------------------------
 
-async function setStartLocation(){
+async function calculateFromInput(){
 
-    var location =
+    var startLocation =
     document.getElementById("start").value.trim();
 
-    if(location === ""){
-        alert("Enter Start Location");
+    var endLocation =
+    document.getElementById("end").value.trim();
+
+    if(startLocation === "" || endLocation === ""){
+
+        alert("Enter both Start and End Locations");
         return;
     }
 
-    var result =
-    await searchLocation(location);
+    // SEARCH START
 
-    if(!result) return;
+    var startResult =
+    await searchLocation(startLocation);
 
-    var lat = parseFloat(result.lat);
-    var lon = parseFloat(result.lon);
+    if(!startResult){
 
-    startLatLng = L.latLng(lat, lon);
+        alert("Start Location not found");
+        return;
+    }
+
+    // SEARCH END
+
+    var endResult =
+    await searchLocation(endLocation);
+
+    if(!endResult){
+
+        alert("End Location not found");
+        return;
+    }
+
+    // LAT LNG
+
+    startLatLng = L.latLng(
+        parseFloat(startResult.lat),
+        parseFloat(startResult.lon)
+    );
+
+    endLatLng = L.latLng(
+        parseFloat(endResult.lat),
+        parseFloat(endResult.lon)
+    );
+
+    // REMOVE OLD MARKERS
 
     if(startMarker){
         map.removeLayer(startMarker);
     }
+
+    if(endMarker){
+        map.removeLayer(endMarker);
+    }
+
+    if(routeLine){
+        map.removeLayer(routeLine);
+    }
+
+    // ADD START MARKER
 
     startMarker =
     L.marker(startLatLng)
@@ -291,59 +316,29 @@ async function setStartLocation(){
     .bindPopup("Start Location")
     .openPopup();
 
-    document.getElementById("start").value =
-    result.display_name;
-
-    map.setView(startLatLng, 15);
-
-    calculateDistance();
-}
-
-// ------------------------------
-// SET END LOCATION
-// ------------------------------
-
-async function setEndLocation(){
-
-    var location =
-    document.getElementById("end").value.trim();
-
-    if(location === ""){
-        alert("Enter End Location");
-        return;
-    }
-
-    var result =
-    await searchLocation(location);
-
-    if(!result) return;
-
-    var lat = parseFloat(result.lat);
-    var lon = parseFloat(result.lon);
-
-    endLatLng = L.latLng(lat, lon);
-
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
+    // ADD END MARKER
 
     endMarker =
     L.marker(endLatLng)
     .addTo(map)
-    .bindPopup("End Location")
-    .openPopup();
+    .bindPopup("End Location");
+
+    // UPDATE INPUTS
+
+    document.getElementById("start").value =
+    startResult.display_name;
 
     document.getElementById("end").value =
-    result.display_name;
+    endResult.display_name;
 
-    map.setView(endLatLng, 15);
+    // CALCULATE DISTANCE
 
     calculateDistance();
 }
 
-// ------------------------------
+// -----------------------------
 // MAP CLICK
-// ------------------------------
+// -----------------------------
 
 map.on('click', async function(e){
 
@@ -353,7 +348,7 @@ map.on('click', async function(e){
     try{
 
         var url =
-        "https://nominatim.openstreetmap.org/reverse?format=json&lat="
+        "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="
         + lat +
         "&lon=" +
         lon;
@@ -365,7 +360,7 @@ map.on('click', async function(e){
         var address =
         data.display_name || lat + "," + lon;
 
-        // START
+        // START LOCATION
 
         if(!startLatLng){
 
@@ -385,7 +380,7 @@ map.on('click', async function(e){
             address;
         }
 
-        // END
+        // END LOCATION
 
         else if(!endLatLng){
 
@@ -407,7 +402,7 @@ map.on('click', async function(e){
             calculateDistance();
         }
 
-        // RESET + NEW START
+        // RESET AUTOMATICALLY
 
         else{
 
@@ -432,9 +427,9 @@ map.on('click', async function(e){
 
 });
 
-// ------------------------------
+// -----------------------------
 // DISTANCE CALCULATION
-// ------------------------------
+// -----------------------------
 
 function calculateDistance(){
 
@@ -445,12 +440,6 @@ function calculateDistance(){
 
         document.getElementById("distance").value =
         distance.toFixed(2) + " KM";
-
-        // REMOVE OLD LINE
-
-        if(routeLine){
-            map.removeLayer(routeLine);
-        }
 
         // DRAW LINE
 
@@ -463,11 +452,9 @@ function calculateDistance(){
             }
         ).addTo(map);
 
-        // FIT MAP
-
         map.fitBounds(routeLine.getBounds());
 
-        // SEND TO ZOHO CREATOR
+        // SEND TO ZOHO
 
         window.parent.postMessage({
 
@@ -484,9 +471,9 @@ function calculateDistance(){
     }
 }
 
-// ------------------------------
-// RESET FUNCTION
-// ------------------------------
+// -----------------------------
+// RESET MAP
+// -----------------------------
 
 function resetMap(){
 
@@ -516,15 +503,15 @@ function resetMap(){
     map.setView([13.0827, 80.2707], 11);
 }
 
-// ------------------------------
+// -----------------------------
 // ENTER KEY SUPPORT
-// ------------------------------
+// -----------------------------
 
 document.getElementById("start")
 .addEventListener("keypress", function(e){
 
     if(e.key === "Enter"){
-        setStartLocation();
+        calculateFromInput();
     }
 });
 
@@ -532,7 +519,7 @@ document.getElementById("end")
 .addEventListener("keypress", function(e){
 
     if(e.key === "Enter"){
-        setEndLocation();
+        calculateFromInput();
     }
 });
 
