@@ -195,7 +195,7 @@ var startLatLng = null;
 var endLatLng = null;
 
 // -------------------------------------
-// IMPROVED SEARCH LOCATION FUNCTION
+// ADVANCED ADDRESS SEARCH
 // -------------------------------------
 
 async function searchLocation(location){
@@ -206,37 +206,84 @@ async function searchLocation(location){
 
         location = location
         .toLowerCase()
-        .replace(/no\./g, "")
-        .replace(/door no/g, "")
-        .replace(/,/g, " ")
-        .replace(/-/g, " ")
-        .replace(/\s+/g, " ")
+        .replace(/no\./g," ")
+        .replace(/door no/g," ")
+        .replace(/flat no/g," ")
+        .replace(/plot no/g," ")
+        .replace(/,/g," ")
+        .replace(/-/g," ")
+        .replace(/\s+/g," ")
         .trim();
 
-        // MULTIPLE SEARCH FORMATS
+        // BREAK INTO WORDS
 
-        var searchQueries = [
+        var words = location.split(" ");
 
-            location,
+        // MULTIPLE SEARCH QUERIES
 
-            location + " chennai",
+        var searchQueries = [];
 
-            location + " tamil nadu",
+        // FULL ADDRESS
 
-            location + " india",
+        searchQueries.push(location);
 
-            location + " chennai tamil nadu india"
-        ];
+        // ADD CHENNAI / INDIA
 
-        // TRY EACH SEARCH
+        searchQueries.push(location + " chennai");
+        searchQueries.push(location + " tamil nadu");
+        searchQueries.push(location + " india");
+        searchQueries.push(location + " chennai tamil nadu india");
 
-        for(var i = 0; i < searchQueries.length; i++){
+        // LAST 6 WORDS
+
+        if(words.length > 6){
+
+            searchQueries.push(
+                words.slice(-6).join(" ")
+            );
+
+            searchQueries.push(
+                words.slice(-6).join(" ") + " chennai"
+            );
+        }
+
+        // LAST 4 WORDS
+
+        if(words.length > 4){
+
+            searchQueries.push(
+                words.slice(-4).join(" ")
+            );
+
+            searchQueries.push(
+                words.slice(-4).join(" ") + " chennai"
+            );
+        }
+
+        // LAST 3 WORDS
+
+        if(words.length > 3){
+
+            searchQueries.push(
+                words.slice(-3).join(" ")
+            );
+
+            searchQueries.push(
+                words.slice(-3).join(" ") + " chennai"
+            );
+        }
+
+        // TRY EACH QUERY
+
+        for(var i=0; i<searchQueries.length; i++){
+
+            var query = searchQueries[i];
 
             var url =
             "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q="
-            + encodeURIComponent(searchQueries[i]);
+            + encodeURIComponent(query);
 
-            var response = await fetch(url, {
+            var response = await fetch(url,{
 
                 headers:{
                     "Accept":"application/json",
@@ -247,33 +294,10 @@ async function searchLocation(location){
 
             var data = await response.json();
 
-            // FOUND
-
             if(data && data.length > 0){
 
                 return data[0];
             }
-        }
-
-        // LAST TRY:
-        // REMOVE HOUSE NUMBER
-
-        var simplified =
-        location.replace(/^\d+\w*\s*/,"");
-
-        var finalUrl =
-        "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=10&q="
-        + encodeURIComponent(simplified);
-
-        var finalResponse =
-        await fetch(finalUrl);
-
-        var finalData =
-        await finalResponse.json();
-
-        if(finalData && finalData.length > 0){
-
-            return finalData[0];
         }
 
         return null;
@@ -577,6 +601,7 @@ document.getElementById("end")
 
 </body>
 </html>
+
 
 
 
