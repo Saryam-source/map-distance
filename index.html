@@ -1,984 +1,532 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Distance Calculator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<!-- LEAFLET -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<meta charset="UTF-8"/>
+<title>Route Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- LEAFLET ROUTING MACHINE (for real road-based routes like Google Maps) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-
-<!-- GOOGLE FONT -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; }
+:root{
+  --bg:#0e1117;--surface:#161b25;--surface2:#1e2535;--border:#2a3347;
+  --text:#e8edf5;--muted:#7a8499;--accent:#3b82f6;--accent2:#60a5fa;
+  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex}
 
-  body {
-    margin: 0;
-    font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
-    background: #f1f3f4;
-    color: #202124;
-    overflow: hidden;
-    height: 100vh;
-  }
+.sidebar{width:400px;min-width:400px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow:hidden}
+.brand{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.brand-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-icon svg{width:17px;height:17px;fill:#fff}
+.brand-title{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
 
-  /* ===== LAYOUT ===== */
-  .app {
-    display: flex;
-    height: 100vh;
-    width: 100%;
-  }
+.pane{padding:14px 16px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:11px}
+.pane::-webkit-scrollbar{width:4px}
+.pane::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-  /* ===== SIDEBAR (Left panel like Google Maps) ===== */
-  .sidebar {
-    width: 400px;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+.field-label{font-size:10px;font-weight:700;letter-spacing:.6px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.name-input{width:100%;padding:11px 14px;font-size:13px;font-family:inherit;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;transition:.2s}
+.name-input::placeholder{color:var(--muted)}
+.name-input:focus{border-color:var(--accent);background:var(--surface2)}
 
-  .header {
-    padding: 16px 20px;
-    background: #fff;
-    border-bottom: 1px solid #e8eaed;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+/* TRACKER PANEL */
+.tracker-panel{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:11px}
 
-  .header svg {
-    width: 28px;
-    height: 28px;
-    fill: #4285f4;
-  }
+.status-bar{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:8px;background:var(--surface2)}
+.s-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.s-dot.idle{background:var(--muted)}
+.s-dot.tracking{background:var(--green);animation:blink 1.1s infinite}
+.s-dot.done{background:var(--accent2)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.s-body{flex:1}
+.s-text{font-size:13px;font-weight:500}
+.s-coords{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
 
-  .header h1 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 500;
-    color: #202124;
-  }
+.live-metrics{display:flex;gap:7px}
+.lm{flex:1;background:var(--surface2);border-radius:8px;padding:9px 8px;text-align:center}
+.lm-lbl{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.lm-val{font-size:19px;font-weight:700;color:var(--accent2);font-family:'DM Mono',monospace;line-height:1}
+.lm-unit{font-size:9px;color:var(--muted);margin-top:2px;font-weight:500}
 
-  /* ===== SEARCH INPUTS ===== */
-  .search-container {
-    padding: 20px;
-    flex: 1;
-    overflow-y: auto;
-  }
+.track-actions{display:flex;gap:7px}
+.btn-start{flex:1;padding:13px;font-size:14px;font-weight:700;font-family:inherit;border:none;border-radius:var(--radius);cursor:pointer;transition:.2s;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-start:hover:not(:disabled){background:#16a34a;box-shadow:0 0 16px rgba(34,197,94,.35)}
+.btn-start:disabled{background:#1a3a22;color:#3a6a42;cursor:not-allowed}
+.btn-stop{flex:1;padding:13px;font-size:14px;font-weight:700;font-family:inherit;border:none;border-radius:var(--radius);cursor:pointer;transition:.2s;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-stop:hover:not(:disabled){background:#b91c1c;box-shadow:0 0 16px rgba(239,68,68,.35)}
+.btn-stop:disabled{background:#3a1a1a;color:#7a3a3a;cursor:not-allowed}
+.btn-reset{padding:13px 12px;font-size:12px;font-family:inherit;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--muted);cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+.btn-reset:hover{color:var(--text);border-color:#3a4560}
+.btn-reset svg{width:16px;height:16px;fill:currentColor}
 
-  .input-wrapper {
-    position: relative;
-    margin-bottom: 12px;
-  }
+.path-hint{display:none;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.path-hint.show{display:flex}
+.ph-bar{width:24px;height:4px;border-radius:2px;background:var(--green)}
 
-  .input-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    z-index: 2;
-  }
+/* RESULT CARD */
+.result-card{background:var(--bg);border:1.5px solid var(--accent);border-radius:12px;padding:14px;display:none;flex-direction:column;gap:10px}
+.result-card.show{display:flex}
+.section-hdr{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+.rc-top{display:flex;gap:8px}
+.rc-metric{flex:1;background:var(--surface2);border-radius:8px;padding:10px}
+.rc-label{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:3px;font-weight:600}
+.rc-value{font-size:21px;font-weight:700;color:var(--accent2);font-family:'DM Mono',monospace;line-height:1}
+.rc-unit{font-size:10px;color:var(--muted);margin-top:2px;font-weight:500}
+.rc-details{display:flex;flex-direction:column;gap:5px}
+.rc-row{font-size:12px;color:var(--muted);line-height:1.5}
+.rc-row strong{color:var(--text)}
 
-  .input-icon.start { background: #34a853; }
-  .input-icon.end { background: #ea4335; }
+.btn-submit{width:100%;padding:12px;font-size:14px;font-weight:700;font-family:inherit;border:none;border-radius:var(--radius);cursor:pointer;background:var(--accent);color:#fff;transition:.2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-submit:hover:not(:disabled){background:#2563eb}
+.btn-submit:disabled{background:#1a2d4a;color:#3a5a8a;cursor:not-allowed}
+.submit-ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--green);display:none;align-items:center;gap:7px}
+.submit-ok.show{display:flex}
+.submit-ok svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
 
-  .location-input {
-    width: 100%;
-    padding: 14px 44px 14px 40px;
-    font-size: 14px;
-    font-family: inherit;
-    border: 1px solid #dadce0;
-    border-radius: 8px;
-    background: #fff;
-    outline: none;
-    transition: all 0.2s;
-  }
+/* MAP */
+#map{flex:1;height:100vh;z-index:1}
+.live-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;color:var(--text);z-index:500;display:none;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(0,0,0,.4);white-space:nowrap}
+.live-banner.show{display:flex}
+.lb-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.1s infinite;flex-shrink:0}
 
-  .location-input:focus {
-    border-color: #4285f4;
-    box-shadow: 0 0 0 2px rgba(66,133,244,0.15);
-  }
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:20px;font-size:13px;z-index:99999;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
 
-  .location-input:hover:not(:focus) {
-    border-color: #b8bbbe;
-  }
+/* MARKERS */
+.mkr{width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid rgba(255,255,255,.85);box-shadow:0 3px 12px rgba(0,0,0,.5);position:relative}
+.mkr::after{content:'';position:absolute;top:50%;left:50%;width:10px;height:10px;background:#fff;border-radius:50%;transform:translate(-50%,-50%) rotate(45deg)}
+.mkr.s{background:var(--green)}
+.mkr.e{background:var(--red)}
+.live-dot{width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 0 rgba(59,130,246,.6);animation:pulse 1.5s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,.6)}70%{box-shadow:0 0 0 12px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}
 
-  /* USE MY LOCATION BUTTON */
-  .my-loc-btn {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: #5f6368;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-  }
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
 
-  .my-loc-btn:hover { background: #f1f3f4; }
-  .my-loc-btn svg { width: 20px; height: 20px; }
-
-  /* AUTOCOMPLETE SUGGESTIONS */
-  .suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border: 1px solid #dadce0;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    max-height: 240px;
-    overflow-y: auto;
-    z-index: 999;
-    display: none;
-  }
-
-  .suggestion-item {
-    padding: 10px 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 13px;
-    color: #202124;
-    border-bottom: 1px solid #f1f3f4;
-  }
-
-  .suggestion-item:last-child { border-bottom: none; }
-  .suggestion-item:hover { background: #f8f9fa; }
-
-  .suggestion-item svg {
-    width: 16px;
-    height: 16px;
-    fill: #5f6368;
-    margin-top: 2px;
-    flex-shrink: 0;
-  }
-
-  .suggestion-text {
-    flex: 1;
-    line-height: 1.4;
-  }
-
-  .suggestion-main {
-    font-weight: 500;
-    color: #202124;
-  }
-
-  .suggestion-sub {
-    font-size: 12px;
-    color: #5f6368;
-    margin-top: 2px;
-  }
-
-  /* SWAP BUTTON */
-  .swap-row {
-    display: flex;
-    justify-content: center;
-    margin: -6px 0 6px;
-  }
-
-  .swap-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid #dadce0;
-    background: #fff;
-    color: #5f6368;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-
-  .swap-btn:hover {
-    background: #f1f3f4;
-    color: #4285f4;
-  }
-
-  .swap-btn svg { width: 18px; height: 18px; }
-
-  /* ACTION BUTTONS */
-  .actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 16px;
-  }
-
-  .btn {
-    flex: 1;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-family: inherit;
-    font-weight: 500;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-primary {
-    background: #4285f4;
-    color: #fff;
-  }
-
-  .btn-primary:hover {
-    background: #1a73e8;
-    box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-  }
-
-  .btn-secondary {
-    background: #fff;
-    color: #4285f4;
-    border: 1px solid #dadce0;
-  }
-
-  .btn-secondary:hover {
-    background: #f8f9fa;
-  }
-
-  /* RESULT PANEL */
-  .result-panel {
-    margin-top: 20px;
-    padding: 16px;
-    background: linear-gradient(135deg, #e8f0fe 0%, #f8f9fa 100%);
-    border-radius: 12px;
-    border: 1px solid #d2e3fc;
-    display: none;
-  }
-
-  .result-panel.show { display: block; }
-
-  .result-label {
-    font-size: 12px;
-    color: #5f6368;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .result-row {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-
-  .result-row:last-child { margin-bottom: 0; }
-
-  .result-value {
-    font-size: 28px;
-    font-weight: 600;
-    color: #1a73e8;
-    font-family: 'Google Sans', sans-serif;
-  }
-
-  .result-unit {
-    font-size: 14px;
-    color: #5f6368;
-    font-weight: 500;
-  }
-
-  .result-mode {
-    font-size: 12px;
-    color: #5f6368;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-  }
-
-  /* TRAVEL MODE TOGGLE */
-  .mode-toggle {
-    display: flex;
-    background: #f1f3f4;
-    border-radius: 8px;
-    padding: 4px;
-    margin-bottom: 12px;
-  }
-
-  .mode-btn {
-    flex: 1;
-    padding: 8px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #5f6368;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: all 0.2s;
-  }
-
-  .mode-btn svg { width: 16px; height: 16px; }
-  .mode-btn:hover { color: #202124; }
-
-  .mode-btn.active {
-    background: #fff;
-    color: #1a73e8;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  }
-
-  /* ===== MAP ===== */
-  #map {
-    flex: 1;
-    height: 100vh;
-    z-index: 1;
-  }
-
-  /* Custom marker style */
-  .custom-marker {
-    width: 32px;
-    height: 32px;
-    border-radius: 50% 50% 50% 0;
-    background: #ea4335;
-    transform: rotate(-45deg);
-    border: 3px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .custom-marker.start { background: #34a853; }
-
-  .custom-marker::after {
-    content: '';
-    width: 10px;
-    height: 10px;
-    background: #fff;
-    border-radius: 50%;
-    transform: rotate(45deg);
-  }
-
-  /* LOADING SPINNER */
-  .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #4285f4;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: inline-block;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #323232;
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    pointer-events: none;
-  }
-
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-8px);
-  }
-
-  /* Hide default routing machine UI (we show our own result) */
-  .leaflet-routing-container { display: none !important; }
-
-  /* MOBILE */
-  @media (max-width: 768px) {
-    body { overflow: auto; height: auto; }
-    .app { flex-direction: column; height: auto; }
-    .sidebar { width: 100%; height: auto; }
-    #map { height: 55vh; min-height: 360px; }
-    .search-container { flex: none; }
-  }
+@media(max-width:768px){
+  body{flex-direction:column;overflow:auto;height:auto}
+  .sidebar{width:100%;min-width:unset;height:auto}
+  #map{height:50vh;min-height:320px}
+}
 </style>
 </head>
 <body>
 
-<div class="app">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+    <div>
+      <div class="brand-title">Live Route Tracker</div>
+      <div class="brand-sub">GPS · Auto distance · Zoho sync</div>
+    </div>
+  </div>
 
-    <div class="header">
-      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-      <h1>Distance Calculator</h1>
+  <div class="pane">
+
+    <!-- NAME -->
+    <div>
+      <div class="field-label">Your Name</div>
+      <input type="text" id="person-name" class="name-input" placeholder="Enter your full name…" autocomplete="name"/>
     </div>
 
-    <div class="search-container">
+    <!-- TRACKER -->
+    <div class="tracker-panel">
 
-      <!-- TRAVEL MODE TOGGLE -->
-      <div class="mode-toggle">
-        <button class="mode-btn active" data-mode="driving">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
-          Driving
-        </button>
-        <button class="mode-btn" data-mode="straight">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 11.5l-3-3v2H6v-2l-3 3 3 3v-2h12v2z"/></svg>
-          Straight
-        </button>
-      </div>
-
-      <!-- START LOCATION -->
-      <div class="input-wrapper">
-        <div class="input-icon start"></div>
-        <input type="text" id="start" class="location-input" placeholder="Choose starting point" autocomplete="off" />
-        <button class="my-loc-btn" onclick="useMyLocation('start')" title="Use my current location">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-        </button>
-        <div class="suggestions" id="start-suggestions"></div>
-      </div>
-
-      <!-- SWAP -->
-      <div class="swap-row">
-        <button class="swap-btn" onclick="swapLocations()" title="Swap">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
-        </button>
-      </div>
-
-      <!-- END LOCATION -->
-      <div class="input-wrapper">
-        <div class="input-icon end"></div>
-        <input type="text" id="end" class="location-input" placeholder="Choose destination" autocomplete="off" />
-        <button class="my-loc-btn" onclick="useMyLocation('end')" title="Use my current location">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-        </button>
-        <div class="suggestions" id="end-suggestions"></div>
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="actions">
-        <button class="btn btn-primary" onclick="calculateRoute()">
-          <span id="calc-btn-text">Get Directions</span>
-        </button>
-        <button class="btn btn-secondary" onclick="resetMap()">Reset</button>
-      </div>
-
-      <!-- RESULT -->
-      <div class="result-panel" id="result-panel">
-        <div class="result-label">Total Distance</div>
-        <div class="result-row">
-          <span class="result-value" id="distance-value">0</span>
-          <span class="result-unit">km</span>
+      <div class="status-bar">
+        <div class="s-dot idle" id="s-dot"></div>
+        <div class="s-body">
+          <div class="s-text" id="s-text">Ready to track</div>
+          <div class="s-coords" id="s-coords">Enter your name, then press Start</div>
         </div>
-        <div class="result-row" id="duration-row" style="display:none;">
-          <div>
-            <div class="result-label">Estimated Time</div>
-            <span class="result-value" id="duration-value" style="font-size:20px;">0</span>
-            <span class="result-unit" id="duration-unit">min</span>
-          </div>
+      </div>
+
+      <div class="live-metrics">
+        <div class="lm">
+          <div class="lm-lbl">Distance</div>
+          <div class="lm-val" id="lv-dist">0.00</div>
+          <div class="lm-unit">km</div>
         </div>
-        <div class="result-mode" id="result-mode"></div>
+        <div class="lm">
+          <div class="lm-lbl">Duration</div>
+          <div class="lm-val" id="lv-dur">0:00</div>
+          <div class="lm-unit">elapsed</div>
+        </div>
+        <div class="lm">
+          <div class="lm-lbl">GPS Points</div>
+          <div class="lm-val" id="lv-pts">0</div>
+          <div class="lm-unit">fixes</div>
+        </div>
+      </div>
+
+      <div class="track-actions">
+        <button class="btn-start" id="btn-start" onclick="startTracking()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Start
+        </button>
+        <button class="btn-stop" id="btn-stop" onclick="stopTracking()" disabled>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+          Stop
+        </button>
+        <button class="btn-reset" onclick="resetAll()" title="Reset">
+          <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        </button>
+      </div>
+
+      <div class="path-hint" id="path-hint">
+        <div class="ph-bar"></div>
+        <span>Live path drawing on map…</span>
       </div>
 
     </div>
-  </aside>
 
-  <!-- MAP -->
-  <div id="map"></div>
+    <!-- RESULT CARD (shown after Stop) -->
+    <div class="result-card" id="result-card">
+      <div class="section-hdr">Trip Summary</div>
+      <div class="rc-top">
+        <div class="rc-metric">
+          <div class="rc-label">Distance</div>
+          <div class="rc-value" id="f-dist">—</div>
+          <div class="rc-unit">kilometres</div>
+        </div>
+        <div class="rc-metric">
+          <div class="rc-label">Duration</div>
+          <div class="rc-value" id="f-dur">—</div>
+          <div class="rc-unit" id="f-dur-unit">min</div>
+        </div>
+      </div>
+      <div class="rc-details">
+        <div class="rc-row" id="f-name"></div>
+        <div class="rc-row" id="f-start"></div>
+        <div class="rc-row" id="f-end"></div>
+        <div class="rc-row" id="f-coords" style="font-size:11px;font-family:'DM Mono',monospace"></div>
+      </div>
+      <button class="btn-submit" id="btn-submit" onclick="submitToZoho()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Submit to Zoho Report
+      </button>
+      <div class="submit-ok" id="submit-ok">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        Submitted! Data saved to Zoho report.
+      </div>
+    </div>
+
+  </div>
+</aside>
+
+<div id="map" style="position:relative">
+  <div class="live-banner" id="live-banner">
+    <div class="lb-dot"></div>
+    Live GPS tracking in progress
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ========================================
-// MAP INITIALIZATION
-// ========================================
-var map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
-
-// Google-Maps-style tile layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '© OpenStreetMap contributors'
+// ══════════════════════════════════════════════
+// MAP
+// ══════════════════════════════════════════════
+var map = L.map('map',{zoomControl:false}).setView([13.0827,80.2707],14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19, attribution:'© OpenStreetMap'
 }).addTo(map);
+L.control.zoom({position:'bottomright'}).addTo(map);
 
-L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-// ========================================
+// ══════════════════════════════════════════════
 // STATE
-// ========================================
-var startMarker = null;
-var endMarker = null;
-var routeLine = null;
-var routingControl = null;
+// ══════════════════════════════════════════════
+var watchId=null, isTracking=false;
+var pathPoints=[], totalDist=0;
+var polyline=null, startMarker=null, endMarker=null, liveMarker=null;
+var startLL=null, endLL=null;
+var startAddr='', endAddr='';
+var startTime=null, timerInterval=null;
+var tripData=null;
 
-var startLatLng = null;
-var endLatLng = null;
-var startData = null;
-var endData = null;
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+function toast(msg,dur){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t=setTimeout(function(){t.classList.remove('show');},dur||2500);
+}
 
-var currentMode = 'driving'; // 'driving' or 'straight'
+function setStatus(cls,text,coords){
+  document.getElementById('s-dot').className='s-dot '+cls;
+  document.getElementById('s-text').textContent=text;
+  document.getElementById('s-coords').textContent=coords||'';
+}
 
-// ========================================
-// CUSTOM MARKER ICONS
-// ========================================
-function makeIcon(type) {
+function fmtElapsed(secs){
+  var h=Math.floor(secs/3600),m=Math.floor((secs%3600)/60),s=secs%60;
+  if(h>0) return h+':'+pad(m)+':'+pad(s);
+  return m+':'+pad(s);
+}
+function pad(n){return String(n).padStart(2,'0');}
+
+function fmtMins(secs){
+  var m=Math.round(secs/60);
+  if(m>=60){var h=Math.floor(m/60),r=m%60;return h+'h '+(r>0?r+'m':'');}
+  return m+' min';
+}
+
+function makeIcon(type){
+  if(type==='live'){
+    return L.divIcon({className:'',html:'<div class="live-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]});
+  }
   return L.divIcon({
-    className: '',
-    html: '<div class="custom-marker ' + type + '"></div>',
-    iconSize: [32, 32],
-    iconAnchor: [16, 32]
+    className:'',
+    html:'<div class="mkr '+(type==='start'?'s':'e')+'"></div>',
+    iconSize:[32,32],iconAnchor:[16,32]
   });
 }
 
-// ========================================
-// TOAST
-// ========================================
-function toast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._tid);
-  t._tid = setTimeout(function(){ t.classList.remove('show'); }, 2500);
+// ══════════════════════════════════════════════
+// REVERSE GEOCODE
+// ══════════════════════════════════════════════
+async function revGeo(lat,lng){
+  try{
+    var r=await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&lat='+lat+'&lon='+lng);
+    var d=await r.json();
+    return d.display_name||lat.toFixed(5)+', '+lng.toFixed(5);
+  }catch(e){return lat.toFixed(5)+', '+lng.toFixed(5);}
 }
 
-// ========================================
-// AUTOCOMPLETE — Live suggestions from Nominatim
-// ========================================
-function debounce(fn, wait) {
-  var t;
-  return function() {
-    var ctx = this, args = arguments;
-    clearTimeout(t);
-    t = setTimeout(function(){ fn.apply(ctx, args); }, wait);
+// ══════════════════════════════════════════════
+// START TRACKING
+// ══════════════════════════════════════════════
+function startTracking(){
+  var name=document.getElementById('person-name').value.trim();
+  if(!name){
+    toast('⚠️ Please enter your name first',3000);
+    document.getElementById('person-name').focus();
+    return;
+  }
+  if(!navigator.geolocation){toast('Geolocation not supported');return;}
+
+  // Reset state
+  isTracking=true; pathPoints=[]; totalDist=0;
+  startTime=Date.now(); startLL=endLL=null; startAddr=endAddr=''; tripData=null;
+
+  [polyline,startMarker,endMarker,liveMarker].forEach(function(l){if(l)map.removeLayer(l);});
+  polyline=startMarker=endMarker=liveMarker=null;
+
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('submit-ok').classList.remove('show');
+  document.getElementById('lv-dist').textContent='0.00';
+  document.getElementById('lv-dur').textContent='0:00';
+  document.getElementById('lv-pts').textContent='0';
+  document.getElementById('path-hint').classList.add('show');
+  document.getElementById('live-banner').classList.add('show');
+  document.getElementById('btn-start').disabled=true;
+  document.getElementById('btn-stop').disabled=false;
+  document.getElementById('person-name').disabled=true;
+
+  setStatus('tracking','Acquiring GPS signal…','Move to an open area for best accuracy');
+
+  // Live elapsed timer
+  timerInterval=setInterval(function(){
+    var e=Math.floor((Date.now()-startTime)/1000);
+    document.getElementById('lv-dur').textContent=fmtElapsed(e);
+  },1000);
+
+  watchId=navigator.geolocation.watchPosition(onPos,onGpsErr,
+    {enableHighAccuracy:true,timeout:20000,maximumAge:0});
+}
+
+// ══════════════════════════════════════════════
+// POSITION HANDLER
+// ══════════════════════════════════════════════
+function onPos(pos){
+  var lat=pos.coords.latitude, lng=pos.coords.longitude;
+  var acc=pos.coords.accuracy;
+  var ll=L.latLng(lat,lng);
+
+  // First fix → start marker
+  if(!startLL){
+    startLL=ll;
+    startMarker=L.marker(ll,{icon:makeIcon('start')}).addTo(map);
+    startMarker.bindPopup('<b>Start</b><br>'+lat.toFixed(5)+', '+lng.toFixed(5));
+    map.setView(ll,17);
+    revGeo(lat,lng).then(function(a){startAddr=a;});
+    setStatus('tracking','Tracking… (acc ±'+Math.round(acc)+'m)',lat.toFixed(5)+', '+lng.toFixed(5));
+  }
+
+  // GPS noise filter: ignore points < 5m from last
+  if(pathPoints.length>0){
+    var prev=pathPoints[pathPoints.length-1];
+    var seg=prev.distanceTo(ll);
+    if(seg<5) return;
+    totalDist+=seg;
+  }
+  pathPoints.push(ll);
+
+  // Redraw polyline
+  if(polyline) map.removeLayer(polyline);
+  polyline=L.polyline(pathPoints,{color:'#22c55e',weight:5,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(map);
+
+  // Live dot
+  if(liveMarker) map.removeLayer(liveMarker);
+  liveMarker=L.marker(ll,{icon:makeIcon('live')}).addTo(map);
+
+  // Pan map
+  map.panTo(ll);
+
+  // Update metrics
+  document.getElementById('lv-dist').textContent=(totalDist/1000).toFixed(2);
+  document.getElementById('lv-pts').textContent=pathPoints.length;
+  setStatus('tracking','Tracking… (acc ±'+Math.round(acc)+'m)',lat.toFixed(5)+', '+lng.toFixed(5));
+}
+
+function onGpsErr(err){
+  var msgs=['','Location access denied — allow GPS in browser','Location unavailable','GPS timed out'];
+  toast(msgs[err.code]||'GPS error',4000);
+  setStatus('idle',msgs[err.code]||'GPS error','');
+}
+
+// ══════════════════════════════════════════════
+// STOP TRACKING
+// ══════════════════════════════════════════════
+async function stopTracking(){
+  if(!isTracking) return;
+  isTracking=false;
+
+  if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;}
+  clearInterval(timerInterval);
+
+  document.getElementById('btn-start').disabled=false;
+  document.getElementById('btn-stop').disabled=true;
+  document.getElementById('live-banner').classList.remove('show');
+  document.getElementById('path-hint').classList.remove('show');
+  document.getElementById('person-name').disabled=false;
+
+  if(pathPoints.length<2){
+    setStatus('idle','Trip too short — press Start again','Need at least 2 GPS points');
+    toast('Move more before stopping',3000);
+    return;
+  }
+
+  endLL=pathPoints[pathPoints.length-1];
+
+  // End marker
+  if(endMarker) map.removeLayer(endMarker);
+  endMarker=L.marker(endLL,{icon:makeIcon('end')}).addTo(map);
+  endMarker.bindPopup('<b>End</b><br>'+endLL.lat.toFixed(5)+', '+endLL.lng.toFixed(5));
+
+  if(liveMarker){map.removeLayer(liveMarker);liveMarker=null;}
+  if(polyline) map.fitBounds(polyline.getBounds(),{padding:[50,50]});
+
+  var elSecs=Math.floor((Date.now()-startTime)/1000);
+  var km=(totalDist/1000);
+  var name=document.getElementById('person-name').value.trim();
+
+  setStatus('done','Trip complete · '+km.toFixed(2)+' km','Resolving addresses…');
+  toast('Resolving addresses…',3000);
+
+  // Reverse geocode both ends (async)
+  endAddr=await revGeo(endLL.lat,endLL.lng);
+  if(!startAddr) startAddr=await revGeo(startLL.lat,startLL.lng);
+
+  // Build payload
+  tripData={
+    name:          name,
+    start:         startAddr,
+    end:           endAddr,
+    distance:      km.toFixed(2),
+    duration:      String(Math.round(elSecs/60)),
+    duration_sec:  String(elSecs),
+    mode:          'live_gps',
+    start_lat:     startLL.lat.toFixed(6),
+    start_lng:     startLL.lng.toFixed(6),
+    end_lat:       endLL.lat.toFixed(6),
+    end_lng:       endLL.lng.toFixed(6),
+    gps_points:    String(pathPoints.length),
+    timestamp:     new Date().toISOString()
   };
+
+  // Populate result card
+  document.getElementById('f-dist').textContent=km.toFixed(2);
+  document.getElementById('f-dur').textContent=fmtMins(elSecs);
+  document.getElementById('f-name').innerHTML='👤 <strong>'+name+'</strong>';
+  document.getElementById('f-start').innerHTML='🟢 <strong>Start:</strong> '+startAddr;
+  document.getElementById('f-end').innerHTML='🔴 <strong>End:</strong> '+endAddr;
+  document.getElementById('f-coords').innerHTML=
+    startLL.lat.toFixed(5)+','+startLL.lng.toFixed(5)+' → '+endLL.lat.toFixed(5)+','+endLL.lng.toFixed(5);
+
+  document.getElementById('result-card').classList.add('show');
+  document.getElementById('btn-submit').disabled=false;
+  document.getElementById('btn-submit').innerHTML=
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Submit to Zoho Report';
+
+  setStatus('done','Trip complete · '+km.toFixed(2)+' km','Review below and submit');
+  toast('Trip ended! Review & submit to Zoho.',3000);
 }
 
-async function fetchSuggestions(query) {
-  if (!query || query.length < 3) return [];
-  // Bias toward user's view + India for better local results
-  var center = map.getCenter();
-  var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=6'
-    + '&q=' + encodeURIComponent(query)
-    + '&viewbox=' + (center.lng - 1) + ',' + (center.lat + 1) + ',' + (center.lng + 1) + ',' + (center.lat - 1)
-    + '&bounded=0'
-    + '&countrycodes=in';
-  try {
-    var res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    return await res.json();
-  } catch (e) {
-    return [];
-  }
-}
+// ══════════════════════════════════════════════
+// SUBMIT TO ZOHO
+// ══════════════════════════════════════════════
+function submitToZoho(){
+  if(!tripData){toast('No trip data — complete a trip first');return;}
+  var name=document.getElementById('person-name').value.trim();
+  if(!name){toast('Please enter your name');return;}
+  tripData.name=name; // ensure latest
 
-function renderSuggestions(items, container, inputId) {
-  container.innerHTML = '';
-  if (!items.length) { container.style.display = 'none'; return; }
-
-  items.forEach(function(item) {
-    var div = document.createElement('div');
-    div.className = 'suggestion-item';
-
-    var parts = item.display_name.split(',');
-    var main = parts[0].trim();
-    var sub = parts.slice(1, 4).join(',').trim();
-
-    div.innerHTML =
-      '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' +
-      '<div class="suggestion-text">' +
-        '<div class="suggestion-main">' + main + '</div>' +
-        '<div class="suggestion-sub">' + sub + '</div>' +
-      '</div>';
-
-    div.onclick = function() {
-      document.getElementById(inputId).value = item.display_name;
-      container.style.display = 'none';
-
-      var latlng = L.latLng(parseFloat(item.lat), parseFloat(item.lon));
-      if (inputId === 'start') {
-        startLatLng = latlng;
-        startData = item;
-        placeMarker('start', latlng);
-      } else {
-        endLatLng = latlng;
-        endData = item;
-        placeMarker('end', latlng);
-      }
-
-      // If both selected, auto-calculate
-      if (startLatLng && endLatLng) calculateRoute();
-      else map.setView(latlng, 14);
-    };
-
-    container.appendChild(div);
-  });
-
-  container.style.display = 'block';
-}
-
-function setupAutocomplete(inputId, containerId) {
-  var input = document.getElementById(inputId);
-  var container = document.getElementById(containerId);
-
-  var handler = debounce(async function() {
-    var q = input.value.trim();
-    if (q.length < 3) { container.style.display = 'none'; return; }
-    var items = await fetchSuggestions(q);
-    renderSuggestions(items, container, inputId);
-  }, 350);
-
-  input.addEventListener('input', handler);
-  input.addEventListener('focus', function() {
-    if (container.children.length > 0) container.style.display = 'block';
-  });
-  // Hide on click outside
-  document.addEventListener('click', function(e) {
-    if (e.target !== input && !container.contains(e.target)) {
-      container.style.display = 'none';
-    }
-  });
-  input.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      container.style.display = 'none';
-      calculateRoute();
-    }
-  });
-}
-
-setupAutocomplete('start', 'start-suggestions');
-setupAutocomplete('end', 'end-suggestions');
-
-// ========================================
-// PLACE MARKER
-// ========================================
-function placeMarker(type, latlng) {
-  if (type === 'start') {
-    if (startMarker) map.removeLayer(startMarker);
-    startMarker = L.marker(latlng, { icon: makeIcon('start') }).addTo(map).bindPopup('Start');
-  } else {
-    if (endMarker) map.removeLayer(endMarker);
-    endMarker = L.marker(latlng, { icon: makeIcon('end') }).addTo(map).bindPopup('End');
-  }
-}
-
-// ========================================
-// SEARCH (fallback for direct typed addresses without picking suggestion)
-// ========================================
-async function searchLocation(q) {
-  var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(q);
-  try {
-    var res = await fetch(url);
-    var data = await res.json();
-    return data.length ? data[0] : null;
-  } catch (e) { return null; }
-}
-
-// ========================================
-// USE MY CURRENT LOCATION
-// ========================================
-function useMyLocation(which) {
-  if (!navigator.geolocation) { toast('Geolocation not supported'); return; }
-  toast('Getting your location...');
-
-  navigator.geolocation.getCurrentPosition(async function(pos) {
-    var lat = pos.coords.latitude;
-    var lng = pos.coords.longitude;
-    var latlng = L.latLng(lat, lng);
-
-    // Reverse geocode for a readable name
-    var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng;
-    try {
-      var res = await fetch(url);
-      var data = await res.json();
-      var name = data.display_name || (lat.toFixed(5) + ', ' + lng.toFixed(5));
-
-      document.getElementById(which).value = name;
-      if (which === 'start') {
-        startLatLng = latlng;
-        startData = data;
-        placeMarker('start', latlng);
-      } else {
-        endLatLng = latlng;
-        endData = data;
-        placeMarker('end', latlng);
-      }
-
-      map.setView(latlng, 15);
-      if (startLatLng && endLatLng) calculateRoute();
-    } catch (e) { toast('Could not resolve address'); }
-  }, function(err) {
-    toast('Location access denied');
-  }, { enableHighAccuracy: true, timeout: 10000 });
-}
-
-// ========================================
-// SWAP
-// ========================================
-function swapLocations() {
-  var s = document.getElementById('start');
-  var e = document.getElementById('end');
-  var tmp = s.value; s.value = e.value; e.value = tmp;
-
-  var tLL = startLatLng, tD = startData, tM = startMarker;
-  startLatLng = endLatLng; startData = endData;
-  endLatLng = tLL; endData = tD;
-
-  // Re-render markers cleanly
-  if (startMarker) { map.removeLayer(startMarker); startMarker = null; }
-  if (endMarker) { map.removeLayer(endMarker); endMarker = null; }
-  if (startLatLng) placeMarker('start', startLatLng);
-  if (endLatLng) placeMarker('end', endLatLng);
-
-  if (startLatLng && endLatLng) calculateRoute();
-}
-
-// ========================================
-// CALCULATE ROUTE (real road route OR straight line)
-// ========================================
-async function calculateRoute() {
-  var sVal = document.getElementById('start').value.trim();
-  var eVal = document.getElementById('end').value.trim();
-  if (!sVal || !eVal) { toast('Please enter both locations'); return; }
-
-  var btn = document.getElementById('calc-btn-text');
-  btn.innerHTML = '<span class="spinner"></span>';
-
-  // Resolve start/end if not already
-  if (!startLatLng) {
-    var sR = await searchLocation(sVal);
-    if (!sR) { btn.textContent = 'Get Directions'; toast('Start not found'); return; }
-    startLatLng = L.latLng(parseFloat(sR.lat), parseFloat(sR.lon));
-    startData = sR;
-    document.getElementById('start').value = sR.display_name;
-    placeMarker('start', startLatLng);
-  }
-  if (!endLatLng) {
-    var eR = await searchLocation(eVal);
-    if (!eR) { btn.textContent = 'Get Directions'; toast('End not found'); return; }
-    endLatLng = L.latLng(parseFloat(eR.lat), parseFloat(eR.lon));
-    endData = eR;
-    document.getElementById('end').value = eR.display_name;
-    placeMarker('end', endLatLng);
-  }
-
-  // Clear any previous route
-  if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
-  if (routingControl) { map.removeControl(routingControl); routingControl = null; }
-
-  if (currentMode === 'driving') {
-    await calculateDrivingRoute();
-  } else {
-    calculateStraightLine();
-  }
-
-  btn.textContent = 'Get Directions';
-}
-
-// REAL ROAD-BASED ROUTE via OSRM (public demo server)
-async function calculateDrivingRoute() {
-  var url = 'https://router.project-osrm.org/route/v1/driving/'
-    + startLatLng.lng + ',' + startLatLng.lat + ';'
-    + endLatLng.lng + ',' + endLatLng.lat
-    + '?overview=full&geometries=geojson';
-
-  try {
-    var res = await fetch(url);
-    var data = await res.json();
-
-    if (!data.routes || !data.routes.length) {
-      toast('No driving route found, showing straight line');
-      calculateStraightLine();
-      return;
-    }
-
-    var route = data.routes[0];
-    var coords = route.geometry.coordinates.map(function(c){ return [c[1], c[0]]; });
-
-    routeLine = L.polyline(coords, {
-      color: '#4285f4',
-      weight: 6,
-      opacity: 0.85,
-      lineCap: 'round',
-      lineJoin: 'round'
-    }).addTo(map);
-
-    // Border for that Google Maps "outline" feel
-    var border = L.polyline(coords, {
-      color: '#1a73e8',
-      weight: 9,
-      opacity: 0.3,
-      lineCap: 'round',
-      lineJoin: 'round'
-    }).addTo(map);
-    routeLine._border = border;
-
-    map.fitBounds(routeLine.getBounds(), { padding: [60, 60] });
-
-    var km = route.distance / 1000;
-    var minutes = Math.round(route.duration / 60);
-
-    showResult(km, minutes, 'driving');
-    sendToParent(km, minutes);
-  } catch (e) {
+  try{
+    window.parent.postMessage(tripData,'*');
+    document.getElementById('submit-ok').classList.add('show');
+    document.getElementById('btn-submit').disabled=true;
+    document.getElementById('btn-submit').innerHTML=
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Submitted ✓';
+    toast('Data sent to Zoho report!',3000);
+  }catch(e){
+    toast('Submit failed: '+e.message,4000);
     console.error(e);
-    toast('Routing failed, showing straight line');
-    calculateStraightLine();
   }
 }
 
-function calculateStraightLine() {
-  var km = startLatLng.distanceTo(endLatLng) / 1000;
-
-  routeLine = L.polyline([startLatLng, endLatLng], {
-    color: '#ea4335',
-    weight: 5,
-    opacity: 0.9,
-    dashArray: '10, 8'
-  }).addTo(map);
-
-  map.fitBounds(routeLine.getBounds(), { padding: [60, 60] });
-
-  showResult(km, null, 'straight');
-  sendToParent(km, null);
-}
-
-// ========================================
-// SHOW RESULT
-// ========================================
-function showResult(km, minutes, mode) {
-  var panel = document.getElementById('result-panel');
-  document.getElementById('distance-value').textContent = km.toFixed(2);
-
-  if (minutes !== null) {
-    document.getElementById('duration-row').style.display = 'flex';
-    var hrs = Math.floor(minutes / 60);
-    var mins = minutes % 60;
-    if (hrs > 0) {
-      document.getElementById('duration-value').textContent = hrs + 'h ' + mins;
-      document.getElementById('duration-unit').textContent = 'min';
-    } else {
-      document.getElementById('duration-value').textContent = minutes;
-      document.getElementById('duration-unit').textContent = 'min';
-    }
-  } else {
-    document.getElementById('duration-row').style.display = 'none';
-  }
-
-  var modeText = mode === 'driving'
-    ? '🚗 Via roads (actual driving distance)'
-    : '📏 Straight-line (as the crow flies)';
-  document.getElementById('result-mode').textContent = modeText;
-
-  panel.classList.add('show');
-}
-
-// ========================================
-// SEND DATA TO ZOHO PARENT
-// ========================================
-function sendToParent(km, minutes) {
-  try {
-    window.parent.postMessage({
-      start: document.getElementById('start').value,
-      end: document.getElementById('end').value,
-      distance: km.toFixed(2),
-      duration: minutes !== null ? String(minutes) : '',
-      mode: currentMode
-    }, '*');
-  } catch (e) { console.log('postMessage failed', e); }
-}
-
-// ========================================
-// MAP CLICK — drop start / end pins
-// ========================================
-map.on('click', async function(e) {
-  // Don't trigger on suggestion click
-  var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + e.latlng.lat + '&lon=' + e.latlng.lng;
-  try {
-    var res = await fetch(url);
-    var data = await res.json();
-    var addr = data.display_name || (e.latlng.lat.toFixed(5) + ', ' + e.latlng.lng.toFixed(5));
-
-    if (!startLatLng) {
-      startLatLng = e.latlng;
-      startData = data;
-      placeMarker('start', e.latlng);
-      document.getElementById('start').value = addr;
-    } else if (!endLatLng) {
-      endLatLng = e.latlng;
-      endData = data;
-      placeMarker('end', e.latlng);
-      document.getElementById('end').value = addr;
-      calculateRoute();
-    } else {
-      // Reset cycle - start fresh
-      resetMap();
-      startLatLng = e.latlng;
-      startData = data;
-      placeMarker('start', e.latlng);
-      document.getElementById('start').value = addr;
-    }
-  } catch (err) { console.log(err); }
-});
-
-// ========================================
+// ══════════════════════════════════════════════
 // RESET
-// ========================================
-function resetMap() {
-  if (startMarker) map.removeLayer(startMarker);
-  if (endMarker) map.removeLayer(endMarker);
-  if (routeLine) {
-    if (routeLine._border) map.removeLayer(routeLine._border);
-    map.removeLayer(routeLine);
+// ══════════════════════════════════════════════
+function resetAll(){
+  if(isTracking){
+    navigator.geolocation.clearWatch(watchId);
+    clearInterval(timerInterval);
+    isTracking=false;
   }
-  startMarker = endMarker = routeLine = null;
-  startLatLng = endLatLng = startData = endData = null;
-  document.getElementById('start').value = '';
-  document.getElementById('end').value = '';
-  document.getElementById('result-panel').classList.remove('show');
-  map.setView([13.0827, 80.2707], 12);
+  watchId=null; pathPoints=[]; totalDist=0; startTime=null; tripData=null;
+  startLL=endLL=null; startAddr=endAddr='';
+
+  [polyline,startMarker,endMarker,liveMarker].forEach(function(l){if(l)map.removeLayer(l);});
+  polyline=startMarker=endMarker=liveMarker=null;
+
+  document.getElementById('btn-start').disabled=false;
+  document.getElementById('btn-stop').disabled=true;
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('submit-ok').classList.remove('show');
+  document.getElementById('live-banner').classList.remove('show');
+  document.getElementById('path-hint').classList.remove('show');
+  document.getElementById('person-name').disabled=false;
+  document.getElementById('lv-dist').textContent='0.00';
+  document.getElementById('lv-dur').textContent='0:00';
+  document.getElementById('lv-pts').textContent='0';
+  document.getElementById('btn-submit').disabled=false;
+  document.getElementById('btn-submit').innerHTML=
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Submit to Zoho Report';
+
+  setStatus('idle','Ready to track','Enter your name, then press Start');
+  map.setView([13.0827,80.2707],14);
+  toast('Reset complete');
 }
-
-// ========================================
-// MODE TOGGLE
-// ========================================
-document.querySelectorAll('.mode-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active'); });
-    btn.classList.add('active');
-    currentMode = btn.dataset.mode;
-    if (startLatLng && endLatLng) calculateRoute();
-  });
-});
 </script>
-
 </body>
 </html>
 
+
+      
 
