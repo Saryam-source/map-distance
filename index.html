@@ -1,530 +1,984 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+<meta charset="UTF-8" />
+<title>Distance Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Map Distance Calculator</title>
+<!-- LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <meta charset="utf-8"/>
+<!-- LEAFLET ROUTING MACHINE (for real road-based routes like Google Maps) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
-    <meta name="viewport"
-    content="width=device-width, initial-scale=1.0"/>
+<!-- GOOGLE FONT -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <!-- LEAFLET CSS -->
-    <link rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<style>
+  * { box-sizing: border-box; }
 
-    <!-- LEAFLET JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  body {
+    margin: 0;
+    font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+    background: #f1f3f4;
+    color: #202124;
+    overflow: hidden;
+    height: 100vh;
+  }
 
-    <style>
+  /* ===== LAYOUT ===== */
+  .app {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+  }
 
-        body{
-            margin:0;
-            font-family:Arial,sans-serif;
-            background:#f5f5f5;
-        }
+  /* ===== SIDEBAR (Left panel like Google Maps) ===== */
+  .sidebar {
+    width: 400px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-        #map{
-            height:500px;
-            width:100%;
-        }
+  .header {
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e8eaed;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-        .container{
-            padding:20px;
-            background:white;
-        }
+  .header svg {
+    width: 28px;
+    height: 28px;
+    fill: #4285f4;
+  }
 
-        h2{
-            margin-top:0;
-            color:#333;
-        }
+  .header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+  }
 
-        h3{
-            margin-bottom:8px;
-            color:#444;
-        }
+  /* ===== SEARCH INPUTS ===== */
+  .search-container {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+  }
 
-        .input-group{
-            display:flex;
-            gap:10px;
-            margin-bottom:20px;
-        }
+  .input-wrapper {
+    position: relative;
+    margin-bottom: 12px;
+  }
 
-        input{
-            flex:1;
-            padding:12px;
-            font-size:15px;
-            border:1px solid #ccc;
-            border-radius:8px;
-            outline:none;
-        }
+  .input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 2;
+  }
 
-        input:focus{
-            border-color:#4285f4;
-        }
+  .input-icon.start { background: #34a853; }
+  .input-icon.end { background: #ea4335; }
 
-        button{
-            padding:12px 20px;
-            font-size:15px;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-            background:#4285f4;
-            color:white;
-        }
+  .location-input {
+    width: 100%;
+    padding: 14px 44px 14px 40px;
+    font-size: 14px;
+    font-family: inherit;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    background: #fff;
+    outline: none;
+    transition: all 0.2s;
+  }
 
-        button:hover{
-            background:#2f6fe4;
-        }
+  .location-input:focus {
+    border-color: #4285f4;
+    box-shadow: 0 0 0 2px rgba(66,133,244,0.15);
+  }
 
-        #distance{
-            background:#f0f0f0;
-            font-weight:bold;
-        }
+  .location-input:hover:not(:focus) {
+    border-color: #b8bbbe;
+  }
 
-        .btn-group{
-            display:flex;
-            gap:10px;
-            margin-top:20px;
-        }
+  /* USE MY LOCATION BUTTON */
+  .my-loc-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #5f6368;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
 
-        @media(max-width:768px){
+  .my-loc-btn:hover { background: #f1f3f4; }
+  .my-loc-btn svg { width: 20px; height: 20px; }
 
-            .input-group{
-                flex-direction:column;
-            }
+  /* AUTOCOMPLETE SUGGESTIONS */
+  .suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 999;
+    display: none;
+  }
 
-            .btn-group{
-                flex-direction:column;
-            }
+  .suggestion-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #202124;
+    border-bottom: 1px solid #f1f3f4;
+  }
 
-            button{
-                width:100%;
-            }
-        }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:hover { background: #f8f9fa; }
 
-    </style>
+  .suggestion-item svg {
+    width: 16px;
+    height: 16px;
+    fill: #5f6368;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
 
+  .suggestion-text {
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .suggestion-main {
+    font-weight: 500;
+    color: #202124;
+  }
+
+  .suggestion-sub {
+    font-size: 12px;
+    color: #5f6368;
+    margin-top: 2px;
+  }
+
+  /* SWAP BUTTON */
+  .swap-row {
+    display: flex;
+    justify-content: center;
+    margin: -6px 0 6px;
+  }
+
+  .swap-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #dadce0;
+    background: #fff;
+    color: #5f6368;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .swap-btn:hover {
+    background: #f1f3f4;
+    color: #4285f4;
+  }
+
+  .swap-btn svg { width: 18px; height: 18px; }
+
+  /* ACTION BUTTONS */
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: #4285f4;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #1a73e8;
+    box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+  }
+
+  .btn-secondary {
+    background: #fff;
+    color: #4285f4;
+    border: 1px solid #dadce0;
+  }
+
+  .btn-secondary:hover {
+    background: #f8f9fa;
+  }
+
+  /* RESULT PANEL */
+  .result-panel {
+    margin-top: 20px;
+    padding: 16px;
+    background: linear-gradient(135deg, #e8f0fe 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    border: 1px solid #d2e3fc;
+    display: none;
+  }
+
+  .result-panel.show { display: block; }
+
+  .result-label {
+    font-size: 12px;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .result-row:last-child { margin-bottom: 0; }
+
+  .result-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a73e8;
+    font-family: 'Google Sans', sans-serif;
+  }
+
+  .result-unit {
+    font-size: 14px;
+    color: #5f6368;
+    font-weight: 500;
+  }
+
+  .result-mode {
+    font-size: 12px;
+    color: #5f6368;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  /* TRAVEL MODE TOGGLE */
+  .mode-toggle {
+    display: flex;
+    background: #f1f3f4;
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 12px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #5f6368;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+
+  .mode-btn svg { width: 16px; height: 16px; }
+  .mode-btn:hover { color: #202124; }
+
+  .mode-btn.active {
+    background: #fff;
+    color: #1a73e8;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* ===== MAP ===== */
+  #map {
+    flex: 1;
+    height: 100vh;
+    z-index: 1;
+  }
+
+  /* Custom marker style */
+  .custom-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 50% 50% 50% 0;
+    background: #ea4335;
+    transform: rotate(-45deg);
+    border: 3px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .custom-marker.start { background: #34a853; }
+
+  .custom-marker::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    transform: rotate(45deg);
+  }
+
+  /* LOADING SPINNER */
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #4285f4;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #323232;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-8px);
+  }
+
+  /* Hide default routing machine UI (we show our own result) */
+  .leaflet-routing-container { display: none !important; }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    body { overflow: auto; height: auto; }
+    .app { flex-direction: column; height: auto; }
+    .sidebar { width: 100%; height: auto; }
+    #map { height: 55vh; min-height: 360px; }
+    .search-container { flex: none; }
+  }
+</style>
 </head>
-
 <body>
 
-<div id="map"></div>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
 
-<div class="container">
-
-    <h2>Map Distance Calculator</h2>
-
-    <!-- START -->
-
-    <h3>Start Location</h3>
-
-    <div class="input-group">
-
-        <input
-            type="text"
-            id="start"
-            placeholder="Enter Start Location">
-
+    <div class="header">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      <h1>Distance Calculator</h1>
     </div>
 
-    <!-- END -->
+    <div class="search-container">
 
-    <h3>End Location</h3>
-
-    <div class="input-group">
-
-        <input
-            type="text"
-            id="end"
-            placeholder="Enter End Location">
-
-    </div>
-
-    <!-- DISTANCE -->
-
-    <h3>Distance</h3>
-
-    <input
-        type="text"
-        id="distance"
-        readonly
-        placeholder="Distance will appear here">
-
-    <!-- BUTTONS -->
-
-    <div class="btn-group">
-
-        <button onclick="calculateFromInput()">
-            Calculate Distance
+      <!-- TRAVEL MODE TOGGLE -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="driving">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+          Driving
         </button>
-
-        <button onclick="resetMap()">
-            Reset Map
+        <button class="mode-btn" data-mode="straight">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 11.5l-3-3v2H6v-2l-3 3 3 3v-2h12v2z"/></svg>
+          Straight
         </button>
+      </div>
+
+      <!-- START LOCATION -->
+      <div class="input-wrapper">
+        <div class="input-icon start"></div>
+        <input type="text" id="start" class="location-input" placeholder="Choose starting point" autocomplete="off" />
+        <button class="my-loc-btn" onclick="useMyLocation('start')" title="Use my current location">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <div class="suggestions" id="start-suggestions"></div>
+      </div>
+
+      <!-- SWAP -->
+      <div class="swap-row">
+        <button class="swap-btn" onclick="swapLocations()" title="Swap">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+        </button>
+      </div>
+
+      <!-- END LOCATION -->
+      <div class="input-wrapper">
+        <div class="input-icon end"></div>
+        <input type="text" id="end" class="location-input" placeholder="Choose destination" autocomplete="off" />
+        <button class="my-loc-btn" onclick="useMyLocation('end')" title="Use my current location">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <div class="suggestions" id="end-suggestions"></div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="actions">
+        <button class="btn btn-primary" onclick="calculateRoute()">
+          <span id="calc-btn-text">Get Directions</span>
+        </button>
+        <button class="btn btn-secondary" onclick="resetMap()">Reset</button>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result-panel" id="result-panel">
+        <div class="result-label">Total Distance</div>
+        <div class="result-row">
+          <span class="result-value" id="distance-value">0</span>
+          <span class="result-unit">km</span>
+        </div>
+        <div class="result-row" id="duration-row" style="display:none;">
+          <div>
+            <div class="result-label">Estimated Time</div>
+            <span class="result-value" id="duration-value" style="font-size:20px;">0</span>
+            <span class="result-unit" id="duration-unit">min</span>
+          </div>
+        </div>
+        <div class="result-mode" id="result-mode"></div>
+      </div>
 
     </div>
+  </aside>
 
+  <!-- MAP -->
+  <div id="map"></div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-
-// -----------------------------
+// ========================================
 // MAP INITIALIZATION
-// -----------------------------
+// ========================================
+var map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
 
-var map = L.map('map').setView([13.0827, 80.2707], 11);
-
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    maxZoom:19,
-    attribution:'© OpenStreetMap'
+// Google-Maps-style tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// -----------------------------
-// VARIABLES
-// -----------------------------
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+// ========================================
+// STATE
+// ========================================
 var startMarker = null;
 var endMarker = null;
 var routeLine = null;
+var routingControl = null;
 
 var startLatLng = null;
 var endLatLng = null;
+var startData = null;
+var endData = null;
 
-// -----------------------------
-// SEARCH LOCATION
-// -----------------------------
+var currentMode = 'driving'; // 'driving' or 'straight'
 
-async function searchLocation(location){
-
-    try{
-
-        // MORE POWERFUL SEARCH
-
-        var url =
-        "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q="
-        + encodeURIComponent(location);
-
-        var response = await fetch(url, {
-            headers:{
-                "Accept":"application/json"
-            }
-        });
-
-        var data = await response.json();
-
-        // IF NOT FOUND TRY WITH CHENNAI
-
-        if(data.length === 0){
-
-            url =
-            "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&q="
-            + encodeURIComponent(location + ", Chennai");
-
-            response = await fetch(url);
-
-            data = await response.json();
-        }
-
-        if(data.length === 0){
-            return null;
-        }
-
-        return data[0];
-
-    }catch(error){
-
-        console.log(error);
-        return null;
-    }
+// ========================================
+// CUSTOM MARKER ICONS
+// ========================================
+function makeIcon(type) {
+  return L.divIcon({
+    className: '',
+    html: '<div class="custom-marker ' + type + '"></div>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]
+  });
 }
 
-// -----------------------------
-// CALCULATE FROM INPUT
-// -----------------------------
-
-async function calculateFromInput(){
-
-    var startLocation =
-    document.getElementById("start").value.trim();
-
-    var endLocation =
-    document.getElementById("end").value.trim();
-
-    if(startLocation === "" || endLocation === ""){
-
-        alert("Enter both Start and End Locations");
-        return;
-    }
-
-    // SEARCH START
-
-    var startResult =
-    await searchLocation(startLocation);
-
-    if(!startResult){
-
-        alert("Start Location not found");
-        return;
-    }
-
-    // SEARCH END
-
-    var endResult =
-    await searchLocation(endLocation);
-
-    if(!endResult){
-
-        alert("End Location not found");
-        return;
-    }
-
-    // LAT LNG
-
-    startLatLng = L.latLng(
-        parseFloat(startResult.lat),
-        parseFloat(startResult.lon)
-    );
-
-    endLatLng = L.latLng(
-        parseFloat(endResult.lat),
-        parseFloat(endResult.lon)
-    );
-
-    // REMOVE OLD MARKERS
-
-    if(startMarker){
-        map.removeLayer(startMarker);
-    }
-
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
-
-    if(routeLine){
-        map.removeLayer(routeLine);
-    }
-
-    // ADD START MARKER
-
-    startMarker =
-    L.marker(startLatLng)
-    .addTo(map)
-    .bindPopup("Start Location")
-    .openPopup();
-
-    // ADD END MARKER
-
-    endMarker =
-    L.marker(endLatLng)
-    .addTo(map)
-    .bindPopup("End Location");
-
-    // UPDATE INPUTS
-
-    document.getElementById("start").value =
-    startResult.display_name;
-
-    document.getElementById("end").value =
-    endResult.display_name;
-
-    // CALCULATE DISTANCE
-
-    calculateDistance();
+// ========================================
+// TOAST
+// ========================================
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function(){ t.classList.remove('show'); }, 2500);
 }
 
-// -----------------------------
-// MAP CLICK
-// -----------------------------
+// ========================================
+// AUTOCOMPLETE — Live suggestions from Nominatim
+// ========================================
+function debounce(fn, wait) {
+  var t;
+  return function() {
+    var ctx = this, args = arguments;
+    clearTimeout(t);
+    t = setTimeout(function(){ fn.apply(ctx, args); }, wait);
+  };
+}
 
-map.on('click', async function(e){
+async function fetchSuggestions(query) {
+  if (!query || query.length < 3) return [];
+  // Bias toward user's view + India for better local results
+  var center = map.getCenter();
+  var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=6'
+    + '&q=' + encodeURIComponent(query)
+    + '&viewbox=' + (center.lng - 1) + ',' + (center.lat + 1) + ',' + (center.lng + 1) + ',' + (center.lat - 1)
+    + '&bounded=0'
+    + '&countrycodes=in';
+  try {
+    var res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    return await res.json();
+  } catch (e) {
+    return [];
+  }
+}
 
-    var lat = e.latlng.lat;
-    var lon = e.latlng.lng;
+function renderSuggestions(items, container, inputId) {
+  container.innerHTML = '';
+  if (!items.length) { container.style.display = 'none'; return; }
 
-    try{
+  items.forEach(function(item) {
+    var div = document.createElement('div');
+    div.className = 'suggestion-item';
 
-        var url =
-        "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat="
-        + lat +
-        "&lon=" +
-        lon;
+    var parts = item.display_name.split(',');
+    var main = parts[0].trim();
+    var sub = parts.slice(1, 4).join(',').trim();
 
-        var response = await fetch(url);
+    div.innerHTML =
+      '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' +
+      '<div class="suggestion-text">' +
+        '<div class="suggestion-main">' + main + '</div>' +
+        '<div class="suggestion-sub">' + sub + '</div>' +
+      '</div>';
 
-        var data = await response.json();
+    div.onclick = function() {
+      document.getElementById(inputId).value = item.display_name;
+      container.style.display = 'none';
 
-        var address =
-        data.display_name || lat + "," + lon;
+      var latlng = L.latLng(parseFloat(item.lat), parseFloat(item.lon));
+      if (inputId === 'start') {
+        startLatLng = latlng;
+        startData = item;
+        placeMarker('start', latlng);
+      } else {
+        endLatLng = latlng;
+        endData = item;
+        placeMarker('end', latlng);
+      }
 
-        // START LOCATION
+      // If both selected, auto-calculate
+      if (startLatLng && endLatLng) calculateRoute();
+      else map.setView(latlng, 14);
+    };
 
-        if(!startLatLng){
+    container.appendChild(div);
+  });
 
-            startLatLng = e.latlng;
+  container.style.display = 'block';
+}
 
-            if(startMarker){
-                map.removeLayer(startMarker);
-            }
+function setupAutocomplete(inputId, containerId) {
+  var input = document.getElementById(inputId);
+  var container = document.getElementById(containerId);
 
-            startMarker =
-            L.marker(startLatLng)
-            .addTo(map)
-            .bindPopup("Start Location")
-            .openPopup();
+  var handler = debounce(async function() {
+    var q = input.value.trim();
+    if (q.length < 3) { container.style.display = 'none'; return; }
+    var items = await fetchSuggestions(q);
+    renderSuggestions(items, container, inputId);
+  }, 350);
 
-            document.getElementById("start").value =
-            address;
-        }
+  input.addEventListener('input', handler);
+  input.addEventListener('focus', function() {
+    if (container.children.length > 0) container.style.display = 'block';
+  });
+  // Hide on click outside
+  document.addEventListener('click', function(e) {
+    if (e.target !== input && !container.contains(e.target)) {
+      container.style.display = 'none';
+    }
+  });
+  input.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      container.style.display = 'none';
+      calculateRoute();
+    }
+  });
+}
 
-        // END LOCATION
+setupAutocomplete('start', 'start-suggestions');
+setupAutocomplete('end', 'end-suggestions');
 
-        else if(!endLatLng){
+// ========================================
+// PLACE MARKER
+// ========================================
+function placeMarker(type, latlng) {
+  if (type === 'start') {
+    if (startMarker) map.removeLayer(startMarker);
+    startMarker = L.marker(latlng, { icon: makeIcon('start') }).addTo(map).bindPopup('Start');
+  } else {
+    if (endMarker) map.removeLayer(endMarker);
+    endMarker = L.marker(latlng, { icon: makeIcon('end') }).addTo(map).bindPopup('End');
+  }
+}
 
-            endLatLng = e.latlng;
+// ========================================
+// SEARCH (fallback for direct typed addresses without picking suggestion)
+// ========================================
+async function searchLocation(q) {
+  var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(q);
+  try {
+    var res = await fetch(url);
+    var data = await res.json();
+    return data.length ? data[0] : null;
+  } catch (e) { return null; }
+}
 
-            if(endMarker){
-                map.removeLayer(endMarker);
-            }
+// ========================================
+// USE MY CURRENT LOCATION
+// ========================================
+function useMyLocation(which) {
+  if (!navigator.geolocation) { toast('Geolocation not supported'); return; }
+  toast('Getting your location...');
 
-            endMarker =
-            L.marker(endLatLng)
-            .addTo(map)
-            .bindPopup("End Location")
-            .openPopup();
+  navigator.geolocation.getCurrentPosition(async function(pos) {
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    var latlng = L.latLng(lat, lng);
 
-            document.getElementById("end").value =
-            address;
+    // Reverse geocode for a readable name
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng;
+    try {
+      var res = await fetch(url);
+      var data = await res.json();
+      var name = data.display_name || (lat.toFixed(5) + ', ' + lng.toFixed(5));
 
-            calculateDistance();
-        }
+      document.getElementById(which).value = name;
+      if (which === 'start') {
+        startLatLng = latlng;
+        startData = data;
+        placeMarker('start', latlng);
+      } else {
+        endLatLng = latlng;
+        endData = data;
+        placeMarker('end', latlng);
+      }
 
-        // RESET AUTOMATICALLY
+      map.setView(latlng, 15);
+      if (startLatLng && endLatLng) calculateRoute();
+    } catch (e) { toast('Could not resolve address'); }
+  }, function(err) {
+    toast('Location access denied');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
 
-        else{
+// ========================================
+// SWAP
+// ========================================
+function swapLocations() {
+  var s = document.getElementById('start');
+  var e = document.getElementById('end');
+  var tmp = s.value; s.value = e.value; e.value = tmp;
 
-            resetMap();
+  var tLL = startLatLng, tD = startData, tM = startMarker;
+  startLatLng = endLatLng; startData = endData;
+  endLatLng = tLL; endData = tD;
 
-            startLatLng = e.latlng;
+  // Re-render markers cleanly
+  if (startMarker) { map.removeLayer(startMarker); startMarker = null; }
+  if (endMarker) { map.removeLayer(endMarker); endMarker = null; }
+  if (startLatLng) placeMarker('start', startLatLng);
+  if (endLatLng) placeMarker('end', endLatLng);
 
-            startMarker =
-            L.marker(startLatLng)
-            .addTo(map)
-            .bindPopup("Start Location")
-            .openPopup();
+  if (startLatLng && endLatLng) calculateRoute();
+}
 
-            document.getElementById("start").value =
-            address;
-        }
+// ========================================
+// CALCULATE ROUTE (real road route OR straight line)
+// ========================================
+async function calculateRoute() {
+  var sVal = document.getElementById('start').value.trim();
+  var eVal = document.getElementById('end').value.trim();
+  if (!sVal || !eVal) { toast('Please enter both locations'); return; }
 
-    }catch(error){
+  var btn = document.getElementById('calc-btn-text');
+  btn.innerHTML = '<span class="spinner"></span>';
 
-        console.log(error);
+  // Resolve start/end if not already
+  if (!startLatLng) {
+    var sR = await searchLocation(sVal);
+    if (!sR) { btn.textContent = 'Get Directions'; toast('Start not found'); return; }
+    startLatLng = L.latLng(parseFloat(sR.lat), parseFloat(sR.lon));
+    startData = sR;
+    document.getElementById('start').value = sR.display_name;
+    placeMarker('start', startLatLng);
+  }
+  if (!endLatLng) {
+    var eR = await searchLocation(eVal);
+    if (!eR) { btn.textContent = 'Get Directions'; toast('End not found'); return; }
+    endLatLng = L.latLng(parseFloat(eR.lat), parseFloat(eR.lon));
+    endData = eR;
+    document.getElementById('end').value = eR.display_name;
+    placeMarker('end', endLatLng);
+  }
+
+  // Clear any previous route
+  if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  if (routingControl) { map.removeControl(routingControl); routingControl = null; }
+
+  if (currentMode === 'driving') {
+    await calculateDrivingRoute();
+  } else {
+    calculateStraightLine();
+  }
+
+  btn.textContent = 'Get Directions';
+}
+
+// REAL ROAD-BASED ROUTE via OSRM (public demo server)
+async function calculateDrivingRoute() {
+  var url = 'https://router.project-osrm.org/route/v1/driving/'
+    + startLatLng.lng + ',' + startLatLng.lat + ';'
+    + endLatLng.lng + ',' + endLatLng.lat
+    + '?overview=full&geometries=geojson';
+
+  try {
+    var res = await fetch(url);
+    var data = await res.json();
+
+    if (!data.routes || !data.routes.length) {
+      toast('No driving route found, showing straight line');
+      calculateStraightLine();
+      return;
     }
 
+    var route = data.routes[0];
+    var coords = route.geometry.coordinates.map(function(c){ return [c[1], c[0]]; });
+
+    routeLine = L.polyline(coords, {
+      color: '#4285f4',
+      weight: 6,
+      opacity: 0.85,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+
+    // Border for that Google Maps "outline" feel
+    var border = L.polyline(coords, {
+      color: '#1a73e8',
+      weight: 9,
+      opacity: 0.3,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+    routeLine._border = border;
+
+    map.fitBounds(routeLine.getBounds(), { padding: [60, 60] });
+
+    var km = route.distance / 1000;
+    var minutes = Math.round(route.duration / 60);
+
+    showResult(km, minutes, 'driving');
+    sendToParent(km, minutes);
+  } catch (e) {
+    console.error(e);
+    toast('Routing failed, showing straight line');
+    calculateStraightLine();
+  }
+}
+
+function calculateStraightLine() {
+  var km = startLatLng.distanceTo(endLatLng) / 1000;
+
+  routeLine = L.polyline([startLatLng, endLatLng], {
+    color: '#ea4335',
+    weight: 5,
+    opacity: 0.9,
+    dashArray: '10, 8'
+  }).addTo(map);
+
+  map.fitBounds(routeLine.getBounds(), { padding: [60, 60] });
+
+  showResult(km, null, 'straight');
+  sendToParent(km, null);
+}
+
+// ========================================
+// SHOW RESULT
+// ========================================
+function showResult(km, minutes, mode) {
+  var panel = document.getElementById('result-panel');
+  document.getElementById('distance-value').textContent = km.toFixed(2);
+
+  if (minutes !== null) {
+    document.getElementById('duration-row').style.display = 'flex';
+    var hrs = Math.floor(minutes / 60);
+    var mins = minutes % 60;
+    if (hrs > 0) {
+      document.getElementById('duration-value').textContent = hrs + 'h ' + mins;
+      document.getElementById('duration-unit').textContent = 'min';
+    } else {
+      document.getElementById('duration-value').textContent = minutes;
+      document.getElementById('duration-unit').textContent = 'min';
+    }
+  } else {
+    document.getElementById('duration-row').style.display = 'none';
+  }
+
+  var modeText = mode === 'driving'
+    ? '🚗 Via roads (actual driving distance)'
+    : '📏 Straight-line (as the crow flies)';
+  document.getElementById('result-mode').textContent = modeText;
+
+  panel.classList.add('show');
+}
+
+// ========================================
+// SEND DATA TO ZOHO PARENT
+// ========================================
+function sendToParent(km, minutes) {
+  try {
+    window.parent.postMessage({
+      start: document.getElementById('start').value,
+      end: document.getElementById('end').value,
+      distance: km.toFixed(2),
+      duration: minutes !== null ? String(minutes) : '',
+      mode: currentMode
+    }, '*');
+  } catch (e) { console.log('postMessage failed', e); }
+}
+
+// ========================================
+// MAP CLICK — drop start / end pins
+// ========================================
+map.on('click', async function(e) {
+  // Don't trigger on suggestion click
+  var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + e.latlng.lat + '&lon=' + e.latlng.lng;
+  try {
+    var res = await fetch(url);
+    var data = await res.json();
+    var addr = data.display_name || (e.latlng.lat.toFixed(5) + ', ' + e.latlng.lng.toFixed(5));
+
+    if (!startLatLng) {
+      startLatLng = e.latlng;
+      startData = data;
+      placeMarker('start', e.latlng);
+      document.getElementById('start').value = addr;
+    } else if (!endLatLng) {
+      endLatLng = e.latlng;
+      endData = data;
+      placeMarker('end', e.latlng);
+      document.getElementById('end').value = addr;
+      calculateRoute();
+    } else {
+      // Reset cycle - start fresh
+      resetMap();
+      startLatLng = e.latlng;
+      startData = data;
+      placeMarker('start', e.latlng);
+      document.getElementById('start').value = addr;
+    }
+  } catch (err) { console.log(err); }
 });
 
-// -----------------------------
-// DISTANCE CALCULATION
-// -----------------------------
-
-function calculateDistance(){
-
-    if(startLatLng && endLatLng){
-
-        var distance =
-        startLatLng.distanceTo(endLatLng) / 1000;
-
-        document.getElementById("distance").value =
-        distance.toFixed(2) + " KM";
-
-        // DRAW LINE
-
-        routeLine =
-        L.polyline(
-            [startLatLng, endLatLng],
-            {
-                color:'blue',
-                weight:5
-            }
-        ).addTo(map);
-
-        map.fitBounds(routeLine.getBounds());
-
-        // SEND TO ZOHO
-
-        window.parent.postMessage({
-
-            start:
-            document.getElementById("start").value,
-
-            end:
-            document.getElementById("end").value,
-
-            distance:
-            distance.toFixed(2)
-
-        }, "*");
-    }
+// ========================================
+// RESET
+// ========================================
+function resetMap() {
+  if (startMarker) map.removeLayer(startMarker);
+  if (endMarker) map.removeLayer(endMarker);
+  if (routeLine) {
+    if (routeLine._border) map.removeLayer(routeLine._border);
+    map.removeLayer(routeLine);
+  }
+  startMarker = endMarker = routeLine = null;
+  startLatLng = endLatLng = startData = endData = null;
+  document.getElementById('start').value = '';
+  document.getElementById('end').value = '';
+  document.getElementById('result-panel').classList.remove('show');
+  map.setView([13.0827, 80.2707], 12);
 }
 
-// -----------------------------
-// RESET MAP
-// -----------------------------
-
-function resetMap(){
-
-    if(startMarker){
-        map.removeLayer(startMarker);
-    }
-
-    if(endMarker){
-        map.removeLayer(endMarker);
-    }
-
-    if(routeLine){
-        map.removeLayer(routeLine);
-    }
-
-    startMarker = null;
-    endMarker = null;
-    routeLine = null;
-
-    startLatLng = null;
-    endLatLng = null;
-
-    document.getElementById("start").value = "";
-    document.getElementById("end").value = "";
-    document.getElementById("distance").value = "";
-
-    map.setView([13.0827, 80.2707], 11);
-}
-
-// -----------------------------
-// ENTER KEY SUPPORT
-// -----------------------------
-
-document.getElementById("start")
-.addEventListener("keypress", function(e){
-
-    if(e.key === "Enter"){
-        calculateFromInput();
-    }
+// ========================================
+// MODE TOGGLE
+// ========================================
+document.querySelectorAll('.mode-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+    if (startLatLng && endLatLng) calculateRoute();
+  });
 });
-
-document.getElementById("end")
-.addEventListener("keypress", function(e){
-
-    if(e.key === "Enter"){
-        calculateFromInput();
-    }
-});
-
 </script>
 
 </body>
 </html>
+
 
