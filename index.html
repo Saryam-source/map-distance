@@ -223,10 +223,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 // ZOHO CONFIG — fill these in after getting credentials
 // ═══════════════════════════════════════════════════════
 var ZOHO_CONFIG = {
-  accountOwner:  "sarathynds_saryam",
-  appLinkName:   "Distance-Calculator-App",
+  // Your Zoho account owner's email username (part before @)
+  // e.g. if your login is muni@yourcompany.com → "muni"
+  accountOwner:  "YOUR_ACCOUNT_OWNER_NAME",
+
+  // Your Zoho Creator app link name
+  // Find it: Edit Application → App Properties → Link Name
+  appLinkName:   "distance-calculator-app",
+
+  // Your form link name (NOT display name)
+  // Find it: Edit Form → Form Properties → Link Name
   formLinkName:  "Distance_Calculation_Request",
-  accessToken:   "PASTE_YOUR_TOKEN_HERE",
+
+  // Access token — generate one using the steps in the README
+  // This expires every 1 hour; for production use a proxy function
+  accessToken:   "YOUR_ACCESS_TOKEN_HERE",
+
+  // Zoho domain: "zoho.com" for US, "zoho.in" for India, "zoho.eu" for EU
   domain:        "zoho.in"
 };
 
@@ -447,46 +460,14 @@ async function submitToZoho(){
   if(!name){toast('Please enter your name');return;}
   tripData.name=name;
 
-  document.getElementById('btn-submit').disabled=true;
-  showMsg('loading');
-
-  // Send to Zoho Creator parent page via postMessage
-  try{
-    window.parent.postMessage({
-      name:     tripData.name,
-      start:    tripData.start,
-      end:      tripData.end,
-      distance: tripData.distance,
-      duration: tripData.duration,
-      mode:     tripData.mode
-    }, '*');
-
-    // Wait for save confirmation from Zoho page
-    window.addEventListener('message', function handler(e){
-      if(e.data && typeof e.data.saved !== 'undefined'){
-        window.removeEventListener('message', handler);
-        if(e.data.saved){
-          showMsg('ok');
-          document.getElementById('msg-ok-text').textContent=
-            '✅ Trip saved to Distance_Calculation_Request!';
-          document.getElementById('btn-submit').innerHTML=
-            '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved ✓';
-          toast('Saved successfully!',3000);
-        }else{
-          showMsg('err');
-          document.getElementById('msg-err-text').textContent=
-            'Save failed: '+(e.data.error||'Unknown error');
-          document.getElementById('btn-submit').disabled=false;
-        }
-      }
-    });
-
-  }catch(e){
-    showMsg('err');
-    document.getElementById('msg-err-text').textContent='Error: '+e.message;
-    document.getElementById('btn-submit').disabled=false;
+  if(!ZOHO_CONFIG.accessToken||ZOHO_CONFIG.accessToken==='YOUR_ACCESS_TOKEN_HERE'){
+    // Fallback: just use postMessage and show instructions
+    try{window.parent.postMessage(tripData,'*');}catch(e){}
+    showMsg('ok');
+    document.getElementById('msg-ok-text').textContent='Sent via postMessage. Add access token for direct API save.';
+    document.getElementById('btn-submit').disabled=true;
+    return;
   }
-}
 
   document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
@@ -591,6 +572,7 @@ function resetAll(){
 </script>
 </body>
 </html>
+
 
 
 
