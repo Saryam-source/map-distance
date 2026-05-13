@@ -229,7 +229,7 @@ var ZOHO_CONFIG = {
 
   // Your Zoho Creator app link name
   // Find it: Edit Application → App Properties → Link Name
-  appLinkName:   "distance-calculator-app",
+  appLinkName:   "Distance_Calculator_App",
 
   // Your form link name (NOT display name)
   // Find it: Edit Form → Form Properties → Link Name
@@ -460,14 +460,40 @@ async function submitToZoho(){
   if(!name){toast('Please enter your name');return;}
   tripData.name=name;
 
-  if(!ZOHO_CONFIG.accessToken||ZOHO_CONFIG.accessToken==='YOUR_ACCESS_TOKEN_HERE'){
-    // Fallback: just use postMessage and show instructions
-    try{window.parent.postMessage(tripData,'*');}catch(e){}
+ try{
+
+    window.parent.postMessage({
+
+        name: tripData.name,
+
+        start: tripData.start,
+
+        end: tripData.end,
+
+        distance: tripData.distance,
+
+        duration: tripData.duration
+
+    }, "*");
+
     showMsg('ok');
-    document.getElementById('msg-ok-text').textContent='Sent via postMessage. Add access token for direct API save.';
-    document.getElementById('btn-submit').disabled=true;
-    return;
-  }
+
+    document.getElementById('msg-ok-text').textContent =
+        '✅ Trip sent successfully to Zoho Creator';
+
+    document.getElementById('btn-submit').disabled = true;
+
+}
+catch(e){
+
+    console.log(e);
+
+    showMsg('err');
+
+    document.getElementById('msg-err-text').textContent =
+        '❌ Error sending data';
+
+}
 
   document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
