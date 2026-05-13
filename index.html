@@ -224,7 +224,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 // ═══════════════════════════════════════════════════════
 var ZOHO_CONFIG = {
   accountOwner:  "sarathynds_saryam",
-  appLinkName:   "distance-calculator-app",
+  appLinkName:   "Distance-Calculator-App",
   formLinkName:  "Distance_Calculation_Request",
   accessToken:   "PASTE_YOUR_TOKEN_HERE",
   domain:        "zoho.in"
@@ -447,14 +447,46 @@ async function submitToZoho(){
   if(!name){toast('Please enter your name');return;}
   tripData.name=name;
 
-  if(!ZOHO_CONFIG.accessToken||ZOHO_CONFIG.accessToken==='YOUR_ACCESS_TOKEN_HERE'){
-    // Fallback: just use postMessage and show instructions
-    try{window.parent.postMessage(tripData,'*');}catch(e){}
-    showMsg('ok');
-    document.getElementById('msg-ok-text').textContent='Sent via postMessage. Add access token for direct API save.';
-    document.getElementById('btn-submit').disabled=true;
-    return;
+  document.getElementById('btn-submit').disabled=true;
+  showMsg('loading');
+
+  // Send to Zoho Creator parent page via postMessage
+  try{
+    window.parent.postMessage({
+      name:     tripData.name,
+      start:    tripData.start,
+      end:      tripData.end,
+      distance: tripData.distance,
+      duration: tripData.duration,
+      mode:     tripData.mode
+    }, '*');
+
+    // Wait for save confirmation from Zoho page
+    window.addEventListener('message', function handler(e){
+      if(e.data && typeof e.data.saved !== 'undefined'){
+        window.removeEventListener('message', handler);
+        if(e.data.saved){
+          showMsg('ok');
+          document.getElementById('msg-ok-text').textContent=
+            '✅ Trip saved to Distance_Calculation_Request!';
+          document.getElementById('btn-submit').innerHTML=
+            '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved ✓';
+          toast('Saved successfully!',3000);
+        }else{
+          showMsg('err');
+          document.getElementById('msg-err-text').textContent=
+            'Save failed: '+(e.data.error||'Unknown error');
+          document.getElementById('btn-submit').disabled=false;
+        }
+      }
+    });
+
+  }catch(e){
+    showMsg('err');
+    document.getElementById('msg-err-text').textContent='Error: '+e.message;
+    document.getElementById('btn-submit').disabled=false;
   }
+}
 
   document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
