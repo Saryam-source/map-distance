@@ -222,26 +222,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 // ═══════════════════════════════════════════════════════
 // ZOHO CONFIG — fill these in after getting credentials
 // ═══════════════════════════════════════════════════════
-var ZOHO_CONFIG = {
-  // Your Zoho account owner's email username (part before @)
-  // e.g. if your login is muni@yourcompany.com → "muni"
-  accountOwner:  "YOUR_ACCOUNT_OWNER_NAME",
-
-  // Your Zoho Creator app link name
-  // Find it: Edit Application → App Properties → Link Name
-  appLinkName:   "distance-calculator-app",
-
-  // Your form link name (NOT display name)
-  // Find it: Edit Form → Form Properties → Link Name
-  formLinkName:  "Distance_Calculation_Request",
-
-  // Access token — generate one using the steps in the README
-  // This expires every 1 hour; for production use a proxy function
-  accessToken:   "YOUR_ACCESS_TOKEN_HERE",
-
-  // Zoho domain: "zoho.com" for US, "zoho.in" for India, "zoho.eu" for EU
-  domain:        "zoho.in"
-};
+// ── PASTE YOUR ZOHO FLOW WEBHOOK URL BELOW ──
+var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
 
 // ═══════════════════════════════════════════════════════
 // MAP
@@ -460,82 +442,49 @@ async function submitToZoho(){
   if(!name){toast('Please enter your name');return;}
   tripData.name=name;
 
-  if(!ZOHO_CONFIG.accessToken||ZOHO_CONFIG.accessToken==='YOUR_ACCESS_TOKEN_HERE'){
-    // Fallback: just use postMessage and show instructions
-    try{window.parent.postMessage(tripData,'*');}catch(e){}
-    showMsg('ok');
-    document.getElementById('msg-ok-text').textContent='Sent via postMessage. Add access token for direct API save.';
-    document.getElementById('btn-submit').disabled=true;
+  if(!ZOHO_WEBHOOK_URL||ZOHO_WEBHOOK_URL==='YOUR_ZOHO_FLOW_WEBHOOK_URL_HERE'){
+    toast('⚠️ Please set your Zoho Flow webhook URL in the code');
     return;
   }
 
   document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
 
-  // Build the record payload matching your form's API field names exactly
-  var recordPayload={
-    "data":{
-      "Name":{
-        "first_name": tripData.name,
-        "last_name":  ""
-      },
-      "Start_Location":  tripData.start,
-      "End_Location":    tripData.end,
-      "Distance_in_KM":  tripData.distance
-    }
-  };
-
-  // Add optional fields (only if they exist in your form)
-  var optional={
-    "Duration_in_Min":  tripData.duration,
-    "Travel_Mode":      tripData.mode,
-    "Start_Latitude":   tripData.start_lat,
-    "Start_Longitude":  tripData.start_lng,
-    "End_Latitude":     tripData.end_lat,
-    "End_Longitude":    tripData.end_lng,
-    "GPS_Points":       tripData.gps_points,
-    "Trip_Timestamp":   tripData.timestamp
-  };
-  for(var k in optional){
-    if(optional[k]) recordPayload.data[k]=optional[k];
-  }
-
-  var url='https://creator.'+ZOHO_CONFIG.domain+'/api/v2/'
-    +ZOHO_CONFIG.accountOwner+'/'
-    +ZOHO_CONFIG.appLinkName+'/form/'
-    +ZOHO_CONFIG.formLinkName;
-
   try{
-    var res=await fetch(url,{
+    await fetch(ZOHO_WEBHOOK_URL,{
       method:'POST',
-      headers:{
-        'Authorization':'Zoho-oauthtoken '+ZOHO_CONFIG.accessToken,
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify(recordPayload)
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name:     tripData.name,
+        start:    tripData.start,
+        end:      tripData.end,
+        distance: tripData.distance,
+        duration: tripData.duration,
+        mode:     tripData.mode      || 'live_gps',
+        start_lat:  tripData.start_lat  || '',
+        start_lng:  tripData.start_lng  || '',
+        end_lat:    tripData.end_lat    || '',
+        end_lng:    tripData.end_lng    || '',
+        gps_points: tripData.gps_points || '',
+        timestamp:  tripData.timestamp  || ''
+      })
     });
 
-    var json=await res.json();
-    console.log('Zoho API response:',json);
+    // Zoho Flow webhooks return 200 on success
+    showMsg('ok');
+    document.getElementById('msg-ok-text').textContent=
+      '✅ Trip saved! Check your Distance_Calculation_Request_Report in Zoho Creator.';
+    document.getElementById('btn-submit').innerHTML=
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved to Zoho ✓';
+    toast('Saved to Zoho report!',3000);
 
-    if(json.code===3000){
-      showMsg('ok');
-      document.getElementById('msg-ok-text').textContent=
-        '✅ Saved! Record ID: '+(json.data&&json.data.ID?json.data.ID:'—')+'. Check your Distance_Calculation_Request_Report.';
-      document.getElementById('btn-submit').innerHTML=
-        '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved to Zoho ✓';
-      toast('Saved to Zoho report!',3000);
-    } else {
-      showMsg('err');
-      document.getElementById('msg-err-text').textContent=
-        'Zoho error '+(json.code||res.status)+': '+(json.message||JSON.stringify(json));
-      document.getElementById('btn-submit').disabled=false;
-    }
+    // Also notify parent iframe as backup
+    try{window.parent.postMessage(tripData,'*');}catch(e){}
 
   }catch(e){
-    console.error('Zoho API fetch error:',e);
+    console.error('Webhook error:',e);
     showMsg('err');
-    document.getElementById('msg-err-text').textContent='Network error: '+e.message+'. Check CORS or token.';
+    document.getElementById('msg-err-text').textContent='Error: '+e.message;
     document.getElementById('btn-submit').disabled=false;
   }
 }
@@ -572,6 +521,7 @@ function resetAll(){
 </script>
 </body>
 </html>
+
 
 
 
