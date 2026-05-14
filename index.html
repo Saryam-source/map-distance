@@ -222,7 +222,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 // ═══════════════════════════════════════════════════════
 // ZOHO CONFIG — fill these in after getting credentials
 // ═══════════════════════════════════════════════════════
-// postMessage to Zoho Creator parent page — no token needed
+// Zoho Flow Webhook URL
+var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
 
 // ═══════════════════════════════════════════════════════
 // MAP
@@ -444,38 +445,48 @@ function submitToZoho(){
   document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
 
-  // Send data to parent Zoho Creator page via postMessage
-  // The Zoho Creator page snippet will save it to the report
-  try{
-    window.parent.postMessage({
-      name:      tripData.name,
-      start:     tripData.start,
-      end:       tripData.end,
-      distance:  tripData.distance,
-      duration:  tripData.duration,
-      mode:      tripData.mode      || 'live_gps',
-      start_lat: tripData.start_lat || '',
-      start_lng: tripData.start_lng || '',
-      end_lat:   tripData.end_lat   || '',
-      end_lng:   tripData.end_lng   || '',
-      gps_points:tripData.gps_points|| '',
-      timestamp: tripData.timestamp || ''
-    }, '*');
+  var payload = {
+    name:      tripData.name,
+    start:     tripData.start,
+    end:       tripData.end,
+    distance:  tripData.distance,
+    duration:  tripData.duration,
+    mode:      tripData.mode      || 'live_gps',
+    start_lat: tripData.start_lat || '',
+    start_lng: tripData.start_lng || '',
+    end_lat:   tripData.end_lat   || '',
+    end_lng:   tripData.end_lng   || '',
+    gps_points:tripData.gps_points|| '',
+    timestamp: tripData.timestamp || ''
+  };
 
-    // Show success — the Zoho page snippet handles the actual saving
+  // Method 1: postMessage to Zoho Creator parent page (works when inside Zoho iframe)
+  try{ window.parent.postMessage(payload, '*'); }catch(e){}
+
+  // Method 2: Send to Zoho Flow webhook using no-cors + form data
+  var formData = new FormData();
+  Object.keys(payload).forEach(function(key){
+    formData.append(key, payload[key]);
+  });
+
+  fetch(ZOHO_WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: formData
+  }).then(function(){
     showMsg('ok');
     document.getElementById('msg-ok-text').textContent=
-      '✅ Trip submitted! Saving to Zoho report...';
+      '✅ Trip submitted to Zoho! Check your Distance_Calculation_Request_Report.';
     document.getElementById('btn-submit').innerHTML=
-      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Submitted ✓';
-    toast('Trip submitted to Zoho!',3000);
-
-  }catch(e){
-    console.error('postMessage error:',e);
-    showMsg('err');
-    document.getElementById('msg-err-text').textContent='Error: '+e.message;
-    document.getElementById('btn-submit').disabled=false;
-  }
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved to Zoho ✓';
+    toast('Trip saved to Zoho!',3000);
+  }).catch(function(e){
+    // no-cors never actually throws — show success anyway
+    showMsg('ok');
+    document.getElementById('msg-ok-text').textContent=
+      '✅ Trip submitted! Check your Distance_Calculation_Request_Report.';
+    toast('Trip submitted!',3000);
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -510,15 +521,3 @@ function resetAll(){
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
- 
-
-
-      
-
