@@ -229,7 +229,7 @@ var ZOHO_CONFIG = {
 
   // Your Zoho Creator app link name
   // Find it: Edit Application → App Properties → Link Name
-  appLinkName:   "Distance_Calculator_App",
+  appLinkName:   "distance-calculator-app",
 
   // Your form link name (NOT display name)
   // Find it: Edit Form → Form Properties → Link Name
@@ -460,40 +460,14 @@ async function submitToZoho(){
   if(!name){toast('Please enter your name');return;}
   tripData.name=name;
 
- try{
-
-    window.parent.postMessage({
-
-        name: tripData.name,
-
-        start: tripData.start,
-
-        end: tripData.end,
-
-        distance: tripData.distance,
-
-        duration: tripData.duration
-
-    }, "*");
-
+  if(!ZOHO_CONFIG.accessToken||ZOHO_CONFIG.accessToken==='YOUR_ACCESS_TOKEN_HERE'){
+    // Fallback: just use postMessage and show instructions
+    try{window.parent.postMessage(tripData,'*');}catch(e){}
     showMsg('ok');
-
-    document.getElementById('msg-ok-text').textContent =
-        '✅ Trip sent successfully to Zoho Creator';
-
-    document.getElementById('btn-submit').disabled = true;
-
-}
-catch(e){
-
-    console.log(e);
-
-    showMsg('err');
-
-    document.getElementById('msg-err-text').textContent =
-        '❌ Error sending data';
-
-}
+    document.getElementById('msg-ok-text').textContent='Sent via postMessage. Add access token for direct API save.';
+    document.getElementById('btn-submit').disabled=true;
+    return;
+  }
 
   document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
@@ -502,12 +476,12 @@ catch(e){
   var recordPayload={
     "data":{
       "Name":{
-        "first_name": tripData.YourName,
+        "first_name": tripData.name,
         "last_name":  ""
       },
-      "Start_Location":  tripData.Start,
-      "End_Location":    tripData.End,
-      "Distance_in_KM":  tripData.DISTANCE
+      "Start_Location":  tripData.start,
+      "End_Location":    tripData.end,
+      "Distance_in_KM":  tripData.distance
     }
   };
 
@@ -598,6 +572,7 @@ function resetAll(){
 </script>
 </body>
 </html>
+
 
 
 
