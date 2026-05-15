@@ -460,19 +460,14 @@ function submitToZoho(){
     timestamp: tripData.timestamp || ''
   };
 
-  // Method 1: postMessage to Zoho Creator parent page (works when inside Zoho iframe)
-  try{ window.parent.postMessage(payload, '*'); }catch(e){}
+  // Send to Zoho Flow webhook only
+  var params = new URLSearchParams();
+  Object.keys(payload).forEach(function(k){ params.append(k, String(payload[k])); });
+  var urlWithParams = ZOHO_WEBHOOK_URL + '&' + params.toString();
 
-  // Method 2: Send to Zoho Flow webhook using no-cors + form data
-  var formData = new FormData();
-  Object.keys(payload).forEach(function(key){
-    formData.append(key, payload[key]);
-  });
-
-  fetch(ZOHO_WEBHOOK_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: formData
+  fetch(urlWithParams, {
+    method: 'GET',
+    mode: 'no-cors'
   }).then(function(){
     showMsg('ok');
     document.getElementById('msg-ok-text').textContent=
@@ -481,7 +476,6 @@ function submitToZoho(){
       '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved to Zoho ✓';
     toast('Trip saved to Zoho!',3000);
   }).catch(function(e){
-    // no-cors never actually throws — show success anyway
     showMsg('ok');
     document.getElementById('msg-ok-text').textContent=
       '✅ Trip submitted! Check your Distance_Calculation_Request_Report.';
@@ -521,3 +515,4 @@ function resetAll(){
 </script>
 </body>
 </html>
+
