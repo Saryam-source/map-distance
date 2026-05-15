@@ -429,8 +429,6 @@ async function stopTracking(){
   setStatus('done','Trip complete · '+km.toFixed(2)+' km','Review below and submit');
   toast('Trip ended! Submit to save.',3000);
 
-  // Also notify parent iframe (Zoho page) — kept as fallback
-  try{ window.parent.postMessage(tripData,'*'); }catch(e){}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -515,4 +513,5 @@ function resetAll(){
 </script>
 </body>
 </html>
+
 
