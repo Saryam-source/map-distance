@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -434,7 +435,7 @@ async function stopTracking(){
     distance:     km.toFixed(2),
     duration:     String(Math.round(elSecs/60)),
     duration_sec: String(elSecs),
-    mode:         'live_gps',
+    mode:         selectedVehicle,
     start_lat:    startLL.lat.toFixed(6),
     start_lng:    startLL.lng.toFixed(6),
     end_lat:      endLL.lat.toFixed(6),
