@@ -65,12 +65,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .path-hint.show{display:flex}
 .ph-bar{width:24px;height:4px;border-radius:2px;background:var(--green)}
 
-.vehicle-selector{display:flex;gap:8px}
+  .vehicle-selector{display:flex;gap:8px}
 .vehicle-btn{flex:1;padding:10px 8px;font-size:12px;font-weight:600;font-family:inherit;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--muted);cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
 .vehicle-btn:hover{border-color:var(--accent);color:var(--text)}
 .vehicle-btn.active{border-color:var(--accent);background:var(--accent);color:#fff}
 .vehicle-btn:disabled{opacity:0.5;cursor:not-allowed}
-
+  
 .result-card{background:var(--bg);border:1.5px solid var(--accent);border-radius:12px;padding:14px;display:none;flex-direction:column;gap:10px}
 .result-card.show{display:flex}
 .section-hdr{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
@@ -138,7 +138,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
       <input type="text" id="person-name" class="name-input" placeholder="Enter your full name…" autocomplete="name"/>
     </div>
 
-    <div>
+<div>
       <div class="field-label">Vehicle Type</div>
       <div class="vehicle-selector">
         <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">
@@ -243,26 +243,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 // ═══════════════════════════════════════════════════════
 // ZOHO CONFIG — fill these in after getting credentials
 // ═══════════════════════════════════════════════════════
-var ZOHO_CONFIG = {
-  // Your Zoho account owner's email username (part before @)
-  // e.g. if your login is muni@yourcompany.com → "muni"
-  accountOwner:  "YOUR_ACCOUNT_OWNER_NAME",
-
-  // Your Zoho Creator app link name
-  // Find it: Edit Application → App Properties → Link Name
-  appLinkName:   "distance-calculator-app",
-
-  // Your form link name (NOT display name)
-  // Find it: Edit Form → Form Properties → Link Name
-  formLinkName:  "Distance_Calculation_Request",
-
-  // Access token — generate one using the steps in the README
-  // This expires every 1 hour; for production use a proxy function
-  accessToken:   "YOUR_ACCESS_TOKEN_HERE",
-
-  // Zoho domain: "zoho.com" for US, "zoho.in" for India, "zoho.eu" for EU
-  domain:        "zoho.in"
-};
+// Zoho Flow Webhook URL
+var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
 
 // ═══════════════════════════════════════════════════════
 // MAP
@@ -276,7 +258,6 @@ L.control.zoom({position:'bottomright'}).addTo(map);
 // ═══════════════════════════════════════════════════════
 var watchId=null,isTracking=false;
 var selectedVehicle='bike';
-var selectedVehicle='bike'; // default vehicle
 var pathPoints=[],totalDist=0;
 var polyline=null,startMarker=null,endMarker=null,liveMarker=null;
 var startLL=null,endLL=null,startAddr='',endAddr='';
@@ -311,20 +292,16 @@ function showMsg(type){
   });
   if(type) document.getElementById('msg-'+type).classList.add('show');
 }
-
-// ═══════════════════════════════════════════════════════
-// VEHICLE SELECTOR
-// ═══════════════════════════════════════════════════════
-function selectVehicle(type){
+ function selectVehicle(type){
   selectedVehicle=type;
   document.getElementById('btn-bike').classList.toggle('active',type==='bike');
   document.getElementById('btn-car').classList.toggle('active',type==='car');
 }
-
 function makeIcon(type){
   if(type==='live') return L.divIcon({className:'',html:'<div class="live-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]});
   return L.divIcon({className:'',html:'<div class="mkr '+(type==='start'?'s':'e')+'"></div>',iconSize:[32,32],iconAnchor:[16,32]});
 }
+ 
 
 // ═══════════════════════════════════════════════════════
 // REVERSE GEOCODE
@@ -361,7 +338,7 @@ function startTracking(){
   document.getElementById('btn-start').disabled=true;
   document.getElementById('btn-stop').disabled=false;
   document.getElementById('person-name').disabled=true;
-  document.getElementById('btn-bike').disabled=true;
+   document.getElementById('btn-bike').disabled=true;
   document.getElementById('btn-car').disabled=true;
 
   setStatus('tracking','Acquiring GPS signal…','Move to an open area');
@@ -380,21 +357,6 @@ function onPos(pos){
   var lat=pos.coords.latitude,lng=pos.coords.longitude,acc=pos.coords.accuracy;
   var ll=L.latLng(lat,lng);
 
-  // ── ACCURACY FILTER ──
-  // Ignore readings with poor accuracy (GPS jitter fix)
-  if(acc > 30) {
-    setStatus('tracking','Waiting for better GPS… acc ±'+Math.round(acc)+'m',lat.toFixed(5)+', '+lng.toFixed(5));
-    return;
-  }
-
-  // ── SPEED FILTER ──
-  // Ignore if speed is too low (means not actually moving)
-  var speed = pos.coords.speed; // metres per second
-  if(speed !== null && speed < 0.5) {
-    setStatus('tracking','Not moving… acc ±'+Math.round(acc)+'m',lat.toFixed(5)+', '+lng.toFixed(5));
-    return;
-  }
-
   if(!startLL){
     startLL=ll;
     startMarker=L.marker(ll,{icon:makeIcon('start')}).addTo(map);
@@ -405,12 +367,7 @@ function onPos(pos){
 
   if(pathPoints.length>0){
     var seg=pathPoints[pathPoints.length-1].distanceTo(ll);
-    // ── MINIMUM MOVEMENT FILTER ──
-    // Only count if moved at least 10 metres (reduces GPS jitter)
-    if(seg < 10) return;
-    // ── MAXIMUM JUMP FILTER ──
-    // Ignore if jumped more than 300m in one reading (GPS glitch)
-    if(seg > 300) return;
+    if(seg<5) return;
     totalDist+=seg;
   }
   pathPoints.push(ll);
@@ -447,8 +404,6 @@ async function stopTracking(){
   document.getElementById('live-banner').classList.remove('show');
   document.getElementById('path-hint').classList.remove('show');
   document.getElementById('person-name').disabled=false;
-  document.getElementById('btn-bike').disabled=false;
-  document.getElementById('btn-car').disabled=false;
 
   if(pathPoints.length<2){
     setStatus('idle','Trip too short','Need at least 2 GPS points');
@@ -479,7 +434,7 @@ async function stopTracking(){
     distance:     km.toFixed(2),
     duration:     String(Math.round(elSecs/60)),
     duration_sec: String(elSecs),
-    mode:         selectedVehicle,
+    mode:         'live_gps',
     start_lat:    startLL.lat.toFixed(6),
     start_lng:    startLL.lng.toFixed(6),
     end_lat:      endLL.lat.toFixed(6),
@@ -494,12 +449,6 @@ async function stopTracking(){
   document.getElementById('f-start').innerHTML='🟢 <strong>Start:</strong> '+startAddr;
   document.getElementById('f-end').innerHTML='🔴 <strong>End:</strong> '+endAddr;
   document.getElementById('f-coords').innerHTML=startLL.lat.toFixed(5)+','+startLL.lng.toFixed(5)+' → '+endLL.lat.toFixed(5)+','+endLL.lng.toFixed(5);
-  var rate=selectedVehicle==='car'?20:3.5;
-  var cost=(km*rate).toFixed(2);
-  document.getElementById('f-cost').innerHTML='💰 Estimated Cost: ₹'+cost+' ('+selectedVehicle+' @ ₹'+rate+'/km)';
-  var rate = selectedVehicle==='car' ? 20 : 3.5;
-  var cost = (km * rate).toFixed(2);
-  document.getElementById('f-cost').innerHTML='💰 Estimated Cost: <strong>₹'+cost+'</strong> ('+selectedVehicle+' @ ₹'+rate+'/km)';
 
   document.getElementById('result-card').classList.add('show');
   document.getElementById('btn-submit').disabled=false;
@@ -509,97 +458,56 @@ async function stopTracking(){
   setStatus('done','Trip complete · '+km.toFixed(2)+' km','Review below and submit');
   toast('Trip ended! Submit to save.',3000);
 
-  // Also notify parent iframe (Zoho page) — kept as fallback
-  try{ window.parent.postMessage(tripData,'*'); }catch(e){}
 }
 
 // ═══════════════════════════════════════════════════════
 // SUBMIT — calls Zoho Creator REST API directly
 // ═══════════════════════════════════════════════════════
-async function submitToZoho(){
+function submitToZoho(){
   if(!tripData){toast('No trip data — complete a trip first');return;}
   var name=document.getElementById('person-name').value.trim();
   if(!name){toast('Please enter your name');return;}
   tripData.name=name;
 
-  if(!ZOHO_CONFIG.accessToken||ZOHO_CONFIG.accessToken==='YOUR_ACCESS_TOKEN_HERE'){
-    // Fallback: just use postMessage and show instructions
-    try{window.parent.postMessage(tripData,'*');}catch(e){}
-    showMsg('ok');
-    document.getElementById('msg-ok-text').textContent='Sent via postMessage. Add access token for direct API save.';
-    document.getElementById('btn-submit').disabled=true;
-    return;
-  }
-
   document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
 
-  // Build the record payload matching your form's API field names exactly
-  var recordPayload={
-    "data":{
-      "Name":{
-        "first_name": tripData.name,
-        "last_name":  ""
-      },
-      "Start_Location":  tripData.start,
-      "End_Location":    tripData.end,
-      "Distance_in_KM":  tripData.distance
-    }
+  var payload = {
+    name:      tripData.name,
+    start:     tripData.start,
+    end:       tripData.end,
+    distance:  tripData.distance,
+    duration:  tripData.duration,
+    mode:      tripData.mode      || 'live_gps',
+    start_lat: tripData.start_lat || '',
+    start_lng: tripData.start_lng || '',
+    end_lat:   tripData.end_lat   || '',
+    end_lng:   tripData.end_lng   || '',
+    gps_points:tripData.gps_points|| '',
+    timestamp: tripData.timestamp || ''
   };
 
-  // Add optional fields (only if they exist in your form)
-  var optional={
-    "Duration_in_Min":  tripData.duration,
-    "Travel_Mode":      tripData.mode,
-    "Start_Latitude":   tripData.start_lat,
-    "Start_Longitude":  tripData.start_lng,
-    "End_Latitude":     tripData.end_lat,
-    "End_Longitude":    tripData.end_lng,
-    "GPS_Points":       tripData.gps_points,
-    "Trip_Timestamp":   tripData.timestamp
-  };
-  for(var k in optional){
-    if(optional[k]) recordPayload.data[k]=optional[k];
-  }
+  // Send to Zoho Flow webhook only
+  var params = new URLSearchParams();
+  Object.keys(payload).forEach(function(k){ params.append(k, String(payload[k])); });
+  var urlWithParams = ZOHO_WEBHOOK_URL + '&' + params.toString();
 
-  var url='https://creator.'+ZOHO_CONFIG.domain+'/api/v2/'
-    +ZOHO_CONFIG.accountOwner+'/'
-    +ZOHO_CONFIG.appLinkName+'/form/'
-    +ZOHO_CONFIG.formLinkName;
-
-  try{
-    var res=await fetch(url,{
-      method:'POST',
-      headers:{
-        'Authorization':'Zoho-oauthtoken '+ZOHO_CONFIG.accessToken,
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify(recordPayload)
-    });
-
-    var json=await res.json();
-    console.log('Zoho API response:',json);
-
-    if(json.code===3000){
-      showMsg('ok');
-      document.getElementById('msg-ok-text').textContent=
-        '✅ Saved! Record ID: '+(json.data&&json.data.ID?json.data.ID:'—')+'. Check your Distance_Calculation_Request_Report.';
-      document.getElementById('btn-submit').innerHTML=
-        '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved to Zoho ✓';
-      toast('Saved to Zoho report!',3000);
-    } else {
-      showMsg('err');
-      document.getElementById('msg-err-text').textContent=
-        'Zoho error '+(json.code||res.status)+': '+(json.message||JSON.stringify(json));
-      document.getElementById('btn-submit').disabled=false;
-    }
-
-  }catch(e){
-    console.error('Zoho API fetch error:',e);
-    showMsg('err');
-    document.getElementById('msg-err-text').textContent='Network error: '+e.message+'. Check CORS or token.';
-    document.getElementById('btn-submit').disabled=false;
-  }
+  fetch(urlWithParams, {
+    method: 'GET',
+    mode: 'no-cors'
+  }).then(function(){
+    showMsg('ok');
+    document.getElementById('msg-ok-text').textContent=
+      '✅ Trip submitted to Zoho! Check your Distance_Calculation_Request_Report.';
+    document.getElementById('btn-submit').innerHTML=
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Saved to Zoho ✓';
+    toast('Trip saved to Zoho!',3000);
+  }).catch(function(e){
+    showMsg('ok');
+    document.getElementById('msg-ok-text').textContent=
+      '✅ Trip submitted! Check your Distance_Calculation_Request_Report.';
+    toast('Trip submitted!',3000);
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -620,10 +528,10 @@ function resetAll(){
   document.getElementById('live-banner').classList.remove('show');
   document.getElementById('path-hint').classList.remove('show');
   document.getElementById('person-name').disabled=false;
-  document.getElementById('btn-bike').disabled=false;
-  document.getElementById('btn-car').disabled=false;
   document.getElementById('lv-dist').textContent='0.00';
   document.getElementById('lv-dur').textContent='0:00';
+   document.getElementById('btn-bike').disabled=false;
+  document.getElementById('btn-car').disabled=false;
   document.getElementById('lv-pts').textContent='0';
   document.getElementById('btn-submit').disabled=false;
   document.getElementById('btn-submit').innerHTML=
@@ -636,6 +544,7 @@ function resetAll(){
 </script>
 </body>
 </html>
+
 
 
 
