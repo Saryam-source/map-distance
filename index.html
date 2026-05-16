@@ -276,7 +276,7 @@ L.control.zoom({position:'bottomright'}).addTo(map);
 // ═══════════════════════════════════════════════════════
 var watchId=null,isTracking=false;
 var selectedVehicle='bike';
-var selectedVehicle='bike'; // default vehicle
+var selectedVehicle='bike';
 var pathPoints=[],totalDist=0;
 var polyline=null,startMarker=null,endMarker=null,liveMarker=null;
 var startLL=null,endLL=null,startAddr='',endAddr='';
@@ -324,11 +324,7 @@ function selectVehicle(type){
 // ═══════════════════════════════════════════════════════
 // VEHICLE SELECTOR
 // ═══════════════════════════════════════════════════════
-function selectVehicle(type){
-  selectedVehicle=type;
-  document.getElementById('btn-bike').classList.toggle('active',type==='bike');
-  document.getElementById('btn-car').classList.toggle('active',type==='car');
-}
+
 
 function makeIcon(type){
   if(type==='live') return L.divIcon({className:'',html:'<div class="live-dot"></div>',iconSize:[16,16],iconAnchor:[8,8]});
