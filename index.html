@@ -45,6 +45,26 @@ color:#6b7280;
 margin-bottom:25px;
 }
 
+.input-group{
+margin-bottom:15px;
+}
+
+.input-group label{
+display:block;
+margin-bottom:8px;
+font-weight:bold;
+color:#374151;
+}
+
+.input-group input,
+.input-group select{
+width:100%;
+padding:14px;
+border:1px solid #d1d5db;
+border-radius:10px;
+font-size:15px;
+}
+
 .vehicle-container{
 display:flex;
 gap:10px;
@@ -65,25 +85,6 @@ transition:0.3s;
 .vehicle-btn.active{
 background:#2563eb;
 color:white;
-}
-
-.input-group{
-margin-bottom:15px;
-}
-
-.input-group label{
-display:block;
-margin-bottom:8px;
-font-weight:bold;
-color:#374151;
-}
-
-.input-group input{
-width:100%;
-padding:14px;
-border:1px solid #d1d5db;
-border-radius:10px;
-font-size:15px;
 }
 
 .calc-btn{
@@ -132,27 +133,13 @@ flex:1;
 height:100vh;
 }
 
-.route-info{
+.status{
 margin-top:20px;
 padding:15px;
-background:white;
-border-radius:12px;
-border:1px solid #ddd;
-}
-
-.route-title{
-font-size:20px;
-font-weight:bold;
-margin-bottom:10px;
-}
-
-.live-status{
-margin-top:15px;
-padding:12px;
 background:#dcfce7;
-border-radius:10px;
-color:#166534;
+border-radius:12px;
 font-weight:bold;
+color:#166534;
 }
 
 </style>
@@ -163,39 +150,58 @@ font-weight:bold;
 <div class="sidebar">
 
 <div class="title">Smart Route Planner</div>
-<div class="subtitle">Distance • Time • Cost</div>
+<div class="subtitle">GPS • Distance • Zoho Flow</div>
 
-<div class="vehicle-container">
-<button class="vehicle-btn active" id="carBtn"
-onclick="selectVehicle('driving-car')">
-🚗 Car
-</button>
-
-<button class="vehicle-btn" id="bikeBtn"
-onclick="selectVehicle('cycling-regular')">
-🏍 Bike
-</button>
-
-<button class="vehicle-btn" id="walkBtn"
-onclick="selectVehicle('foot-walking')">
-🚶 Walk
-</button>
+<div class="input-group">
+<label>Employee Name</label>
+<select id="employee">
+<option value="">Select Employee</option>
+<option>Madhumita</option>
+<option>Muni</option>
+<option>Antony</option>
+<option>Sarath</option>
+</select>
 </div>
 
 <div class="input-group">
-<label>From</label>
+<label>From Location</label>
 <input type="text" id="from-location"
 placeholder="Enter starting location">
 </div>
 
 <div class="input-group">
-<label>To</label>
+<label>To Location</label>
 <input type="text" id="to-location"
 placeholder="Enter destination">
 </div>
 
-<button class="calc-btn" onclick="calculateRoute()">
-Calculate Route
+<div class="vehicle-container">
+
+<button class="vehicle-btn active"
+id="carBtn"
+onclick="selectVehicle('driving-car')">
+🚗 Car
+</button>
+
+<button class="vehicle-btn"
+id="bikeBtn"
+onclick="selectVehicle('cycling-regular')">
+🏍 Bike
+</button>
+
+<button class="vehicle-btn"
+id="walkBtn"
+onclick="selectVehicle('foot-walking')">
+🚶 Walk
+</button>
+
+</div>
+
+<button class="calc-btn"
+onclick="calculateAndSaveTrip()">
+
+Calculate & Save Trip
+
 </button>
 
 <div class="result-box">
@@ -222,18 +228,8 @@ Calculate Route
 
 </div>
 
-<div class="route-info">
-
-<div class="route-title">Route Overview</div>
-
-<div id="route-text">
-Enter locations and calculate route.
-</div>
-
-<div class="live-status">
-📍 GPS Route Navigation Ready
-</div>
-
+<div class="status" id="status">
+Ready
 </div>
 
 </div>
@@ -242,7 +238,11 @@ Enter locations and calculate route.
 
 <script>
 
-const API_KEY = "PASTE_YOUR_OPENROUTESERVICE_API_KEY";
+const API_KEY = "PASTE_OPENROUTESERVICE_API_KEY";
+
+const WEBHOOK_URL = "PASTE_ZOHO_FLOW_WEBHOOK_URL";
+
+var selectedVehicle = "driving-car";
 
 var map = L.map('map').setView([13.0827,80.2707],10);
 
@@ -256,8 +256,6 @@ attribution:'© OpenStreetMap'
 var routeLayer = null;
 var startMarker = null;
 var endMarker = null;
-
-var selectedVehicle = "driving-car";
 
 function selectVehicle(type){
 
@@ -306,7 +304,15 @@ lat: coords[1]
 
 }
 
-async function calculateRoute(){
+async function calculateAndSaveTrip(){
+
+try{
+
+document.getElementById('status').innerText =
+"Calculating route...";
+
+const employee =
+document.getElementById('employee').value;
 
 const from =
 document.getElementById('from-location').value;
@@ -314,14 +320,12 @@ document.getElementById('from-location').value;
 const to =
 document.getElementById('to-location').value;
 
-if(!from || !to){
+if(!employee || !from || !to){
 
-alert("Please enter both locations");
+alert("Please fill all fields");
 
 return;
 }
-
-try{
 
 const start = await geocode(from);
 
@@ -341,8 +345,7 @@ map.removeLayer(endMarker);
 
 startMarker = L.marker([start.lat,start.lng])
 .addTo(map)
-.bindPopup("Start")
-.openPopup();
+.bindPopup("Start");
 
 endMarker = L.marker([end.lat,end.lng])
 .addTo(map)
@@ -403,37 +406,68 @@ if(selectedVehicle === 'foot-walking'){
 rate = 0;
 }
 
-const cost =
+const estimatedCost =
 (distanceKm * rate).toFixed(2);
 
 document.getElementById('cost').innerText =
-"₹" + cost;
+"₹" + estimatedCost;
 
-document.getElementById('route-text').innerHTML =
-`
-<b>From:</b> ${from}<br><br>
-<b>To:</b> ${to}<br><br>
-<b>Distance:</b> ${distanceKm} km<br><br>
-<b>Estimated Time:</b> ${durationMin} minutes
-`;
+navigator.geolocation.getCurrentPosition(
 
-navigator.geolocation.getCurrentPosition(function(pos){
+async function(pos){
 
-const userLat = pos.coords.latitude;
-const userLng = pos.coords.longitude;
+const latitude = pos.coords.latitude;
+const longitude = pos.coords.longitude;
 
-L.circleMarker([userLat,userLng],{
+L.circleMarker([latitude,longitude],{
 radius:8,
 color:'green'
 }).addTo(map)
-.bindPopup("Your Live GPS Location");
+.bindPopup("Current GPS Location");
 
+await fetch(WEBHOOK_URL,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+
+name: employee,
+from: from,
+to: to,
+vehicle: selectedVehicle,
+distance: distanceKm,
+duration: durationMin,
+cost: estimatedCost,
+latitude: latitude,
+longitude: longitude
+
+})
 });
+
+document.getElementById('status').innerText =
+"Trip saved successfully to Zoho";
+
+},
+
+function(error){
+
+console.log(error);
+
+document.getElementById('status').innerText =
+"GPS permission denied";
+
+}
+
+);
 
 }
 catch(err){
 
-console.error(err);
+console.log(err);
+
+document.getElementById('status').innerText =
+"Error calculating route";
 
 alert("Error calculating route");
 
