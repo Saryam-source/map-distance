@@ -364,16 +364,17 @@ async function calculateRoute() {
     var cost = (parseFloat(route.distKm) * rate).toFixed(2);
 
     // Store trip data
-    tripData = {
-      name:      name,
-      start:     from,
-      end:       to,
-      distance:  route.distKm,
-      duration:  String(route.durMin),
-      mode:      selectedVehicle,
-      cost:      cost,
-      timestamp: new Date().toISOString()
-    };
+   tripData = {
+  name:      name,
+  date:      new Date().toLocaleDateString('en-GB'),
+  start:     from,
+  end:       to,
+  distance:  route.distKm,
+  duration:  String(route.durMin),
+  mode:      selectedVehicle,
+  cost:      cost,
+  timestamp: new Date().toISOString()
+};
 
     // Show result
     document.getElementById('r-dist').textContent = route.distKm;
