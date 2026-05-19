@@ -24,395 +24,64 @@
   --red:#ef4444;
   --radius:10px;
 }
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  height:100vh;
-  overflow:hidden;
-  display:flex;
-}
-
-.sidebar{
-  width:390px;
-  min-width:390px;
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  z-index:100;
-}
-
-.brand{
-  padding:16px 20px 12px;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.brand-icon{
-  width:32px;
-  height:32px;
-  background:var(--accent);
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.brand-icon svg{
-  width:17px;
-  height:17px;
-  fill:#fff;
-}
-
-.brand-title{
-  font-size:15px;
-  font-weight:600;
-}
-
-.brand-sub{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:1px;
-}
-
-.pane{
-  padding:14px 16px;
-  flex:1;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.field-label{
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.6px;
-  color:var(--muted);
-  text-transform:uppercase;
-  margin-bottom:5px;
-}
-
-.form-input{
-  width:100%;
-  padding:11px 14px;
-  font-size:13px;
-  font-family:inherit;
-  background:var(--bg);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  color:var(--text);
-  outline:none;
-  transition:.2s;
-}
-
-.form-input::placeholder{
-  color:var(--muted);
-}
-
-.form-input:focus{
-  border-color:var(--accent);
-  background:var(--surface2);
-}
-
-/* autocomplete */
-.ac-wrap{
-  position:relative;
-}
-
-.ac-list{
-  position:absolute;
-  top:100%;
-  left:0;
-  right:0;
-  background:var(--surface);
-  border:1.5px solid var(--accent);
-  border-top:none;
-  border-radius:0 0 var(--radius) var(--radius);
-  z-index:9999;
-  max-height:240px;
-  overflow-y:auto;
-  display:none;
-}
-
-.ac-list.show{
-  display:block;
-}
-
-.ac-item{
-  padding:9px 14px;
-  font-size:12px;
-  cursor:pointer;
-  border-bottom:1px solid var(--border);
-}
-
-.ac-item:hover{
-  background:var(--surface2);
-}
-
-.ac-main{
-  font-weight:600;
-  color:var(--text);
-}
-
-.ac-sub{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:2px;
-}
-
-/* vehicle buttons */
-.vehicle-selector{
-  display:flex;
-  gap:8px;
-}
-
-.vehicle-btn{
-  flex:1;
-  padding:11px 8px;
-  font-size:12px;
-  font-weight:600;
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  background:var(--surface2);
-  color:var(--muted);
-  cursor:pointer;
-  transition:.2s;
-}
-
-.vehicle-btn.active{
-  border-color:var(--accent);
-  background:var(--accent);
-  color:#fff;
-}
-
-/* buttons */
-.btn-calc,
-.btn-submit{
-  width:100%;
-  padding:13px;
-  font-size:14px;
-  font-weight:700;
-  border:none;
-  border-radius:var(--radius);
-  cursor:pointer;
-  transition:.2s;
-  color:#fff;
-}
-
-.btn-calc{
-  background:var(--green);
-}
-
-.btn-calc:hover{
-  background:#16a34a;
-}
-
-.btn-submit{
-  background:var(--accent);
-}
-
-.btn-submit:hover{
-  background:#2563eb;
-}
-
-.btn-submit:disabled{
-  background:#24354f;
-  cursor:not-allowed;
-}
-
-/* status */
-.status-msg{
-  border-radius:8px;
-  padding:10px 12px;
-  font-size:12px;
-  display:none;
-  gap:8px;
-  line-height:1.5;
-}
-
-.status-msg.show{
-  display:flex;
-}
-
-.status-msg.ok{
-  background:rgba(34,197,94,.1);
-  border:1px solid rgba(34,197,94,.25);
-  color:var(--green);
-}
-
-.status-msg.err{
-  background:rgba(239,68,68,.1);
-  border:1px solid rgba(239,68,68,.25);
-  color:var(--red);
-}
-
-.status-msg.loading{
-  background:rgba(59,130,246,.1);
-  border:1px solid rgba(59,130,246,.25);
-  color:var(--accent2);
-}
-
-.spin{
-  width:14px;
-  height:14px;
-  border:2px solid rgba(255,255,255,.25);
-  border-top-color:var(--accent2);
-  border-radius:50%;
-  animation:rot .7s linear infinite;
-}
-
-@keyframes rot{
-  to{
-    transform:rotate(360deg);
-  }
-}
-
-/* result card */
-.result-card{
-  background:var(--bg);
-  border:1.5px solid var(--accent);
-  border-radius:12px;
-  padding:14px;
-  display:none;
-  flex-direction:column;
-  gap:10px;
-}
-
-.result-card.show{
-  display:flex;
-}
-
-.section-hdr{
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.7px;
-  text-transform:uppercase;
-  color:var(--muted);
-}
-
-.rc-top{
-  display:flex;
-  gap:8px;
-}
-
-.rc-metric{
-  flex:1;
-  background:var(--surface2);
-  border-radius:8px;
-  padding:10px;
-  text-align:center;
-}
-
-.rc-label{
-  font-size:9px;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-  color:var(--muted);
-  margin-bottom:3px;
-}
-
-.rc-value{
-  font-size:22px;
-  font-weight:700;
-  color:var(--accent2);
-  font-family:'DM Mono',monospace;
-}
-
-.rc-unit{
-  font-size:9px;
-  color:var(--muted);
-}
-
-.rc-row{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.5;
-}
-
-.rc-row strong{
-  color:var(--text);
-}
-
-.rc-cost{
-  font-size:16px;
-  font-weight:700;
-  color:var(--green);
-  padding:8px 12px;
-  background:rgba(34,197,94,.08);
-  border:1px solid rgba(34,197,94,.2);
-  border-radius:8px;
-  text-align:center;
-}
-
-/* toast */
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:var(--surface2);
-  color:var(--text);
-  border:1px solid var(--border);
-  padding:10px 20px;
-  border-radius:20px;
-  font-size:13px;
-  z-index:99999;
-  opacity:0;
-  transition:.3s;
-}
-
-.toast.show{
-  opacity:1;
-}
-
-/* map */
-#map{
-  flex:1;
-  height:100vh;
-}
-
-/* mobile */
-@media(max-width:768px){
-  body{
-    flex-direction:column;
-    height:auto;
-  }
-
-  .sidebar{
-    width:100%;
-    min-width:100%;
-  }
-
-  #map{
-    height:55vh;
-  }
-}
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{ font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; display:flex; }
+.sidebar{ width:390px; min-width:390px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; z-index:100; }
+.brand{ padding:16px 20px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.brand-icon{ width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+.brand-icon svg{ width:17px; height:17px; fill:#fff; }
+.brand-title{ font-size:15px; font-weight:600; }
+.brand-sub{ font-size:11px; color:var(--muted); margin-top:1px; }
+.pane{ padding:14px 16px; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
+.field-label{ font-size:10px; font-weight:700; letter-spacing:.6px; color:var(--muted); text-transform:uppercase; margin-bottom:5px; }
+.form-input{ width:100%; padding:11px 14px; font-size:13px; font-family:inherit; background:var(--bg); border:1.5px solid var(--border); border-radius:var(--radius); color:var(--text); outline:none; transition:.2s; }
+.form-input::placeholder{ color:var(--muted); }
+.form-input:focus{ border-color:var(--accent); background:var(--surface2); }
+.ac-wrap{ position:relative; }
+.ac-list{ position:absolute; top:100%; left:0; right:0; background:var(--surface); border:1.5px solid var(--accent); border-top:none; border-radius:0 0 var(--radius) var(--radius); z-index:9999; max-height:240px; overflow-y:auto; display:none; }
+.ac-list.show{ display:block; }
+.ac-item{ padding:9px 14px; font-size:12px; cursor:pointer; border-bottom:1px solid var(--border); }
+.ac-item:hover{ background:var(--surface2); }
+.ac-main{ font-weight:600; color:var(--text); }
+.ac-sub{ color:var(--muted); font-size:11px; margin-top:2px; }
+.vehicle-selector{ display:flex; gap:8px; }
+.vehicle-btn{ flex:1; padding:11px 8px; font-size:12px; font-weight:600; border:1.5px solid var(--border); border-radius:var(--radius); background:var(--surface2); color:var(--muted); cursor:pointer; transition:.2s; }
+.vehicle-btn.active{ border-color:var(--accent); background:var(--accent); color:#fff; }
+.btn-calc, .btn-submit{ width:100%; padding:13px; font-size:14px; font-weight:700; border:none; border-radius:var(--radius); cursor:pointer; transition:.2s; color:#fff; }
+.btn-calc{ background:var(--green); }
+.btn-calc:hover{ background:#16a34a; }
+.btn-submit{ background:var(--accent); }
+.btn-submit:hover{ background:#2563eb; }
+.btn-submit:disabled{ background:#24354f; cursor:not-allowed; }
+.status-msg{ border-radius:8px; padding:10px 12px; font-size:12px; display:none; gap:8px; line-height:1.5; }
+.status-msg.show{ display:flex; }
+.status-msg.ok{ background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.25); color:var(--green); }
+.status-msg.err{ background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.25); color:var(--red); }
+.status-msg.loading{ background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.25); color:var(--accent2); }
+.spin{ width:14px; height:14px; border:2px solid rgba(255,255,255,.25); border-top-color:var(--accent2); border-radius:50%; animation:rot .7s linear infinite; }
+@keyframes rot{ to{ transform:rotate(360deg); } }
+.result-card{ background:var(--bg); border:1.5px solid var(--accent); border-radius:12px; padding:14px; display:none; flex-direction:column; gap:10px; }
+.result-card.show{ display:flex; }
+.section-hdr{ font-size:10px; font-weight:700; letter-spacing:.7px; text-transform:uppercase; color:var(--muted); }
+.rc-top{ display:flex; gap:8px; }
+.rc-metric{ flex:1; background:var(--surface2); border-radius:8px; padding:10px; text-align:center; }
+.rc-label{ font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:3px; }
+.rc-value{ font-size:22px; font-weight:700; color:var(--accent2); font-family:'DM Mono',monospace; }
+.rc-unit{ font-size:9px; color:var(--muted); }
+.rc-row{ font-size:12px; color:var(--muted); line-height:1.5; }
+.rc-row strong{ color:var(--text); }
+.rc-cost{ font-size:16px; font-weight:700; color:var(--green); padding:8px 12px; background:rgba(34,197,94,.08); border:1px solid rgba(34,197,94,.2); border-radius:8px; text-align:center; }
+.toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--surface2); color:var(--text); border:1px solid var(--border); padding:10px 20px; border-radius:20px; font-size:13px; z-index:99999; opacity:0; transition:.3s; }
+.toast.show{ opacity:1; }
+#map{ flex:1; height:100vh; }
+@media(max-width:768px){ body{ flex-direction:column; height:auto; } .sidebar{ width:100%; min-width:100%; } #map{ height:55vh; } }
 </style>
 </head>
-
 <body>
 
 <aside class="sidebar">
-
   <div class="brand">
-    <div class="brand-icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-      </svg>
-    </div>
-
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg></div>
     <div>
       <div class="brand-title">Employee Travel Tracker</div>
       <div class="brand-sub">Distance · Route · Zoho Sync</div>
@@ -421,10 +90,8 @@ body{
 
   <div class="pane">
 
-    <!-- EMPLOYEE -->
     <div>
       <div class="field-label">Employee Name</div>
-
       <select id="person-name" class="form-input">
         <option value="">-- Select Employee --</option>
         <option value="Madhumita">Madhumita</option>
@@ -435,76 +102,37 @@ body{
       </select>
     </div>
 
-    <!-- DATE -->
     <div>
       <div class="field-label">Travel Date</div>
-
-      <input
-        type="date"
-        id="travel-date"
-        class="form-input"
-      />
+      <input type="date" id="travel-date" class="form-input"/>
     </div>
 
-    <!-- FROM -->
     <div>
       <div class="field-label">From</div>
-
       <div class="ac-wrap">
-        <input
-          type="text"
-          id="from-loc"
-          class="form-input"
-          placeholder="🟢 Enter starting location..."
-          autocomplete="off"
-          oninput="acSearch(this,'from-list')"
-          onblur="acHide('from-list')"
-        />
-
+        <input type="text" id="from-loc" class="form-input" placeholder="🟢 Enter starting location..." autocomplete="off" oninput="acSearch(this,'from-list')" onblur="acHide('from-list')"/>
         <div class="ac-list" id="from-list"></div>
       </div>
     </div>
 
-    <!-- TO -->
     <div>
       <div class="field-label">To</div>
-
       <div class="ac-wrap">
-        <input
-          type="text"
-          id="to-loc"
-          class="form-input"
-          placeholder="🔴 Enter destination..."
-          autocomplete="off"
-          oninput="acSearch(this,'to-list')"
-          onblur="acHide('to-list')"
-        />
-
+        <input type="text" id="to-loc" class="form-input" placeholder="🔴 Enter destination..." autocomplete="off" oninput="acSearch(this,'to-list')" onblur="acHide('to-list')"/>
         <div class="ac-list" id="to-list"></div>
       </div>
     </div>
 
-    <!-- VEHICLE -->
     <div>
       <div class="field-label">Vehicle Type</div>
-
       <div class="vehicle-selector">
-        <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">
-          Bike ₹3.5/km
-        </button>
-
-        <button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">
-          Car ₹20/km
-        </button>
+        <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">Bike ₹3.5/km</button>
+        <button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">Car ₹20/km</button>
       </div>
     </div>
 
-    <!-- CALCULATE -->
-    <button class="btn-calc" id="btn-calc" onclick="calculateRoute()">
-      Calculate Route
-    </button>
+    <button class="btn-calc" id="btn-calc" onclick="calculateRoute()">Calculate Route</button>
 
-    <!-- STATUS -->
     <div class="status-msg loading" id="msg-loading">
       <span class="spin"></span>
       <span id="msg-loading-text">Calculating...</span>
@@ -514,40 +142,29 @@ body{
       <span id="msg-err-text">Something went wrong.</span>
     </div>
 
-    <!-- RESULT -->
     <div class="result-card" id="result-card">
-
       <div class="section-hdr">Route Summary</div>
-
       <div class="rc-top">
         <div class="rc-metric">
           <div class="rc-label">Distance</div>
           <div class="rc-value" id="r-dist">—</div>
           <div class="rc-unit">km</div>
         </div>
-
         <div class="rc-metric">
           <div class="rc-label">Duration</div>
           <div class="rc-value" id="r-dur">—</div>
           <div class="rc-unit">min</div>
         </div>
       </div>
-
       <div class="rc-row" id="r-name"></div>
       <div class="rc-row" id="r-date"></div>
       <div class="rc-row" id="r-from"></div>
       <div class="rc-row" id="r-to"></div>
-
       <div class="rc-cost" id="r-cost"></div>
-
-      <button class="btn-submit" id="btn-submit" onclick="submitToZoho()">
-        Save to Zoho Report
-      </button>
-
+      <button class="btn-submit" id="btn-submit" onclick="submitToZoho()">Save to Zoho Report</button>
       <div class="status-msg ok" id="msg-ok">
         <span id="msg-ok-text">Saved Successfully</span>
       </div>
-
     </div>
 
   </div>
@@ -557,283 +174,125 @@ body{
 <div class="toast" id="toast"></div>
 
 <script>
+var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
 
-var ZOHO_WEBHOOK_URL =
-"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
-
-/* default today's date */
-document.getElementById('travel-date').value =
-new Date().toISOString().split('T')[0];
+/* default today */
+document.getElementById('travel-date').value = new Date().toISOString().split('T')[0];
 
 /* map */
 var map = L.map('map',{zoomControl:false}).setView([13.0827,80.2707],12);
-
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-  maxZoom:19,
-  attribution:'© OpenStreetMap'
-}
-).addTo(map);
-
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 L.control.zoom({position:'bottomright'}).addTo(map);
 
-/* state */
-var selectedVehicle = 'bike';
-var routeLayer = null;
-var fromMarker = null;
-var toMarker = null;
-var acTimers = {};
-var tripData = null;
+var selectedVehicle='bike', routeLayer=null, fromMarker=null, toMarker=null, acTimers={}, tripData=null;
 
-/* toast */
 function toast(msg,dur){
-  var t = document.getElementById('toast');
-
-  t.textContent = msg;
-  t.classList.add('show');
-
-  clearTimeout(t._t);
-
-  t._t = setTimeout(function(){
-    t.classList.remove('show');
-  }, dur || 2500);
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show');},dur||2500);
 }
 
-/* show status */
 function showMsg(type){
-
-  ['loading','ok','err'].forEach(function(t){
-    document.getElementById('msg-'+t).classList.remove('show');
-  });
-
-  if(type){
-    document.getElementById('msg-'+type).classList.add('show');
-  }
+  ['loading','ok','err'].forEach(function(t){document.getElementById('msg-'+t).classList.remove('show');});
+  if(type) document.getElementById('msg-'+type).classList.add('show');
 }
 
-/* vehicle */
 function selectVehicle(type){
-
   event.preventDefault();
-
-  selectedVehicle = type;
-
-  document.getElementById('btn-bike').classList.toggle('active', type==='bike');
-  document.getElementById('btn-car').classList.toggle('active', type==='car');
+  selectedVehicle=type;
+  document.getElementById('btn-bike').classList.toggle('active',type==='bike');
+  document.getElementById('btn-car').classList.toggle('active',type==='car');
 }
 
-/* autocomplete */
 function acSearch(input,listId){
-
-  var query = input.value.trim();
-  var list = document.getElementById(listId);
-
+  var query=input.value.trim();
+  var list=document.getElementById(listId);
   clearTimeout(acTimers[listId]);
-
-  if(query.length < 3){
-    list.classList.remove('show');
-    list.innerHTML = '';
-    return;
-  }
-
-  acTimers[listId] = setTimeout(async function(){
-
+  if(query.length<3){list.classList.remove('show');list.innerHTML='';return;}
+  acTimers[listId]=setTimeout(async function(){
     try{
-
-      var url =
-      'https://nominatim.openstreetmap.org/search?format=json&q=' +
-      encodeURIComponent(query) +
-      '&countrycodes=in&limit=20&addressdetails=1';
-
-      var r = await fetch(url,{
-        headers:{'Accept-Language':'en'}
-      });
-
-      var d = await r.json();
-
-      if(!d.length){
-        list.classList.remove('show');
-        return;
-      }
-
-      list.innerHTML = d.map(function(item){
-
-        var full = item.display_name;
-        var parts = full.split(',');
-
-        return `
-          <div class="ac-item"
-            onmousedown="acSelect('${listId}','${full.replace(/'/g,"\\'")}')">
-
-            <div class="ac-main">${parts[0]}</div>
-
-            <div class="ac-sub">
-              ${parts.slice(1,4).join(',')}
-            </div>
-
-          </div>
-        `;
-
+      var url='https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(query)+'&countrycodes=in&limit=20&addressdetails=1';
+      var r=await fetch(url,{headers:{'Accept-Language':'en'}});
+      var d=await r.json();
+      if(!d.length){list.classList.remove('show');return;}
+      list.innerHTML=d.map(function(item){
+        var full=item.display_name;
+        var parts=full.split(',');
+        return '<div class="ac-item" onmousedown="acSelect(\''+listId+'\',\''+full.replace(/\\\\/g,'\\\\\\\\').replace(/'/g,"\\\\'")+'\')"><div class="ac-main">'+parts[0]+'</div><div class="ac-sub">'+parts.slice(1,4).join(',')+'</div></div>';
       }).join('');
-
       list.classList.add('show');
-
-    }catch(e){
-      list.classList.remove('show');
-    }
-
+    }catch(e){list.classList.remove('show');}
   },400);
 }
 
 function acSelect(listId,value){
-
-  var inputId = listId === 'from-list'
-    ? 'from-loc'
-    : 'to-loc';
-
-  document.getElementById(inputId).value = value;
-
+  document.getElementById(listId==='from-list'?'from-loc':'to-loc').value=value;
   document.getElementById(listId).classList.remove('show');
 }
 
 function acHide(listId){
-
-  setTimeout(function(){
-    document.getElementById(listId).classList.remove('show');
-  },200);
+  setTimeout(function(){document.getElementById(listId).classList.remove('show');},200);
 }
 
-/* geocode */
 async function geocode(address){
-
-  var url =
-  'https://nominatim.openstreetmap.org/search?format=json&q=' +
-  encodeURIComponent(address) +
-  '&countrycodes=in&limit=1';
-
-  var r = await fetch(url,{
-    headers:{'Accept-Language':'en'}
-  });
-
-  var d = await r.json();
-
-  if(!d.length){
-    throw new Error('Location not found');
-  }
-
-  return {
-    lat:parseFloat(d[0].lat),
-    lon:parseFloat(d[0].lon)
-  };
+  var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(address)+'&countrycodes=in&limit=1',{headers:{'Accept-Language':'en'}});
+  var d=await r.json();
+  if(!d.length) throw new Error('Location not found: '+address);
+  return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon)};
 }
 
-/* route */
 async function getRoute(from,to){
-
-  var url =
-  'https://router.project-osrm.org/route/v1/driving/' +
-  from.lon + ',' + from.lat + ';' +
-  to.lon + ',' + to.lat +
-  '?overview=full&geometries=geojson';
-
-  var r = await fetch(url);
-
-  var d = await r.json();
-
-  if(!d.routes.length){
-    throw new Error('Route not found');
-  }
-
-  var route = d.routes[0];
-
+  var r=await fetch('https://router.project-osrm.org/route/v1/driving/'+from.lon+','+from.lat+';'+to.lon+','+to.lat+'?overview=full&geometries=geojson');
+  var d=await r.json();
+  if(!d.routes.length) throw new Error('Route not found');
+  var route=d.routes[0];
   return {
-
     distKm:(route.distance/1000).toFixed(2),
-
     durMin:Math.round(route.duration/60),
-
-    coords:route.geometry.coordinates.map(function(c){
-      return [c[1],c[0]];
-    })
+    coords:route.geometry.coordinates.map(function(c){return [c[1],c[0]];})
   };
 }
 
-/* calculate */
 async function calculateRoute(){
+  var name=document.getElementById('person-name').value.trim();
+  var date=document.getElementById('travel-date').value;
+  var from=document.getElementById('from-loc').value.trim();
+  var to=document.getElementById('to-loc').value.trim();
 
-  var name = document.getElementById('person-name').value.trim();
-  var date = document.getElementById('travel-date').value;
-  var from = document.getElementById('from-loc').value.trim();
-  var to = document.getElementById('to-loc').value.trim();
-
-  if(!name){
-    alert('Please select employee');
-    return;
-  }
-
-  if(!date){
-    alert('Please select date');
-    return;
-  }
-
-  if(!from){
-    alert('Please enter from location');
-    return;
-  }
-
-  if(!to){
-    alert('Please enter destination');
-    return;
-  }
+  if(!name){alert('Please select employee');return;}
+  if(!date){alert('Please select date');return;}
+  if(!from){alert('Please enter from location');return;}
+  if(!to){alert('Please enter destination');return;}
 
   showMsg('loading');
-
-  document.getElementById('msg-loading-text').textContent =
-  'Calculating route...';
+  document.getElementById('msg-loading-text').textContent='Calculating route...';
 
   try{
+    var fromLL=await geocode(from);
+    var toLL=await geocode(to);
+    var route=await getRoute(fromLL,toLL);
 
-    var fromLL = await geocode(from);
-    var toLL = await geocode(to);
+    if(routeLayer) map.removeLayer(routeLayer);
+    if(fromMarker) map.removeLayer(fromMarker);
+    if(toMarker)   map.removeLayer(toMarker);
 
-    var route = await getRoute(fromLL,toLL);
+    routeLayer=L.polyline(route.coords,{color:'#3b82f6',weight:6}).addTo(map);
+    fromMarker=L.marker([fromLL.lat,fromLL.lon]).addTo(map);
+    toMarker=L.marker([toLL.lat,toLL.lon]).addTo(map);
+    map.fitBounds(routeLayer.getBounds(),{padding:[40,40]});
 
-    if(routeLayer){
-      map.removeLayer(routeLayer);
-    }
+    var rate=selectedVehicle==='car'?20:3.5;
+    var cost=(parseFloat(route.distKm)*rate).toFixed(2);
 
-    if(fromMarker){
-      map.removeLayer(fromMarker);
-    }
+    /* ── FIX: convert date yyyy-mm-dd → dd-MMM-yyyy for Zoho Creator ── */
+    var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var dp=date.split('-');
+    var zohoDate=dp[2]+'-'+months[parseInt(dp[1])-1]+'-'+dp[0];
+    /* ───────────────────────────────────────────────────────────────── */
 
-    if(toMarker){
-      map.removeLayer(toMarker);
-    }
-
-    routeLayer = L.polyline(route.coords,{
-      color:'#3b82f6',
-      weight:6
-    }).addTo(map);
-
-    fromMarker = L.marker([fromLL.lat,fromLL.lon]).addTo(map);
-
-    toMarker = L.marker([toLL.lat,toLL.lon]).addTo(map);
-
-    map.fitBounds(routeLayer.getBounds(),{
-      padding:[40,40]
-    });
-
-    var rate = selectedVehicle === 'car' ? 20 : 3.5;
-
-    var cost =
-    (parseFloat(route.distKm) * rate).toFixed(2);
-
-    /* trip data */
-    tripData = {
-
+    tripData={
       name:name,
-      date:date,
+      date:zohoDate,
       start:from,
       end:to,
       distance:route.distKm,
@@ -843,102 +302,46 @@ async function calculateRoute(){
       timestamp:new Date().toISOString()
     };
 
-    /* UI */
-    document.getElementById('r-dist').textContent =
-    route.distKm;
-
-    document.getElementById('r-dur').textContent =
-    route.durMin;
-
-    document.getElementById('r-name').innerHTML =
-    '👤 <strong>' + name + '</strong>';
-
-    document.getElementById('r-date').innerHTML =
-    '📅 <strong>Date:</strong> ' + date;
-
-    document.getElementById('r-from').innerHTML =
-    '🟢 <strong>From:</strong> ' + from;
-
-    document.getElementById('r-to').innerHTML =
-    '🔴 <strong>To:</strong> ' + to;
-
-    document.getElementById('r-cost').innerHTML =
-    '💰 Estimated Cost: ₹' + cost;
-
+    document.getElementById('r-dist').textContent=route.distKm;
+    document.getElementById('r-dur').textContent=route.durMin;
+    document.getElementById('r-name').innerHTML='👤 <strong>'+name+'</strong>';
+    document.getElementById('r-date').innerHTML='📅 <strong>Date:</strong> '+zohoDate;
+    document.getElementById('r-from').innerHTML='🟢 <strong>From:</strong> '+from;
+    document.getElementById('r-to').innerHTML='🔴 <strong>To:</strong> '+to;
+    document.getElementById('r-cost').innerHTML='💰 Estimated Cost: ₹'+cost;
     document.getElementById('result-card').classList.add('show');
-
-    document.getElementById('btn-submit').disabled = false;
-
+    document.getElementById('btn-submit').disabled=false;
     showMsg(null);
-
     toast('Route Calculated');
 
   }catch(e){
-
     showMsg('err');
-
-    document.getElementById('msg-err-text').textContent =
-    e.message;
-
+    document.getElementById('msg-err-text').textContent=e.message;
     console.error(e);
   }
 }
 
-/* submit */
 function submitToZoho(){
-
-  if(!tripData){
-    toast('Calculate route first');
-    return;
-  }
-
-  document.getElementById('btn-submit').disabled = true;
-
+  if(!tripData){toast('Calculate route first');return;}
+  document.getElementById('btn-submit').disabled=true;
   showMsg('loading');
+  document.getElementById('msg-loading-text').textContent='Saving to Zoho...';
 
-  document.getElementById('msg-loading-text').textContent =
-  'Saving to Zoho...';
+  var params=new URLSearchParams();
+  Object.keys(tripData).forEach(function(k){params.append(k,String(tripData[k]));});
 
-  var params = new URLSearchParams();
-
-  Object.keys(tripData).forEach(function(k){
-
-    params.append(k,String(tripData[k]));
-
-  });
-
-  fetch(
-    ZOHO_WEBHOOK_URL + '&' + params.toString(),
-    {
-      method:'GET',
-      mode:'no-cors'
-    }
-  )
-
+  fetch(ZOHO_WEBHOOK_URL+'&'+params.toString(),{method:'GET',mode:'no-cors'})
   .then(function(){
-
     showMsg('ok');
-
-    document.getElementById('msg-ok-text').textContent =
-    '✅ Saved Successfully';
-
-    document.getElementById('btn-submit').innerHTML =
-    'Saved ✓';
-
+    document.getElementById('msg-ok-text').textContent='✅ Saved Successfully';
+    document.getElementById('btn-submit').innerHTML='Saved ✓';
     toast('Saved to Zoho');
-
   })
-
   .catch(function(){
-
     showMsg('err');
-
-    document.getElementById('msg-err-text').textContent =
-    'Failed to save';
-
+    document.getElementById('msg-err-text').textContent='Failed to save';
   });
 }
-
 </script>
 </body>
 </html>
