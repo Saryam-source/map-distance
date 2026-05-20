@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8"/>
 <title>Employee Travel Tracker</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0"/>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+rel="stylesheet">
 
 <style>
 
@@ -187,7 +194,8 @@ background:var(--accent);
 border-color:var(--accent);
 }
 
-.btn-calc,.btn-submit{
+.btn-calc,
+.btn-submit{
 width:100%;
 padding:13px;
 font-size:14px;
@@ -307,6 +315,7 @@ height:55vh;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -322,13 +331,17 @@ height:55vh;
 
 <div>
 <div class="field-label">Travel Date</div>
-<input type="date" id="travel-date" class="form-input"/>
+<input type="date"
+id="travel-date"
+class="form-input"/>
 </div>
 
 <div>
+
 <div class="field-label">Employee Name</div>
 
-<select id="person-name" class="form-input">
+<select id="person-name"
+class="form-input">
 
 <option value="">-- Select Employee --</option>
 
@@ -339,9 +352,11 @@ height:55vh;
 <option value="Antony">Antony</option>
 
 </select>
+
 </div>
 
 <div>
+
 <div class="field-label">From Location</div>
 
 <div class="ac-wrap">
@@ -355,12 +370,15 @@ autocomplete="off"
 oninput="acSearch(this,'from-list')"
 />
 
-<div class="ac-list" id="from-list"></div>
+<div class="ac-list"
+id="from-list"></div>
 
 </div>
+
 </div>
 
 <div>
+
 <div class="field-label">To Location</div>
 
 <div class="ac-wrap">
@@ -374,12 +392,15 @@ autocomplete="off"
 oninput="acSearch(this,'to-list')"
 />
 
-<div class="ac-list" id="to-list"></div>
+<div class="ac-list"
+id="to-list"></div>
 
 </div>
+
 </div>
 
 <div>
+
 <div class="field-label">Pin Exact GPS Location</div>
 
 <div class="pin-row">
@@ -388,24 +409,28 @@ oninput="acSearch(this,'to-list')"
 type="button"
 class="btn-pin"
 id="btn-pin-from"
-onclick="startPin('from')"
->
+onclick="startPin('from')">
+
 📍 Pin From
+
 </button>
 
 <button
 type="button"
 class="btn-pin"
 id="btn-pin-to"
-onclick="startPin('to')"
->
+onclick="startPin('to')">
+
 📍 Pin To
+
 </button>
 
 </div>
+
 </div>
 
 <div>
+
 <div class="field-label">Vehicle Type</div>
 
 <div class="vehicle-selector">
@@ -414,28 +439,36 @@ onclick="startPin('to')"
 type="button"
 class="vehicle-btn active"
 id="btn-bike"
-onclick="selectVehicle('bike')"
->
+onclick="selectVehicle('bike')">
+
 Bike Rs.3.5/km
+
 </button>
 
 <button
 type="button"
 class="vehicle-btn"
 id="btn-car"
-onclick="selectVehicle('car')"
->
+onclick="selectVehicle('car')">
+
 Car Rs.20/km
+
 </button>
 
 </div>
+
 </div>
 
-<button class="btn-calc" onclick="calculateRoute()">
+<button
+class="btn-calc"
+onclick="calculateRoute()">
+
 Calculate Route
+
 </button>
 
-<div class="result-card" id="result-card">
+<div class="result-card"
+id="result-card">
 
 <div class="rc-top">
 
@@ -458,13 +491,18 @@ Calculate Route
 
 <div class="rc-cost" id="r-cost"></div>
 
-<button class="btn-submit" onclick="submitToZoho()">
+<button
+class="btn-submit"
+onclick="submitToZoho()">
+
 Save to Zoho Report
+
 </button>
 
 </div>
 
 </div>
+
 </aside>
 
 <div id="map"></div>
@@ -478,7 +516,7 @@ Save to Zoho Report
 ========================= */
 
 var ZOHO_WEBHOOK_URL =
-"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.63d9bd1983046a4b5fabc6be0a6d1ecc.f7ae778f73ba509f9213c5ac7eaf49e4&isdebug=true";
 
 /* =========================
    DEFAULT DATE
@@ -491,7 +529,8 @@ new Date().toISOString().split("T")[0];
    MAP
 ========================= */
 
-var map = L.map("map").setView([13.0827,80.2707],13);
+var map =
+L.map("map").setView([13.0827,80.2707],13);
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -506,21 +545,33 @@ attribution:"© OpenStreetMap"
 ========================= */
 
 var greenIcon = new L.Icon({
-iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+
+iconUrl:
+"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+
+shadowUrl:
+"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+
 iconSize:[25,41],
 iconAnchor:[12,41],
 popupAnchor:[1,-34],
 shadowSize:[41,41]
+
 });
 
 var redIcon = new L.Icon({
-iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+
+iconUrl:
+"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+
+shadowUrl:
+"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+
 iconSize:[25,41],
 iconAnchor:[12,41],
 popupAnchor:[1,-34],
 shadowSize:[41,41]
+
 });
 
 var selectedVehicle = "bike";
@@ -537,14 +588,17 @@ var pinMode = null;
 
 function toast(msg){
 
-var t = document.getElementById("toast");
+var t =
+document.getElementById("toast");
 
 t.innerHTML = msg;
 
 t.classList.add("show");
 
 setTimeout(function(){
+
 t.classList.remove("show");
+
 },2500);
 
 }
@@ -557,11 +611,16 @@ function selectVehicle(type){
 
 selectedVehicle = type;
 
-document.getElementById("btn-bike").classList.remove("active");
-document.getElementById("btn-car").classList.remove("active");
+document.getElementById("btn-bike")
+.classList.remove("active");
+
+document.getElementById("btn-car")
+.classList.remove("active");
 
 document.getElementById(
-type === "bike" ? "btn-bike" : "btn-car"
+type === "bike"
+? "btn-bike"
+: "btn-car"
 ).classList.add("active");
 
 }
@@ -574,13 +633,22 @@ function startPin(type){
 
 pinMode = type;
 
-document.getElementById("btn-pin-from").classList.remove("active");
-document.getElementById("btn-pin-to").classList.remove("active");
+document.getElementById("btn-pin-from")
+.classList.remove("active");
+
+document.getElementById("btn-pin-to")
+.classList.remove("active");
 
 if(type === "from"){
-document.getElementById("btn-pin-from").classList.add("active");
+
+document.getElementById("btn-pin-from")
+.classList.add("active");
+
 }else{
-document.getElementById("btn-pin-to").classList.add("active");
+
+document.getElementById("btn-pin-to")
+.classList.add("active");
+
 }
 
 toast("Click on map to pin location");
@@ -612,7 +680,8 @@ data.display_name ||
 
 if(pinMode === "from"){
 
-document.getElementById("from-loc").value = address;
+document.getElementById("from-loc").value =
+address;
 
 if(fromMarker){
 map.removeLayer(fromMarker);
@@ -625,7 +694,8 @@ fromMarker = L.marker(
 
 }else{
 
-document.getElementById("to-loc").value = address;
+document.getElementById("to-loc").value =
+address;
 
 if(toMarker){
 map.removeLayer(toMarker);
@@ -640,8 +710,11 @@ toMarker = L.marker(
 
 toast("GPS location pinned");
 
-document.getElementById("btn-pin-from").classList.remove("active");
-document.getElementById("btn-pin-to").classList.remove("active");
+document.getElementById("btn-pin-from")
+.classList.remove("active");
+
+document.getElementById("btn-pin-to")
+.classList.remove("active");
 
 pinMode = null;
 
@@ -654,14 +727,15 @@ toast("Unable to pin location");
 });
 
 /* =========================
-   SEARCH + MAP PREVIEW
+   AUTOCOMPLETE SEARCH
 ========================= */
 
 async function acSearch(input,listId){
 
 var query = input.value.trim();
 
-var list = document.getElementById(listId);
+var list =
+document.getElementById(listId);
 
 if(query.length < 3){
 
@@ -682,28 +756,6 @@ var data = await response.json();
 
 list.innerHTML = "";
 
-if(data.length > 0){
-
-var first = data[0];
-
-var lat = parseFloat(first.lat);
-var lon = parseFloat(first.lon);
-
-map.setView([lat,lon],14);
-
-if(previewMarker){
-map.removeLayer(previewMarker);
-}
-
-previewMarker = L.circleMarker([lat,lon],{
-radius:8,
-color:"#3b82f6",
-fillColor:"#60a5fa",
-fillOpacity:0.9
-}).addTo(map);
-
-}
-
 data.forEach(function(item){
 
 var div = document.createElement("div");
@@ -711,12 +763,12 @@ var div = document.createElement("div");
 div.className = "ac-item";
 
 div.innerHTML =
-'<div class="ac-main">'+
-item.display_name.split(",")[0]+
-'</div>' +
-'<div class="ac-sub">'+
-item.display_name+
-'</div>';
+'<div class="ac-main">'
++ item.display_name.split(",")[0]
++ '</div>'
++ '<div class="ac-sub">'
++ item.display_name
++ '</div>';
 
 div.onclick = function(){
 
@@ -756,10 +808,13 @@ parseFloat(item.lon)
 
 }
 
-map.setView([
+map.setView(
+[
 parseFloat(item.lat),
 parseFloat(item.lon)
-],15);
+],
+15
+);
 
 list.style.display = "none";
 
@@ -799,7 +854,7 @@ throw new Error("Location not found");
 
 }
 
-return {
+return{
 
 lat:parseFloat(data[0].lat),
 lon:parseFloat(data[0].lon)
@@ -825,14 +880,16 @@ var data = await response.json();
 
 var route = data.routes[0];
 
-return {
+return{
 
 distance:(route.distance/1000).toFixed(2),
 
 duration:Math.round(route.duration/60),
 
 coords:route.geometry.coordinates.map(function(c){
-return [c[1],c[0]];
+
+return[c[1],c[0]];
+
 })
 
 };
@@ -869,7 +926,8 @@ return;
 var fromLL = await geocode(from);
 var toLL = await geocode(to);
 
-var route = await getRoute(fromLL,toLL);
+var route =
+await getRoute(fromLL,toLL);
 
 if(routeLayer){
 
@@ -877,27 +935,36 @@ map.removeLayer(routeLayer);
 
 }
 
-routeLayer = L.polyline(route.coords,{
+routeLayer = L.polyline(
+route.coords,
+{
 color:"#3b82f6",
 weight:6
-}).addTo(map);
+}
+).addTo(map);
 
 map.fitBounds(routeLayer.getBounds());
 
-var rate = selectedVehicle === "car" ? 20 : 3.5;
+var rate =
+selectedVehicle === "car"
+? 20
+: 3.5;
 
 var cost =
-(parseFloat(route.distance) * rate).toFixed(2);
+(parseFloat(route.distance) * rate)
+.toFixed(2);
 
 var formattedDate =
-new Date(date).toLocaleDateString(
+new Date(date)
+.toLocaleDateString(
 'en-GB',
 {
 day:'2-digit',
 month:'short',
 year:'numeric'
 }
-).replace(/ /g,'-');
+)
+.replace(/ /g,'-');
 
 tripData = {
 
@@ -908,30 +975,47 @@ end:to,
 distance:route.distance,
 duration:route.duration,
 mode:selectedVehicle,
-cost:cost
+cost:cost,
+timestamp:new Date().toISOString()
 
 };
 
-document.getElementById("r-dist").innerHTML =
+document.getElementById("r-dist")
+.innerHTML =
 route.distance + " km";
 
-document.getElementById("r-dur").innerHTML =
+document.getElementById("r-dur")
+.innerHTML =
 route.duration + " min";
 
-document.getElementById("r-date").innerHTML =
-"Date : <strong>"+formattedDate+"</strong>";
+document.getElementById("r-date")
+.innerHTML =
+"Date : <strong>"
++ formattedDate +
+"</strong>";
 
-document.getElementById("r-name").innerHTML =
-"Employee : <strong>"+name+"</strong>";
+document.getElementById("r-name")
+.innerHTML =
+"Employee : <strong>"
++ name +
+"</strong>";
 
-document.getElementById("r-from").innerHTML =
-"From : <strong>"+from+"</strong>";
+document.getElementById("r-from")
+.innerHTML =
+"From : <strong>"
++ from +
+"</strong>";
 
-document.getElementById("r-to").innerHTML =
-"To : <strong>"+to+"</strong>";
+document.getElementById("r-to")
+.innerHTML =
+"To : <strong>"
++ to +
+"</strong>";
 
-document.getElementById("r-cost").innerHTML =
-"Estimated Cost : Rs."+cost;
+document.getElementById("r-cost")
+.innerHTML =
+"Estimated Cost : Rs."
++ cost;
 
 document.getElementById("result-card")
 .classList.add("show");
@@ -965,22 +1049,38 @@ var response = await fetch(
 ZOHO_WEBHOOK_URL,
 {
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify(tripData)
+
+body:JSON.stringify({
+payload:tripData
+})
+
 }
 );
 
-toast("Saved to Zoho Report");
+var result =
+await response.text();
 
-console.log(await response.text());
+console.log(result);
+
+if(response.ok){
+
+toast("Saved to Zoho Successfully");
+
+}else{
+
+toast("Zoho Save Failed");
+
+}
 
 }catch(err){
 
 console.log(err);
 
-toast("Failed to save");
+toast("Connection Error");
 
 }
 
