@@ -1,202 +1,810 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8"/>
 <title>Employee Travel Tracker</title>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+
 :root{
-  --bg:#0e1117;
-  --surface:#161b25;
-  --surface2:#1e2535;
-  --border:#2a3347;
-  --text:#e8edf5;
-  --muted:#7a8499;
-  --accent:#3b82f6;
-  --accent2:#60a5fa;
-  --green:#22c55e;
-  --red:#ef4444;
-  --radius:10px;
+--bg:#0e1117;
+--surface:#161b25;
+--surface2:#1e2535;
+--border:#2a3347;
+--text:#e8edf5;
+--muted:#7a8499;
+--accent:#3b82f6;
+--green:#22c55e;
+--red:#ef4444;
+--radius:12px;
 }
 
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
 body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  height:100vh;
-  overflow:hidden;
-  display:flex;
+font-family:'DM Sans',sans-serif;
+background:var(--bg);
+color:var(--text);
+height:100vh;
+display:flex;
+overflow:hidden;
 }
 
-/* SIDEBAR */
 .sidebar{
-  width:390px;
-  min-width:390px;
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  z-index:100;
+width:390px;
+background:var(--surface);
+border-right:1px solid var(--border);
+display:flex;
+flex-direction:column;
+overflow-y:auto;
 }
 
 .brand{
-  padding:16px 20px 12px;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  gap:10px;
+padding:18px;
+border-bottom:1px solid var(--border);
 }
 
-.brand-icon{
-  width:32px;
-  height:32px;
-  background:var(--accent);
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.brand h2{
+font-size:20px;
+margin-bottom:5px;
 }
 
-.brand-icon svg{
-  width:17px;
-  height:17px;
-  fill:#fff;
+.brand p{
+font-size:12px;
+color:var(--muted);
 }
 
-.brand-title{
-  font-size:15px;
-  font-weight:600;
-}
-
-.brand-sub{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:1px;
-}
-
-/* PANE */
 .pane{
-  padding:14px 16px;
-  flex:1;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+padding:18px;
+display:flex;
+flex-direction:column;
+gap:14px;
 }
 
-/* INPUTS */
 .field-label{
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.6px;
-  color:var(--muted);
-  text-transform:uppercase;
-  margin-bottom:5px;
+font-size:12px;
+margin-bottom:6px;
+font-weight:600;
+color:var(--muted);
 }
 
 .form-input{
-  width:100%;
-  padding:11px 14px;
-  font-size:13px;
-  font-family:inherit;
-  background:var(--bg);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  color:var(--text);
+width:100%;
+padding:12px;
+border-radius:var(--radius);
+border:1px solid var(--border);
+background:var(--bg);
+color:var(--text);
+outline:none;
+font-size:14px;
 }
 
 .form-input:focus{
-  border-color:var(--accent);
-  background:var(--surface2);
+border-color:var(--accent);
 }
 
-/* BUTTONS */
-.btn-calc,.btn-submit{
-  width:100%;
-  padding:13px;
-  font-size:14px;
-  font-weight:700;
-  border:none;
-  border-radius:var(--radius);
-  cursor:pointer;
-  color:#fff;
+.vehicle-selector{
+display:flex;
+gap:10px;
 }
 
-.btn-calc{background:var(--green);}
-.btn-submit{background:var(--accent);}
+.vehicle-btn{
+flex:1;
+padding:12px;
+border:none;
+border-radius:var(--radius);
+cursor:pointer;
+background:var(--surface2);
+color:var(--text);
+font-weight:600;
+}
 
-/* MAP */
+.vehicle-btn.active{
+background:var(--accent);
+}
+
+.pin-row{
+display:flex;
+gap:10px;
+}
+
+.btn-pin{
+flex:1;
+padding:12px;
+border:none;
+border-radius:var(--radius);
+cursor:pointer;
+background:var(--surface2);
+color:var(--text);
+font-weight:600;
+}
+
+.btn-pin.active{
+background:var(--green);
+}
+
+.btn-calc,
+.btn-submit{
+padding:14px;
+border:none;
+border-radius:var(--radius);
+cursor:pointer;
+font-size:15px;
+font-weight:700;
+color:white;
+}
+
+.btn-calc{
+background:var(--green);
+}
+
+.btn-submit{
+background:var(--accent);
+}
+
+.result-card{
+display:none;
+flex-direction:column;
+gap:10px;
+padding:16px;
+background:var(--bg);
+border-radius:var(--radius);
+border:1px solid var(--accent);
+}
+
+.result-card.show{
+display:flex;
+}
+
+.result-row{
+font-size:14px;
+line-height:1.6;
+}
+
+.result-row strong{
+color:white;
+}
+
+.toast{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+background:var(--surface2);
+padding:12px 20px;
+border-radius:30px;
+font-size:14px;
+opacity:0;
+transition:0.3s;
+z-index:99999;
+}
+
+.toast.show{
+opacity:1;
+}
+
 #map{
-  flex:1;
-  height:100vh;
+flex:1;
+height:100vh;
 }
+
+@media(max-width:768px){
+
+body{
+flex-direction:column;
+}
+
+.sidebar{
+width:100%;
+height:50vh;
+}
+
+#map{
+height:50vh;
+}
+
+}
+
 </style>
 </head>
 
 <body>
 
 <aside class="sidebar">
-  <div class="brand">
-    <div class="brand-icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-      </svg>
-    </div>
-    <div>
-      <div class="brand-title">Employee Travel Tracker</div>
-      <div class="brand-sub">Distance · Route · Zoho Sync</div>
-    </div>
-  </div>
 
-  <div class="pane">
+<div class="brand">
+<h2>Employee Travel Tracker</h2>
+<p>Distance · GPS Pin · Zoho Sync</p>
+</div>
 
-    <div>
-      <div class="field-label">Employee Name</div>
-      <select id="person-name" class="form-input">
-        <option value="">-- Select Employee --</option>
-        <option value="Madhumita">Madhumita</option>
-        <option value="Muni">Muni</option>
-        <option value="Sarath">Sarath</option>
-        <option value="Yamuna">Yamuna</option>
-        <option value="Antony">Antony</option>
-      </select>
-    </div>
+<div class="pane">
 
-    <div>
-      <div class="field-label">Travel Date</div>
-      <input type="date" id="travel-date" class="form-input"/>
-    </div>
+<div>
+<div class="field-label">Employee Name</div>
 
-    <button class="btn-calc" onclick="calculateRoute()">Calculate Route</button>
+<select id="person-name" class="form-input">
 
-  </div>
+<option value="">Select Employee</option>
+
+<option value="Madhumita">Madhumita</option>
+<option value="Muni">Muni</option>
+<option value="Sarath">Sarath</option>
+<option value="Yamuna">Yamuna</option>
+<option value="Antony">Antony</option>
+
+</select>
+</div>
+
+<div>
+<div class="field-label">Travel Date</div>
+
+<input
+type="date"
+id="travel-date"
+class="form-input"
+/>
+</div>
+
+<div>
+<div class="field-label">From Location</div>
+
+<input
+type="text"
+id="from-loc"
+class="form-input"
+placeholder="Enter From Location"
+/>
+</div>
+
+<div>
+<div class="field-label">To Location</div>
+
+<input
+type="text"
+id="to-loc"
+class="form-input"
+placeholder="Enter Destination"
+/>
+</div>
+
+<div>
+<div class="field-label">Pin GPS Location</div>
+
+<div class="pin-row">
+
+<button
+class="btn-pin"
+id="btn-pin-from"
+onclick="startPin('from')"
+>
+📍 Pin From
+</button>
+
+<button
+class="btn-pin"
+id="btn-pin-to"
+onclick="startPin('to')"
+>
+📍 Pin To
+</button>
+
+</div>
+</div>
+
+<div>
+<div class="field-label">Vehicle Type</div>
+
+<div class="vehicle-selector">
+
+<button
+class="vehicle-btn active"
+id="btn-bike"
+onclick="selectVehicle('bike')"
+>
+Bike ₹3.5/km
+</button>
+
+<button
+class="vehicle-btn"
+id="btn-car"
+onclick="selectVehicle('car')"
+>
+Car ₹20/km
+</button>
+
+</div>
+</div>
+
+<button
+class="btn-calc"
+onclick="calculateRoute()"
+>
+Calculate Route
+</button>
+
+<div class="result-card" id="result-card">
+
+<div class="result-row" id="r-name"></div>
+
+<div class="result-row" id="r-date"></div>
+
+<div class="result-row" id="r-from"></div>
+
+<div class="result-row" id="r-to"></div>
+
+<div class="result-row" id="r-distance"></div>
+
+<div class="result-row" id="r-duration"></div>
+
+<div class="result-row" id="r-cost"></div>
+
+<button
+class="btn-submit"
+onclick="submitToZoho()"
+id="btn-submit"
+>
+Save To Zoho
+</button>
+
+</div>
+
+</div>
+
 </aside>
 
 <div id="map"></div>
 
-<script>
-var map = L.map('map').setView([13.0827, 80.2707], 12);
+<div class="toast" id="toast"></div>
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19
-}).addTo(map);
+<script>
+
+var ZOHO_WEBHOOK_URL =
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=YOUR_WEBHOOK";
+
+document.getElementById('travel-date').value =
+new Date().toISOString().split('T')[0];
+
+var map =
+L.map('map').setView([13.0827,80.2707],13);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+).addTo(map);
+
+var selectedVehicle = 'bike';
+
+var pinMode = null;
+
+var fromMarker = null;
+var toMarker = null;
+var routeLayer = null;
+
+var fromCoords = null;
+var toCoords = null;
+
+var tripData = null;
+
+function toast(msg){
+
+var t = document.getElementById('toast');
+
+t.innerText = msg;
+
+t.classList.add('show');
+
+setTimeout(function(){
+
+t.classList.remove('show');
+
+},2500);
+
+}
+
+function selectVehicle(type){
+
+selectedVehicle = type;
+
+document.getElementById('btn-bike')
+.classList.remove('active');
+
+document.getElementById('btn-car')
+.classList.remove('active');
+
+if(type === 'bike'){
+
+document.getElementById('btn-bike')
+.classList.add('active');
+
+}else{
+
+document.getElementById('btn-car')
+.classList.add('active');
+
+}
+
+}
+
+function startPin(type){
+
+pinMode = type;
+
+document.getElementById('btn-pin-from')
+.classList.remove('active');
+
+document.getElementById('btn-pin-to')
+.classList.remove('active');
+
+if(type === 'from'){
+
+document.getElementById('btn-pin-from')
+.classList.add('active');
+
+}else{
+
+document.getElementById('btn-pin-to')
+.classList.add('active');
+
+}
+
+map.getContainer().style.cursor = 'crosshair';
+
+toast('Click anywhere on map');
+
+}
+
+map.on('click', async function(e){
+
+if(!pinMode) return;
+
+var lat = e.latlng.lat;
+var lng = e.latlng.lng;
+
+var type = pinMode;
+
+pinMode = null;
+
+document.getElementById('btn-pin-from')
+.classList.remove('active');
+
+document.getElementById('btn-pin-to')
+.classList.remove('active');
+
+map.getContainer().style.cursor = '';
+
+try{
+
+if(type === 'from' && fromMarker){
+
+map.removeLayer(fromMarker);
+
+}
+
+if(type === 'to' && toMarker){
+
+map.removeLayer(toMarker);
+
+}
+
+if(type === 'from'){
+
+fromMarker =
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup('FROM')
+.openPopup();
+
+}else{
+
+toMarker =
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup('TO')
+.openPopup();
+
+}
+
+var r = await fetch(
+'https://nominatim.openstreetmap.org/reverse?format=json&lat='
++ lat +
+'&lon=' +
+lng
+);
+
+var d = await r.json();
+
+var address =
+d.display_name
+? d.display_name
+: lat.toFixed(6)+","+lng.toFixed(6);
+
+if(type === 'from'){
+
+document.getElementById('from-loc').value =
+address;
+
+fromCoords = {
+lat:lat,
+lng:lng
+};
+
+}else{
+
+document.getElementById('to-loc').value =
+address;
+
+toCoords = {
+lat:lat,
+lng:lng
+};
+
+}
+
+toast('GPS location pinned');
+
+}catch(err){
+
+toast('Unable to pin');
+
+}
+
+});
+
+async function geocode(address){
+
+var r = await fetch(
+'https://nominatim.openstreetmap.org/search?format=json&q='
++ encodeURIComponent(address)
++ '&limit=1'
+);
+
+var d = await r.json();
+
+if(!d.length){
+
+throw new Error('Location not found');
+
+}
+
+return {
+lat:parseFloat(d[0].lat),
+lng:parseFloat(d[0].lon)
+};
+
+}
 
 async function calculateRoute(){
-  alert("Your function is intact. UI cleaned and formatted.");
+
+try{
+
+var name =
+document.getElementById('person-name').value;
+
+var date =
+document.getElementById('travel-date').value;
+
+var from =
+document.getElementById('from-loc').value;
+
+var to =
+document.getElementById('to-loc').value;
+
+if(!name){
+
+alert('Select employee');
+return;
+
 }
+
+if(!date){
+
+alert('Select date');
+return;
+
+}
+
+if(!from){
+
+alert('Enter from location');
+return;
+
+}
+
+if(!to){
+
+alert('Enter destination');
+return;
+
+}
+
+var fromLL =
+fromCoords
+? fromCoords
+: await geocode(from);
+
+var toLL =
+toCoords
+? toCoords
+: await geocode(to);
+
+var url =
+'https://router.project-osrm.org/route/v1/driving/'
++ fromLL.lng + ',' + fromLL.lat + ';'
++ toLL.lng + ',' + toLL.lat
++ '?overview=full&geometries=geojson';
+
+var r = await fetch(url);
+
+var d = await r.json();
+
+if(!d.routes.length){
+
+throw new Error('Route not found');
+
+}
+
+var route = d.routes[0];
+
+var distance =
+(route.distance / 1000).toFixed(2);
+
+var duration =
+Math.round(route.duration / 60);
+
+var coords =
+route.geometry.coordinates.map(function(c){
+
+return [c[1],c[0]];
+
+});
+
+if(routeLayer){
+
+map.removeLayer(routeLayer);
+
+}
+
+routeLayer =
+L.polyline(coords,{
+color:'#3b82f6',
+weight:6
+}).addTo(map);
+
+map.fitBounds(routeLayer.getBounds());
+
+var rate =
+selectedVehicle === 'car'
+? 20
+: 3.5;
+
+var cost =
+(distance * rate).toFixed(2);
+
+tripData = {
+
+name:name,
+date:date,
+from:from,
+to:to,
+distance:distance,
+duration:duration,
+vehicle:selectedVehicle,
+cost:cost,
+from_lat:fromLL.lat,
+from_lng:fromLL.lng,
+to_lat:toLL.lat,
+to_lng:toLL.lng
+
+};
+
+document.getElementById('r-name')
+.innerHTML =
+'<strong>Employee:</strong> '
++ name;
+
+document.getElementById('r-date')
+.innerHTML =
+'<strong>Date:</strong> '
++ date;
+
+document.getElementById('r-from')
+.innerHTML =
+'<strong>From:</strong> '
++ from;
+
+document.getElementById('r-to')
+.innerHTML =
+'<strong>To:</strong> '
++ to;
+
+document.getElementById('r-distance')
+.innerHTML =
+'<strong>Distance:</strong> '
++ distance + ' km';
+
+document.getElementById('r-duration')
+.innerHTML =
+'<strong>Duration:</strong> '
++ duration + ' mins';
+
+document.getElementById('r-cost')
+.innerHTML =
+'<strong>Estimated Cost:</strong> ₹'
++ cost;
+
+document.getElementById('result-card')
+.classList.add('show');
+
+toast('Route calculated');
+
+}catch(err){
+
+alert(err.message);
+
+}
+
+}
+
+function submitToZoho(){
+
+if(!tripData){
+
+toast('Calculate route first');
+return;
+
+}
+
+document.getElementById('btn-submit')
+.disabled = true;
+
+var params = new URLSearchParams();
+
+Object.keys(tripData).forEach(function(k){
+
+params.append(k,tripData[k]);
+
+});
+
+fetch(
+ZOHO_WEBHOOK_URL + '&' + params.toString(),
+{
+method:'GET',
+mode:'no-cors'
+}
+)
+.then(function(){
+
+toast('Saved to Zoho');
+
+document.getElementById('btn-submit')
+.innerHTML = 'Saved';
+
+})
+.catch(function(){
+
+toast('Save failed');
+
+document.getElementById('btn-submit')
+.disabled = false;
+
+});
+
+}
+
 </script>
 
 </body>
