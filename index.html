@@ -13,7 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-
 :root{
 --bg:#0e1117;
 --surface:#161b25;
@@ -27,11 +26,7 @@
 --radius:12px;
 }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 body{
 font-family:'DM Sans',sans-serif;
@@ -51,27 +46,11 @@ flex-direction:column;
 overflow-y:auto;
 }
 
-.brand{
-padding:18px;
-border-bottom:1px solid var(--border);
-}
+.brand{padding:18px;border-bottom:1px solid var(--border);}
+.brand h2{font-size:20px;margin-bottom:5px;}
+.brand p{font-size:12px;color:var(--muted);}
 
-.brand h2{
-font-size:20px;
-margin-bottom:5px;
-}
-
-.brand p{
-font-size:12px;
-color:var(--muted);
-}
-
-.pane{
-padding:18px;
-display:flex;
-flex-direction:column;
-gap:14px;
-}
+.pane{padding:18px;display:flex;flex-direction:column;gap:14px;}
 
 .field-label{
 font-size:12px;
@@ -91,14 +70,9 @@ outline:none;
 font-size:14px;
 }
 
-.form-input:focus{
-border-color:var(--accent);
-}
+.form-input:focus{border-color:var(--accent);}
 
-.vehicle-selector{
-display:flex;
-gap:10px;
-}
+.vehicle-selector{display:flex;gap:10px;}
 
 .vehicle-btn{
 flex:1;
@@ -111,14 +85,9 @@ color:var(--text);
 font-weight:600;
 }
 
-.vehicle-btn.active{
-background:var(--accent);
-}
+.vehicle-btn.active{background:var(--accent);}
 
-.pin-row{
-display:flex;
-gap:10px;
-}
+.pin-row{display:flex;gap:10px;}
 
 .btn-pin{
 flex:1;
@@ -131,12 +100,9 @@ color:var(--text);
 font-weight:600;
 }
 
-.btn-pin.active{
-background:var(--green);
-}
+.btn-pin.active{background:var(--green);}
 
-.btn-calc,
-.btn-submit{
+.btn-calc,.btn-submit{
 padding:14px;
 border:none;
 border-radius:var(--radius);
@@ -146,13 +112,8 @@ font-weight:700;
 color:white;
 }
 
-.btn-calc{
-background:var(--green);
-}
-
-.btn-submit{
-background:var(--accent);
-}
+.btn-calc{background:var(--green);}
+.btn-submit{background:var(--accent);}
 
 .result-card{
 display:none;
@@ -164,18 +125,10 @@ border-radius:var(--radius);
 border:1px solid var(--accent);
 }
 
-.result-card.show{
-display:flex;
-}
+.result-card.show{display:flex;}
 
-.result-row{
-font-size:14px;
-line-height:1.6;
-}
-
-.result-row strong{
-color:white;
-}
+.result-row{font-size:14px;line-height:1.6;}
+.result-row strong{color:white;}
 
 .toast{
 position:fixed;
@@ -191,32 +144,15 @@ transition:0.3s;
 z-index:99999;
 }
 
-.toast.show{
-opacity:1;
-}
+.toast.show{opacity:1;}
 
-#map{
-flex:1;
-height:100vh;
-}
+#map{flex:1;height:100vh;}
 
 @media(max-width:768px){
-
-body{
-flex-direction:column;
+body{flex-direction:column;}
+.sidebar{width:100%;height:50vh;}
+#map{height:50vh;}
 }
-
-.sidebar{
-width:100%;
-height:50vh;
-}
-
-#map{
-height:50vh;
-}
-
-}
-
 </style>
 </head>
 
@@ -233,576 +169,204 @@ height:50vh;
 
 <div>
 <div class="field-label">Employee Name</div>
-
 <select id="person-name" class="form-input">
-
 <option value="">Select Employee</option>
-
 <option value="Madhumita">Madhumita</option>
 <option value="Muni">Muni</option>
 <option value="Sarath">Sarath</option>
 <option value="Yamuna">Yamuna</option>
 <option value="Antony">Antony</option>
-
 </select>
 </div>
 
 <div>
 <div class="field-label">Travel Date</div>
-
-<input
-type="date"
-id="travel-date"
-class="form-input"
-/>
+<input type="date" id="travel-date" class="form-input"/>
 </div>
 
 <div>
 <div class="field-label">From Location</div>
-
-<input
-type="text"
-id="from-loc"
-class="form-input"
-placeholder="Enter From Location"
-/>
+<input type="text" id="from-loc" class="form-input" placeholder="Enter From Location"/>
 </div>
 
 <div>
 <div class="field-label">To Location</div>
-
-<input
-type="text"
-id="to-loc"
-class="form-input"
-placeholder="Enter Destination"
-/>
+<input type="text" id="to-loc" class="form-input" placeholder="Enter Destination"/>
 </div>
 
 <div>
 <div class="field-label">Pin GPS Location</div>
-
 <div class="pin-row">
-
-<button
-class="btn-pin"
-id="btn-pin-from"
-onclick="startPin('from')"
->
-📍 Pin From
-</button>
-
-<button
-class="btn-pin"
-id="btn-pin-to"
-onclick="startPin('to')"
->
-📍 Pin To
-</button>
-
+<button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">📍 Pin From</button>
+<button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">📍 Pin To</button>
 </div>
 </div>
 
 <div>
 <div class="field-label">Vehicle Type</div>
-
 <div class="vehicle-selector">
-
-<button
-class="vehicle-btn active"
-id="btn-bike"
-onclick="selectVehicle('bike')"
->
-Bike ₹3.5/km
-</button>
-
-<button
-class="vehicle-btn"
-id="btn-car"
-onclick="selectVehicle('car')"
->
-Car ₹20/km
-</button>
-
+<button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">Bike ₹3.5/km</button>
+<button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">Car ₹20/km</button>
 </div>
 </div>
 
-<button
-class="btn-calc"
-onclick="calculateRoute()"
->
-Calculate Route
-</button>
+<button class="btn-calc" onclick="calculateRoute()">Calculate Route</button>
 
 <div class="result-card" id="result-card">
-
 <div class="result-row" id="r-name"></div>
-
 <div class="result-row" id="r-date"></div>
-
 <div class="result-row" id="r-from"></div>
-
 <div class="result-row" id="r-to"></div>
-
 <div class="result-row" id="r-distance"></div>
-
 <div class="result-row" id="r-duration"></div>
-
 <div class="result-row" id="r-cost"></div>
 
-<button
-class="btn-submit"
-onclick="submitToZoho()"
-id="btn-submit"
->
+<button class="btn-submit" onclick="submitToZoho()" id="btn-submit">
 Save To Zoho
 </button>
-
 </div>
 
 </div>
-
 </aside>
 
 <div id="map"></div>
-
 <div class="toast" id="toast"></div>
 
 <script>
 
 var ZOHO_WEBHOOK_URL =
-"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=YOUR_WEBHOOK";
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
 
 document.getElementById('travel-date').value =
 new Date().toISOString().split('T')[0];
 
-var map =
-L.map('map').setView([13.0827,80.2707],13);
+var map = L.map('map').setView([13.0827,80.2707],13);
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 maxZoom:19
-}
-).addTo(map);
+}).addTo(map);
 
-var selectedVehicle = 'bike';
-
-var pinMode = null;
-
-var fromMarker = null;
-var toMarker = null;
-var routeLayer = null;
-
-var fromCoords = null;
-var toCoords = null;
-
-var tripData = null;
+var selectedVehicle='bike';
+var pinMode=null;
+var fromMarker=null;
+var toMarker=null;
+var routeLayer=null;
+var fromCoords=null;
+var toCoords=null;
+var tripData=null;
 
 function toast(msg){
-
-var t = document.getElementById('toast');
-
-t.innerText = msg;
-
+var t=document.getElementById('toast');
+t.innerText=msg;
 t.classList.add('show');
-
-setTimeout(function(){
-
-t.classList.remove('show');
-
-},2500);
-
+setTimeout(()=>t.classList.remove('show'),2500);
 }
 
 function selectVehicle(type){
-
-selectedVehicle = type;
-
-document.getElementById('btn-bike')
-.classList.remove('active');
-
-document.getElementById('btn-car')
-.classList.remove('active');
-
-if(type === 'bike'){
-
-document.getElementById('btn-bike')
-.classList.add('active');
-
-}else{
-
-document.getElementById('btn-car')
-.classList.add('active');
-
-}
-
+selectedVehicle=type;
+document.getElementById('btn-bike').classList.toggle('active',type==='bike');
+document.getElementById('btn-car').classList.toggle('active',type==='car');
 }
 
 function startPin(type){
-
-pinMode = type;
-
-document.getElementById('btn-pin-from')
-.classList.remove('active');
-
-document.getElementById('btn-pin-to')
-.classList.remove('active');
-
-if(type === 'from'){
-
-document.getElementById('btn-pin-from')
-.classList.add('active');
-
-}else{
-
-document.getElementById('btn-pin-to')
-.classList.add('active');
-
+pinMode=type;
+map.getContainer().style.cursor='crosshair';
+toast('Click on map');
 }
 
-map.getContainer().style.cursor = 'crosshair';
-
-toast('Click anywhere on map');
-
-}
-
-map.on('click', async function(e){
-
+map.on('click',async function(e){
 if(!pinMode) return;
 
-var lat = e.latlng.lat;
-var lng = e.latlng.lng;
-
-var type = pinMode;
-
-pinMode = null;
-
-document.getElementById('btn-pin-from')
-.classList.remove('active');
-
-document.getElementById('btn-pin-to')
-.classList.remove('active');
-
-map.getContainer().style.cursor = '';
+var lat=e.latlng.lat;
+var lng=e.latlng.lng;
+var type=pinMode;
+pinMode=null;
 
 try{
-
-if(type === 'from' && fromMarker){
-
-map.removeLayer(fromMarker);
-
-}
-
-if(type === 'to' && toMarker){
-
-map.removeLayer(toMarker);
-
-}
-
-if(type === 'from'){
-
-fromMarker =
-L.marker([lat,lng])
-.addTo(map)
-.bindPopup('FROM')
-.openPopup();
-
-}else{
-
-toMarker =
-L.marker([lat,lng])
-.addTo(map)
-.bindPopup('TO')
-.openPopup();
-
-}
-
-var r = await fetch(
-'https://nominatim.openstreetmap.org/reverse?format=json&lat='
-+ lat +
-'&lon=' +
-lng
+var r=await fetch(
+'https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng
 );
+var d=await r.json();
+var addr=d.display_name||lat+","+lng;
 
-var d = await r.json();
+document.getElementById(type==='from'?'from-loc':'to-loc').value=addr;
 
-var address =
-d.display_name
-? d.display_name
-: lat.toFixed(6)+","+lng.toFixed(6);
+if(type==='from') fromCoords={lat,lng};
+else toCoords={lat,lng};
 
-if(type === 'from'){
-
-document.getElementById('from-loc').value =
-address;
-
-fromCoords = {
-lat:lat,
-lng:lng
-};
-
-}else{
-
-document.getElementById('to-loc').value =
-address;
-
-toCoords = {
-lat:lat,
-lng:lng
-};
-
-}
-
-toast('GPS location pinned');
-
+toast('Pinned');
 }catch(err){
-
-toast('Unable to pin');
-
+toast('Error');
 }
-
 });
 
-async function geocode(address){
-
-var r = await fetch(
-'https://nominatim.openstreetmap.org/search?format=json&q='
-+ encodeURIComponent(address)
-+ '&limit=1'
-);
-
-var d = await r.json();
-
-if(!d.length){
-
-throw new Error('Location not found');
-
-}
-
-return {
-lat:parseFloat(d[0].lat),
-lng:parseFloat(d[0].lon)
-};
-
+async function geocode(addr){
+var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(addr)+'&limit=1');
+var d=await r.json();
+if(!d.length) throw new Error('Not found');
+return {lat:+d[0].lat,lng:+d[0].lon};
 }
 
 async function calculateRoute(){
 
-try{
+var name=document.getElementById('person-name').value;
+var date=document.getElementById('travel-date').value;
+var from=document.getElementById('from-loc').value;
+var to=document.getElementById('to-loc').value;
 
-var name =
-document.getElementById('person-name').value;
-
-var date =
-document.getElementById('travel-date').value;
-
-var from =
-document.getElementById('from-loc').value;
-
-var to =
-document.getElementById('to-loc').value;
-
-if(!name){
-
-alert('Select employee');
+if(!name||!date||!from||!to){
+alert('Fill all fields');
 return;
-
 }
 
-if(!date){
+var a=fromCoords||await geocode(from);
+var b=toCoords||await geocode(to);
 
-alert('Select date');
-return;
+var url='https://router.project-osrm.org/route/v1/driving/'
++a.lng+','+a.lat+';'+b.lng+','+b.lat+'?overview=full&geometries=geojson';
 
-}
+var r=await fetch(url);
+var d=await r.json();
+var route=d.routes[0];
 
-if(!from){
+var dist=(route.distance/1000).toFixed(2);
+var dur=Math.round(route.duration/60);
+var coords=route.geometry.coordinates.map(c=>[c[1],c[0]]);
 
-alert('Enter from location');
-return;
-
-}
-
-if(!to){
-
-alert('Enter destination');
-return;
-
-}
-
-var fromLL =
-fromCoords
-? fromCoords
-: await geocode(from);
-
-var toLL =
-toCoords
-? toCoords
-: await geocode(to);
-
-var url =
-'https://router.project-osrm.org/route/v1/driving/'
-+ fromLL.lng + ',' + fromLL.lat + ';'
-+ toLL.lng + ',' + toLL.lat
-+ '?overview=full&geometries=geojson';
-
-var r = await fetch(url);
-
-var d = await r.json();
-
-if(!d.routes.length){
-
-throw new Error('Route not found');
-
-}
-
-var route = d.routes[0];
-
-var distance =
-(route.distance / 1000).toFixed(2);
-
-var duration =
-Math.round(route.duration / 60);
-
-var coords =
-route.geometry.coordinates.map(function(c){
-
-return [c[1],c[0]];
-
-});
-
-if(routeLayer){
-
-map.removeLayer(routeLayer);
-
-}
-
-routeLayer =
-L.polyline(coords,{
-color:'#3b82f6',
-weight:6
-}).addTo(map);
-
+if(routeLayer) map.removeLayer(routeLayer);
+routeLayer=L.polyline(coords,{color:'#3b82f6',weight:6}).addTo(map);
 map.fitBounds(routeLayer.getBounds());
 
-var rate =
-selectedVehicle === 'car'
-? 20
-: 3.5;
+var rate=selectedVehicle==='car'?20:3.5;
+var cost=(dist*rate).toFixed(2);
 
-var cost =
-(distance * rate).toFixed(2);
+tripData={name,date,from,to,distance:dist,duration:dur,vehicle:selectedVehicle,cost};
 
-tripData = {
-
-name:name,
-date:date,
-from:from,
-to:to,
-distance:distance,
-duration:duration,
-vehicle:selectedVehicle,
-cost:cost,
-from_lat:fromLL.lat,
-from_lng:fromLL.lng,
-to_lat:toLL.lat,
-to_lng:toLL.lng
-
-};
-
-document.getElementById('r-name')
-.innerHTML =
-'<strong>Employee:</strong> '
-+ name;
-
-document.getElementById('r-date')
-.innerHTML =
-'<strong>Date:</strong> '
-+ date;
-
-document.getElementById('r-from')
-.innerHTML =
-'<strong>From:</strong> '
-+ from;
-
-document.getElementById('r-to')
-.innerHTML =
-'<strong>To:</strong> '
-+ to;
-
-document.getElementById('r-distance')
-.innerHTML =
-'<strong>Distance:</strong> '
-+ distance + ' km';
-
-document.getElementById('r-duration')
-.innerHTML =
-'<strong>Duration:</strong> '
-+ duration + ' mins';
-
-document.getElementById('r-cost')
-.innerHTML =
-'<strong>Estimated Cost:</strong> ₹'
-+ cost;
-
-document.getElementById('result-card')
-.classList.add('show');
+document.getElementById('result-card').classList.add('show');
+document.getElementById('r-name').innerHTML="Employee: <strong>"+name+"</strong>";
+document.getElementById('r-date').innerHTML="Date: <strong>"+date+"</strong>";
+document.getElementById('r-from').innerHTML="From: <strong>"+from+"</strong>";
+document.getElementById('r-to').innerHTML="To: <strong>"+to+"</strong>";
+document.getElementById('r-distance').innerHTML="Distance: <strong>"+dist+" km</strong>";
+document.getElementById('r-duration').innerHTML="Duration: <strong>"+dur+" min</strong>";
+document.getElementById('r-cost').innerHTML="Cost: ₹<strong>"+cost+"</strong>";
 
 toast('Route calculated');
-
-}catch(err){
-
-alert(err.message);
-
-}
-
 }
 
 function submitToZoho(){
 
 if(!tripData){
-
-toast('Calculate route first');
+toast('Calculate first');
 return;
-
 }
 
-document.getElementById('btn-submit')
-.disabled = true;
+var params=new URLSearchParams();
+Object.keys(tripData).forEach(k=>params.append(k,tripData[k]));
 
-var params = new URLSearchParams();
+fetch(ZOHO_WEBHOOK_URL+'&'+params.toString(),{method:'GET',mode:'no-cors'});
 
-Object.keys(tripData).forEach(function(k){
-
-params.append(k,tripData[k]);
-
-});
-
-fetch(
-ZOHO_WEBHOOK_URL + '&' + params.toString(),
-{
-method:'GET',
-mode:'no-cors'
-}
-)
-.then(function(){
-
-toast('Saved to Zoho');
-
-document.getElementById('btn-submit')
-.innerHTML = 'Saved';
-
-})
-.catch(function(){
-
-toast('Save failed');
-
-document.getElementById('btn-submit')
-.disabled = false;
-
-});
-
+toast('Sent to Zoho');
 }
 
 </script>
