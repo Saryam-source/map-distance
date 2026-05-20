@@ -331,7 +331,9 @@ height:55vh;
 
 <div>
 <div class="field-label">Travel Date</div>
-<input type="date"
+
+<input
+type="date"
 id="travel-date"
 class="form-input"/>
 </div>
@@ -340,7 +342,8 @@ class="form-input"/>
 
 <div class="field-label">Employee Name</div>
 
-<select id="person-name"
+<select
+id="person-name"
 class="form-input">
 
 <option value="">-- Select Employee --</option>
@@ -370,8 +373,7 @@ autocomplete="off"
 oninput="acSearch(this,'from-list')"
 />
 
-<div class="ac-list"
-id="from-list"></div>
+<div class="ac-list" id="from-list"></div>
 
 </div>
 
@@ -392,8 +394,7 @@ autocomplete="off"
 oninput="acSearch(this,'to-list')"
 />
 
-<div class="ac-list"
-id="to-list"></div>
+<div class="ac-list" id="to-list"></div>
 
 </div>
 
@@ -467,8 +468,7 @@ Calculate Route
 
 </button>
 
-<div class="result-card"
-id="result-card">
+<div class="result-card" id="result-card">
 
 <div class="rc-top">
 
@@ -516,7 +516,7 @@ Save to Zoho Report
 ========================= */
 
 var ZOHO_WEBHOOK_URL =
-"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.63d9bd1983046a4b5fabc6be0a6d1ecc.f7ae778f73ba509f9213c5ac7eaf49e4&isdebug=true";
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.63d9bd1983046a4b5fabc6be0a6d1ecc.f7ae778f73ba509f9213c5ac7eaf49e4";
 
 /* =========================
    DEFAULT DATE
@@ -578,7 +578,6 @@ var selectedVehicle = "bike";
 var routeLayer = null;
 var fromMarker = null;
 var toMarker = null;
-var previewMarker = null;
 var tripData = null;
 var pinMode = null;
 
@@ -588,17 +587,14 @@ var pinMode = null;
 
 function toast(msg){
 
-var t =
-document.getElementById("toast");
+var t = document.getElementById("toast");
 
 t.innerHTML = msg;
 
 t.classList.add("show");
 
 setTimeout(function(){
-
 t.classList.remove("show");
-
 },2500);
 
 }
@@ -633,24 +629,6 @@ function startPin(type){
 
 pinMode = type;
 
-document.getElementById("btn-pin-from")
-.classList.remove("active");
-
-document.getElementById("btn-pin-to")
-.classList.remove("active");
-
-if(type === "from"){
-
-document.getElementById("btn-pin-from")
-.classList.add("active");
-
-}else{
-
-document.getElementById("btn-pin-to")
-.classList.add("active");
-
-}
-
 toast("Click on map to pin location");
 
 }
@@ -674,49 +652,37 @@ var response = await fetch(
 
 var data = await response.json();
 
-var address =
-data.display_name ||
-(lat.toFixed(6)+","+lon.toFixed(6));
+var address = data.display_name;
 
 if(pinMode === "from"){
 
-document.getElementById("from-loc").value =
-address;
+document.getElementById("from-loc").value = address;
 
 if(fromMarker){
 map.removeLayer(fromMarker);
 }
 
-fromMarker = L.marker(
-[lat,lon],
-{icon:greenIcon}
-).addTo(map);
+fromMarker = L.marker([lat,lon],{
+icon:greenIcon
+}).addTo(map);
 
 }else{
 
-document.getElementById("to-loc").value =
-address;
+document.getElementById("to-loc").value = address;
 
 if(toMarker){
 map.removeLayer(toMarker);
 }
 
-toMarker = L.marker(
-[lat,lon],
-{icon:redIcon}
-).addTo(map);
+toMarker = L.marker([lat,lon],{
+icon:redIcon
+}).addTo(map);
 
 }
 
-toast("GPS location pinned");
-
-document.getElementById("btn-pin-from")
-.classList.remove("active");
-
-document.getElementById("btn-pin-to")
-.classList.remove("active");
-
 pinMode = null;
+
+toast("GPS location pinned");
 
 }catch(err){
 
@@ -734,8 +700,7 @@ async function acSearch(input,listId){
 
 var query = input.value.trim();
 
-var list =
-document.getElementById(listId);
+var list = document.getElementById(listId);
 
 if(query.length < 3){
 
@@ -772,49 +737,7 @@ div.innerHTML =
 
 div.onclick = function(){
 
-if(listId === "from-list"){
-
-document.getElementById("from-loc").value =
-item.display_name;
-
-if(fromMarker){
-map.removeLayer(fromMarker);
-}
-
-fromMarker = L.marker(
-[
-parseFloat(item.lat),
-parseFloat(item.lon)
-],
-{icon:greenIcon}
-).addTo(map);
-
-}else{
-
-document.getElementById("to-loc").value =
-item.display_name;
-
-if(toMarker){
-map.removeLayer(toMarker);
-}
-
-toMarker = L.marker(
-[
-parseFloat(item.lat),
-parseFloat(item.lon)
-],
-{icon:redIcon}
-).addTo(map);
-
-}
-
-map.setView(
-[
-parseFloat(item.lat),
-parseFloat(item.lon)
-],
-15
-);
+input.value = item.display_name;
 
 list.style.display = "none";
 
@@ -847,12 +770,6 @@ var response = await fetch(
 );
 
 var data = await response.json();
-
-if(!data.length){
-
-throw new Error("Location not found");
-
-}
 
 return{
 
@@ -981,41 +898,30 @@ timestamp:new Date().toISOString()
 };
 
 document.getElementById("r-dist")
-.innerHTML =
-route.distance + " km";
+.innerHTML = route.distance + " km";
 
 document.getElementById("r-dur")
-.innerHTML =
-route.duration + " min";
+.innerHTML = route.duration + " min";
 
 document.getElementById("r-date")
 .innerHTML =
-"Date : <strong>"
-+ formattedDate +
-"</strong>";
+"Date : <strong>"+formattedDate+"</strong>";
 
 document.getElementById("r-name")
 .innerHTML =
-"Employee : <strong>"
-+ name +
-"</strong>";
+"Employee : <strong>"+name+"</strong>";
 
 document.getElementById("r-from")
 .innerHTML =
-"From : <strong>"
-+ from +
-"</strong>";
+"From : <strong>"+from+"</strong>";
 
 document.getElementById("r-to")
 .innerHTML =
-"To : <strong>"
-+ to +
-"</strong>";
+"To : <strong>"+to+"</strong>";
 
 document.getElementById("r-cost")
 .innerHTML =
-"Estimated Cost : Rs."
-+ cost;
+"Estimated Cost : Rs."+cost;
 
 document.getElementById("result-card")
 .classList.add("show");
@@ -1045,40 +951,31 @@ return;
 
 try{
 
-var response = await fetch(
+toast("Saving to Zoho...");
+
+await fetch(
 ZOHO_WEBHOOK_URL,
 {
 method:"POST",
+
+mode:"no-cors",
 
 headers:{
 "Content-Type":"application/json"
 },
 
-body:JSON.stringify({
-payload:tripData
-})
+body:JSON.stringify(tripData)
 
 }
 );
 
-var result =
-await response.text();
-
-console.log(result);
-
-if(response.ok){
+console.log("Trip Data Sent:",tripData);
 
 toast("Saved to Zoho Successfully");
 
-}else{
-
-toast("Zoho Save Failed");
-
-}
-
 }catch(err){
 
-console.log(err);
+console.log("ERROR:",err);
 
 toast("Connection Error");
 
