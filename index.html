@@ -321,6 +321,11 @@ height:55vh;
 <div class="pane">
 
 <div>
+<div class="field-label">Travel Date</div>
+<input type="date" id="travel-date" class="form-input"/>
+</div>
+
+<div>
 <div class="field-label">Employee Name</div>
 
 <select id="person-name" class="form-input">
@@ -334,11 +339,6 @@ height:55vh;
 <option value="Antony">Antony</option>
 
 </select>
-</div>
-
-<div>
-<div class="field-label">Travel Date</div>
-<input type="date" id="travel-date" class="form-input"/>
 </div>
 
 <div>
@@ -451,8 +451,8 @@ Calculate Route
 
 </div>
 
-<div class="rc-row" id="r-name"></div>
 <div class="rc-row" id="r-date"></div>
+<div class="rc-row" id="r-name"></div>
 <div class="rc-row" id="r-from"></div>
 <div class="rc-row" id="r-to"></div>
 
@@ -473,11 +473,23 @@ Save to Zoho Report
 
 <script>
 
+/* =========================
+   ZOHO WEBHOOK
+========================= */
+
 var ZOHO_WEBHOOK_URL =
-"PASTE_YOUR_ZOHO_WEBHOOK_URL_HERE";
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
+
+/* =========================
+   DEFAULT DATE
+========================= */
 
 document.getElementById("travel-date").value =
 new Date().toISOString().split("T")[0];
+
+/* =========================
+   MAP
+========================= */
 
 var map = L.map("map").setView([13.0827,80.2707],13);
 
@@ -489,12 +501,39 @@ attribution:"© OpenStreetMap"
 }
 ).addTo(map);
 
+/* =========================
+   CUSTOM MARKERS
+========================= */
+
+var greenIcon = new L.Icon({
+iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+iconSize:[25,41],
+iconAnchor:[12,41],
+popupAnchor:[1,-34],
+shadowSize:[41,41]
+});
+
+var redIcon = new L.Icon({
+iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+iconSize:[25,41],
+iconAnchor:[12,41],
+popupAnchor:[1,-34],
+shadowSize:[41,41]
+});
+
 var selectedVehicle = "bike";
 var routeLayer = null;
 var fromMarker = null;
 var toMarker = null;
+var previewMarker = null;
 var tripData = null;
 var pinMode = null;
+
+/* =========================
+   TOAST
+========================= */
 
 function toast(msg){
 
@@ -510,6 +549,10 @@ t.classList.remove("show");
 
 }
 
+/* =========================
+   VEHICLE SELECT
+========================= */
+
 function selectVehicle(type){
 
 selectedVehicle = type;
@@ -522,6 +565,10 @@ type === "bike" ? "btn-bike" : "btn-car"
 ).classList.add("active");
 
 }
+
+/* =========================
+   PIN MODE
+========================= */
 
 function startPin(type){
 
@@ -536,9 +583,13 @@ document.getElementById("btn-pin-from").classList.add("active");
 document.getElementById("btn-pin-to").classList.add("active");
 }
 
-toast("Click anywhere on the map");
+toast("Click on map to pin location");
 
 }
+
+/* =========================
+   MAP CLICK
+========================= */
 
 map.on("click", async function(e){
 
@@ -567,7 +618,10 @@ if(fromMarker){
 map.removeLayer(fromMarker);
 }
 
-fromMarker = L.marker([lat,lon]).addTo(map);
+fromMarker = L.marker(
+[lat,lon],
+{icon:greenIcon}
+).addTo(map);
 
 }else{
 
@@ -577,7 +631,10 @@ if(toMarker){
 map.removeLayer(toMarker);
 }
 
-toMarker = L.marker([lat,lon]).addTo(map);
+toMarker = L.marker(
+[lat,lon],
+{icon:redIcon}
+).addTo(map);
 
 }
 
@@ -595,6 +652,10 @@ toast("Unable to pin location");
 }
 
 });
+
+/* =========================
+   SEARCH + MAP PREVIEW
+========================= */
 
 async function acSearch(input,listId){
 
@@ -621,6 +682,28 @@ var data = await response.json();
 
 list.innerHTML = "";
 
+if(data.length > 0){
+
+var first = data[0];
+
+var lat = parseFloat(first.lat);
+var lon = parseFloat(first.lon);
+
+map.setView([lat,lon],14);
+
+if(previewMarker){
+map.removeLayer(previewMarker);
+}
+
+previewMarker = L.circleMarker([lat,lon],{
+radius:8,
+color:"#3b82f6",
+fillColor:"#60a5fa",
+fillOpacity:0.9
+}).addTo(map);
+
+}
+
 data.forEach(function(item){
 
 var div = document.createElement("div");
@@ -642,12 +725,41 @@ if(listId === "from-list"){
 document.getElementById("from-loc").value =
 item.display_name;
 
+if(fromMarker){
+map.removeLayer(fromMarker);
+}
+
+fromMarker = L.marker(
+[
+parseFloat(item.lat),
+parseFloat(item.lon)
+],
+{icon:greenIcon}
+).addTo(map);
+
 }else{
 
 document.getElementById("to-loc").value =
 item.display_name;
 
+if(toMarker){
+map.removeLayer(toMarker);
 }
+
+toMarker = L.marker(
+[
+parseFloat(item.lat),
+parseFloat(item.lon)
+],
+{icon:redIcon}
+).addTo(map);
+
+}
+
+map.setView([
+parseFloat(item.lat),
+parseFloat(item.lon)
+],15);
 
 list.style.display = "none";
 
@@ -666,6 +778,10 @@ console.log(err);
 }
 
 }
+
+/* =========================
+   GEOCODE
+========================= */
 
 async function geocode(address){
 
@@ -691,6 +807,10 @@ lon:parseFloat(data[0].lon)
 };
 
 }
+
+/* =========================
+   ROUTE
+========================= */
 
 async function getRoute(from,to){
 
@@ -718,6 +838,10 @@ return [c[1],c[0]];
 };
 
 }
+
+/* =========================
+   CALCULATE ROUTE
+========================= */
 
 async function calculateRoute(){
 
@@ -777,19 +901,14 @@ year:'numeric'
 
 tripData = {
 
-Name:name,
-
-Travel_Date:formattedDate,
-
-Start_Location:from,
-
-End_Location:to,
-
-Distance_in_KM:route.distance,
-
+date:formattedDate,
+name:name,
+start:from,
+end:to,
+distance:route.distance,
+duration:route.duration,
 mode:selectedVehicle,
-
-Cost:cost
+cost:cost
 
 };
 
@@ -799,11 +918,11 @@ route.distance + " km";
 document.getElementById("r-dur").innerHTML =
 route.duration + " min";
 
-document.getElementById("r-name").innerHTML =
-"Employee : <strong>"+name+"</strong>";
-
 document.getElementById("r-date").innerHTML =
 "Date : <strong>"+formattedDate+"</strong>";
+
+document.getElementById("r-name").innerHTML =
+"Employee : <strong>"+name+"</strong>";
 
 document.getElementById("r-from").innerHTML =
 "From : <strong>"+from+"</strong>";
@@ -817,7 +936,7 @@ document.getElementById("r-cost").innerHTML =
 document.getElementById("result-card")
 .classList.add("show");
 
-toast("Route calculated");
+toast("Route calculated successfully");
 
 }catch(err){
 
@@ -826,6 +945,10 @@ toast(err.message);
 }
 
 }
+
+/* =========================
+   SAVE TO ZOHO
+========================= */
 
 async function submitToZoho(){
 
@@ -838,19 +961,24 @@ return;
 
 try{
 
-var params = new URLSearchParams(tripData);
-
-await fetch(
-ZOHO_WEBHOOK_URL + "&" + params.toString(),
+var response = await fetch(
+ZOHO_WEBHOOK_URL,
 {
-method:"GET",
-mode:"no-cors"
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(tripData)
 }
 );
 
-toast("Saved to Zoho");
+toast("Saved to Zoho Report");
+
+console.log(await response.text());
 
 }catch(err){
+
+console.log(err);
 
 toast("Failed to save");
 
