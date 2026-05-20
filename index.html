@@ -55,9 +55,6 @@ z-index:100;
 .brand{
 padding:16px 20px 12px;
 border-bottom:1px solid var(--border);
-display:flex;
-align-items:center;
-gap:10px;
 }
 
 .brand-title{
@@ -99,7 +96,6 @@ border:1.5px solid var(--border);
 border-radius:var(--radius);
 color:var(--text);
 outline:none;
-transition:.2s;
 }
 
 .form-input:focus{
@@ -126,10 +122,6 @@ overflow-y:auto;
 display:none;
 }
 
-.ac-list.show{
-display:block;
-}
-
 .ac-item{
 padding:9px 14px;
 font-size:12px;
@@ -143,7 +135,6 @@ background:var(--surface2);
 
 .ac-main{
 font-weight:600;
-color:var(--text);
 }
 
 .ac-sub{
@@ -155,26 +146,23 @@ margin-top:2px;
 .pin-row{
 display:flex;
 gap:6px;
-margin-top:4px;
 }
 
 .btn-pin{
 flex:1;
-padding:8px;
-font-size:11px;
+padding:10px;
+font-size:12px;
 font-weight:600;
 border:1.5px solid var(--border);
 border-radius:var(--radius);
 background:var(--surface2);
-color:var(--muted);
+color:var(--text);
 cursor:pointer;
-transition:.2s;
 }
 
 .btn-pin.active{
-border-color:var(--green);
 background:var(--green);
-color:#fff;
+border-color:var(--green);
 }
 
 .vehicle-selector{
@@ -184,21 +172,19 @@ gap:8px;
 
 .vehicle-btn{
 flex:1;
-padding:11px 8px;
+padding:11px;
 font-size:12px;
 font-weight:600;
 border:1.5px solid var(--border);
 border-radius:var(--radius);
 background:var(--surface2);
-color:var(--muted);
+color:var(--text);
 cursor:pointer;
-transition:.2s;
 }
 
 .vehicle-btn.active{
-border-color:var(--accent);
 background:var(--accent);
-color:#fff;
+border-color:var(--accent);
 }
 
 .btn-calc,.btn-submit{
@@ -209,7 +195,6 @@ font-weight:700;
 border:none;
 border-radius:var(--radius);
 cursor:pointer;
-transition:.2s;
 color:#fff;
 }
 
@@ -219,37 +204,6 @@ background:var(--green);
 
 .btn-submit{
 background:var(--accent);
-}
-
-.status-msg{
-border-radius:8px;
-padding:10px 12px;
-font-size:12px;
-display:none;
-gap:8px;
-line-height:1.5;
-}
-
-.status-msg.show{
-display:flex;
-}
-
-.status-msg.ok{
-background:rgba(34,197,94,.1);
-border:1px solid rgba(34,197,94,.25);
-color:var(--green);
-}
-
-.status-msg.err{
-background:rgba(239,68,68,.1);
-border:1px solid rgba(239,68,68,.25);
-color:var(--red);
-}
-
-.status-msg.loading{
-background:rgba(59,130,246,.1);
-border:1px solid rgba(59,130,246,.25);
-color:var(--accent2);
 }
 
 .result-card{
@@ -281,10 +235,8 @@ text-align:center;
 
 .rc-label{
 font-size:9px;
-text-transform:uppercase;
-letter-spacing:.5px;
 color:var(--muted);
-margin-bottom:3px;
+text-transform:uppercase;
 }
 
 .rc-value{
@@ -294,15 +246,10 @@ color:var(--accent2);
 font-family:'DM Mono',monospace;
 }
 
-.rc-unit{
-font-size:9px;
-color:var(--muted);
-}
-
 .rc-row{
 font-size:12px;
-color:var(--muted);
 line-height:1.5;
+color:var(--muted);
 }
 
 .rc-row strong{
@@ -315,7 +262,6 @@ font-weight:700;
 color:var(--green);
 padding:8px 12px;
 background:rgba(34,197,94,.08);
-border:1px solid rgba(34,197,94,.2);
 border-radius:8px;
 text-align:center;
 }
@@ -326,14 +272,11 @@ bottom:20px;
 left:50%;
 transform:translateX(-50%);
 background:var(--surface2);
-color:var(--text);
-border:1px solid var(--border);
 padding:10px 20px;
 border-radius:20px;
-font-size:13px;
-z-index:99999;
 opacity:0;
 transition:.3s;
+z-index:9999;
 }
 
 .toast.show{
@@ -371,10 +314,8 @@ height:55vh;
 <aside class="sidebar">
 
 <div class="brand">
-<div>
 <div class="brand-title">Employee Travel Tracker</div>
 <div class="brand-sub">Distance · Route · Zoho Sync</div>
-</div>
 </div>
 
 <div class="pane">
@@ -382,7 +323,6 @@ height:55vh;
 <div>
 <div class="field-label">Employee Name</div>
 
-<!-- EASY TO ADD EMPLOYEES -->
 <select id="person-name" class="form-input">
 
 <option value="">-- Select Employee --</option>
@@ -405,6 +345,7 @@ height:55vh;
 <div class="field-label">From Location</div>
 
 <div class="ac-wrap">
+
 <input
 type="text"
 id="from-loc"
@@ -415,6 +356,7 @@ oninput="acSearch(this,'from-list')"
 />
 
 <div class="ac-list" id="from-list"></div>
+
 </div>
 </div>
 
@@ -422,6 +364,7 @@ oninput="acSearch(this,'from-list')"
 <div class="field-label">To Location</div>
 
 <div class="ac-wrap">
+
 <input
 type="text"
 id="to-loc"
@@ -432,6 +375,7 @@ oninput="acSearch(this,'to-list')"
 />
 
 <div class="ac-list" id="to-list"></div>
+
 </div>
 </div>
 
@@ -440,11 +384,21 @@ oninput="acSearch(this,'to-list')"
 
 <div class="pin-row">
 
-<button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">
+<button
+type="button"
+class="btn-pin"
+id="btn-pin-from"
+onclick="startPin('from')"
+>
 📍 Pin From
 </button>
 
-<button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">
+<button
+type="button"
+class="btn-pin"
+id="btn-pin-to"
+onclick="startPin('to')"
+>
 📍 Pin To
 </button>
 
@@ -456,11 +410,21 @@ oninput="acSearch(this,'to-list')"
 
 <div class="vehicle-selector">
 
-<button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">
+<button
+type="button"
+class="vehicle-btn active"
+id="btn-bike"
+onclick="selectVehicle('bike')"
+>
 Bike Rs.3.5/km
 </button>
 
-<button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">
+<button
+type="button"
+class="vehicle-btn"
+id="btn-car"
+onclick="selectVehicle('car')"
+>
 Car Rs.20/km
 </button>
 
@@ -471,14 +435,6 @@ Car Rs.20/km
 Calculate Route
 </button>
 
-<div class="status-msg loading" id="msg-loading">
-<span id="msg-loading-text">Calculating...</span>
-</div>
-
-<div class="status-msg err" id="msg-err">
-<span id="msg-err-text"></span>
-</div>
-
 <div class="result-card" id="result-card">
 
 <div class="rc-top">
@@ -486,13 +442,11 @@ Calculate Route
 <div class="rc-metric">
 <div class="rc-label">Distance</div>
 <div class="rc-value" id="r-dist">-</div>
-<div class="rc-unit">km</div>
 </div>
 
 <div class="rc-metric">
 <div class="rc-label">Duration</div>
 <div class="rc-value" id="r-dur">-</div>
-<div class="rc-unit">min</div>
 </div>
 
 </div>
@@ -504,13 +458,9 @@ Calculate Route
 
 <div class="rc-cost" id="r-cost"></div>
 
-<button class="btn-submit" id="btn-submit" onclick="submitToZoho()">
+<button class="btn-submit" onclick="submitToZoho()">
 Save to Zoho Report
 </button>
-
-<div class="status-msg ok" id="msg-ok">
-<span>Saved Successfully</span>
-</div>
 
 </div>
 
@@ -523,7 +473,8 @@ Save to Zoho Report
 
 <script>
 
-var ZOHO_WEBHOOK_URL = "YOUR_ZOHO_WEBHOOK_URL_HERE";
+var ZOHO_WEBHOOK_URL =
+"PASTE_YOUR_ZOHO_WEBHOOK_URL_HERE";
 
 document.getElementById("travel-date").value =
 new Date().toISOString().split("T")[0];
@@ -576,6 +527,15 @@ function startPin(type){
 
 pinMode = type;
 
+document.getElementById("btn-pin-from").classList.remove("active");
+document.getElementById("btn-pin-to").classList.remove("active");
+
+if(type === "from"){
+document.getElementById("btn-pin-from").classList.add("active");
+}else{
+document.getElementById("btn-pin-to").classList.add("active");
+}
+
 toast("Click anywhere on the map");
 
 }
@@ -595,14 +555,17 @@ var response = await fetch(
 
 var data = await response.json();
 
-var address = data.display_name ||
+var address =
+data.display_name ||
 (lat.toFixed(6)+","+lon.toFixed(6));
 
 if(pinMode === "from"){
 
 document.getElementById("from-loc").value = address;
 
-if(fromMarker) map.removeLayer(fromMarker);
+if(fromMarker){
+map.removeLayer(fromMarker);
+}
 
 fromMarker = L.marker([lat,lon]).addTo(map);
 
@@ -610,13 +573,18 @@ fromMarker = L.marker([lat,lon]).addTo(map);
 
 document.getElementById("to-loc").value = address;
 
-if(toMarker) map.removeLayer(toMarker);
+if(toMarker){
+map.removeLayer(toMarker);
+}
 
 toMarker = L.marker([lat,lon]).addTo(map);
 
 }
 
-toast("Exact GPS location pinned");
+toast("GPS location pinned");
+
+document.getElementById("btn-pin-from").classList.remove("active");
+document.getElementById("btn-pin-to").classList.remove("active");
 
 pinMode = null;
 
@@ -643,12 +611,11 @@ return;
 
 try{
 
-var url =
+var response = await fetch(
 "https://nominatim.openstreetmap.org/search?format=json&q="
 + encodeURIComponent(query)
-+ "&limit=10";
-
-var response = await fetch(url);
++ "&limit=10"
+);
 
 var data = await response.json();
 
@@ -661,8 +628,12 @@ var div = document.createElement("div");
 div.className = "ac-item";
 
 div.innerHTML =
-'<div class="ac-main">'+item.display_name.split(",")[0]+'</div>' +
-'<div class="ac-sub">'+item.display_name+'</div>';
+'<div class="ac-main">'+
+item.display_name.split(",")[0]+
+'</div>' +
+'<div class="ac-sub">'+
+item.display_name+
+'</div>';
 
 div.onclick = function(){
 
@@ -713,8 +684,10 @@ throw new Error("Location not found");
 }
 
 return {
+
 lat:parseFloat(data[0].lat),
 lon:parseFloat(data[0].lon)
+
 };
 
 }
@@ -769,8 +742,6 @@ return;
 
 }
 
-document.getElementById("msg-loading").classList.add("show");
-
 var fromLL = await geocode(from);
 var toLL = await geocode(to);
 
@@ -794,30 +765,45 @@ var rate = selectedVehicle === "car" ? 20 : 3.5;
 var cost =
 (parseFloat(route.distance) * rate).toFixed(2);
 
+var formattedDate =
+new Date(date).toLocaleDateString(
+'en-GB',
+{
+day:'2-digit',
+month:'short',
+year:'numeric'
+}
+).replace(/ /g,'-');
+
 tripData = {
 
-employee_name:name,
-travel_date:date,
-from_location:from,
-to_location:to,
-distance:route.distance,
-duration:route.duration,
-vehicle:selectedVehicle,
-cost:cost
+Name:name,
+
+Travel_Date:formattedDate,
+
+Start_Location:from,
+
+End_Location:to,
+
+Distance_in_KM:route.distance,
+
+mode:selectedVehicle,
+
+Cost:cost
 
 };
 
 document.getElementById("r-dist").innerHTML =
-route.distance;
+route.distance + " km";
 
 document.getElementById("r-dur").innerHTML =
-route.duration;
+route.duration + " min";
 
 document.getElementById("r-name").innerHTML =
 "Employee : <strong>"+name+"</strong>";
 
 document.getElementById("r-date").innerHTML =
-"Date : <strong>"+date+"</strong>";
+"Date : <strong>"+formattedDate+"</strong>";
 
 document.getElementById("r-from").innerHTML =
 "From : <strong>"+from+"</strong>";
@@ -831,21 +817,11 @@ document.getElementById("r-cost").innerHTML =
 document.getElementById("result-card")
 .classList.add("show");
 
-document.getElementById("msg-loading")
-.classList.remove("show");
-
 toast("Route calculated");
 
 }catch(err){
 
-document.getElementById("msg-loading")
-.classList.remove("show");
-
-document.getElementById("msg-err")
-.classList.add("show");
-
-document.getElementById("msg-err-text")
-.innerHTML = err.message;
+toast(err.message);
 
 }
 
@@ -871,9 +847,6 @@ method:"GET",
 mode:"no-cors"
 }
 );
-
-document.getElementById("msg-ok")
-.classList.add("show");
 
 toast("Saved to Zoho");
 
