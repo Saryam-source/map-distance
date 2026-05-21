@@ -13,262 +13,243 @@
 <style>
 
 :root{
-  --bg:#0e1117;
-  --surface:#161b25;
-  --surface2:#1e2535;
-  --border:#2a3347;
-  --text:#e8edf5;
-  --muted:#7a8499;
-  --accent:#3b82f6;
-  --accent2:#60a5fa;
-  --green:#22c55e;
-  --red:#ef4444;
-  --radius:10px;
+--bg:#0e1117;
+--surface:#161b25;
+--surface2:#1e2535;
+--border:#2a3347;
+--text:#e8edf5;
+--muted:#7a8499;
+--accent:#3b82f6;
+--accent2:#60a5fa;
+--green:#22c55e;
+--red:#ef4444;
+--radius:10px;
 }
 
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+box-sizing:border-box;
+margin:0;
+padding:0;
 }
 
 body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  height:100vh;
-  overflow:hidden;
-  display:flex;
+font-family:'DM Sans',sans-serif;
+background:var(--bg);
+color:var(--text);
+height:100vh;
+overflow:hidden;
+display:flex;
 }
 
 .sidebar{
-  width:390px;
-  min-width:390px;
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  z-index:100;
+width:390px;
+min-width:390px;
+background:var(--surface);
+border-right:1px solid var(--border);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+z-index:100;
 }
 
 .brand{
-  padding:16px 20px 12px;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.brand-icon{
-  width:32px;
-  height:32px;
-  background:var(--accent);
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.brand-icon svg{
-  width:17px;
-  height:17px;
-  fill:#fff;
+padding:16px 20px;
+border-bottom:1px solid var(--border);
 }
 
 .brand-title{
-  font-size:15px;
-  font-weight:600;
+font-size:18px;
+font-weight:700;
 }
 
 .brand-sub{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:1px;
+font-size:12px;
+color:var(--muted);
+margin-top:4px;
 }
 
 .pane{
-  padding:14px 16px;
-  flex:1;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+padding:16px;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:14px;
 }
 
 .field-label{
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.6px;
-  color:var(--muted);
-  text-transform:uppercase;
-  margin-bottom:5px;
+font-size:11px;
+font-weight:700;
+letter-spacing:.5px;
+color:var(--muted);
+margin-bottom:6px;
+text-transform:uppercase;
 }
 
 .form-input{
-  width:100%;
-  padding:11px 14px;
-  font-size:13px;
-  font-family:inherit;
-  background:var(--bg);
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  color:var(--text);
-  outline:none;
-  transition:.2s;
-}
-
-.form-input::placeholder{
-  color:var(--muted);
+width:100%;
+padding:12px;
+background:var(--bg);
+border:1px solid var(--border);
+border-radius:var(--radius);
+color:var(--text);
+font-size:14px;
+outline:none;
 }
 
 .form-input:focus{
-  border-color:var(--accent);
-  background:var(--surface2);
+border-color:var(--accent);
 }
 
 .ac-wrap{
-  position:relative;
+position:relative;
 }
 
 .ac-list{
-  position:absolute;
-  top:100%;
-  left:0;
-  right:0;
-  background:var(--surface);
-  border:1.5px solid var(--accent);
-  border-top:none;
-  border-radius:0 0 var(--radius) var(--radius);
-  z-index:9999;
-  max-height:240px;
-  overflow-y:auto;
-  display:none;
+position:absolute;
+top:100%;
+left:0;
+right:0;
+background:var(--surface);
+border:1px solid var(--border);
+border-top:none;
+z-index:9999;
+max-height:220px;
+overflow-y:auto;
+display:none;
 }
 
 .ac-list.show{
-  display:block;
+display:block;
 }
 
 .ac-item{
-  padding:9px 14px;
-  font-size:12px;
-  cursor:pointer;
-  border-bottom:1px solid var(--border);
+padding:10px 14px;
+cursor:pointer;
+border-bottom:1px solid var(--border);
 }
 
 .ac-item:hover{
-  background:var(--surface2);
-}
-
-.ac-main{
-  font-weight:600;
-  color:var(--text);
-}
-
-.ac-sub{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:2px;
+background:var(--surface2);
 }
 
 .vehicle-selector{
-  display:flex;
-  gap:8px;
+display:flex;
+gap:10px;
 }
 
 .vehicle-btn{
-  flex:1;
-  padding:11px 8px;
-  font-size:12px;
-  font-weight:600;
-  border:1.5px solid var(--border);
-  border-radius:var(--radius);
-  background:var(--surface2);
-  color:var(--muted);
-  cursor:pointer;
-  transition:.2s;
+flex:1;
+padding:12px;
+border:none;
+border-radius:var(--radius);
+cursor:pointer;
+font-weight:700;
+background:var(--surface2);
+color:var(--text);
 }
 
 .vehicle-btn.active{
-  border-color:var(--accent);
-  background:var(--accent);
-  color:#fff;
+background:var(--accent);
 }
 
-.btn-calc,.btn-submit{
-  width:100%;
-  padding:13px;
-  font-size:14px;
-  font-weight:700;
-  border:none;
-  border-radius:var(--radius);
-  cursor:pointer;
-  transition:.2s;
-  color:#fff;
+.pin-row{
+display:flex;
+gap:10px;
+}
+
+.btn-pin{
+flex:1;
+padding:12px;
+border:none;
+border-radius:var(--radius);
+cursor:pointer;
+font-weight:700;
+background:var(--surface2);
+color:var(--text);
+}
+
+.btn-pin.active{
+background:var(--green);
+}
+
+.btn-calc,
+.btn-submit{
+padding:14px;
+border:none;
+border-radius:var(--radius);
+font-size:15px;
+font-weight:700;
+cursor:pointer;
+color:#fff;
 }
 
 .btn-calc{
-  background:var(--green);
+background:var(--green);
 }
 
 .btn-submit{
-  background:var(--accent);
+background:var(--accent);
 }
 
 .result-card{
-  background:var(--bg);
-  border:1.5px solid var(--accent);
-  border-radius:12px;
-  padding:14px;
-  display:none;
-  flex-direction:column;
-  gap:10px;
+background:var(--bg);
+border:1px solid var(--accent);
+border-radius:12px;
+padding:16px;
+display:none;
+flex-direction:column;
+gap:12px;
 }
 
 .result-card.show{
-  display:flex;
-}
-
-.rc-top{
-  display:flex;
-  gap:8px;
-}
-
-.rc-metric{
-  flex:1;
-  background:var(--surface2);
-  border-radius:8px;
-  padding:10px;
-  text-align:center;
+display:flex;
 }
 
 .rc-value{
-  font-size:22px;
-  font-weight:700;
-  color:var(--accent2);
-  font-family:'DM Mono',monospace;
+font-size:24px;
+font-weight:700;
+font-family:'DM Mono',monospace;
+}
+
+.toast{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+background:var(--surface2);
+padding:12px 20px;
+border-radius:20px;
+font-size:13px;
+opacity:0;
+transition:.3s;
+z-index:99999;
+}
+
+.toast.show{
+opacity:1;
 }
 
 #map{
-  flex:1;
-  height:100vh;
+flex:1;
+height:100vh;
 }
 
 @media(max-width:768px){
-  body{
-    flex-direction:column;
-    height:auto;
-  }
 
-  .sidebar{
-    width:100%;
-    min-width:100%;
-  }
+body{
+flex-direction:column;
+height:auto;
+}
 
-  #map{
-    height:55vh;
-  }
+.sidebar{
+width:100%;
+min-width:100%;
+}
+
+#map{
+height:55vh;
+}
+
 }
 
 </style>
@@ -279,461 +260,725 @@ body{
 <aside class="sidebar">
 
 <div class="brand">
-  <div class="brand-icon">
-    <svg viewBox="0 0 24 24">
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-    </svg>
-  </div>
-
-  <div>
-    <div class="brand-title">Employee Travel Tracker</div>
-    <div class="brand-sub">Distance · Route · Zoho Sync</div>
-  </div>
+<div class="brand-title">Employee Travel Tracker</div>
+<div class="brand-sub">Distance · Route · Zoho Sync</div>
 </div>
 
 <div class="pane">
 
-  <div>
-    <div class="field-label">Employee Name</div>
+<div>
+<div class="field-label">Employee Name</div>
 
-    <select id="person-name" class="form-input">
-      <option value="">-- Select Employee --</option>
-      <option value="Madhumita">Madhumita</option>
-      <option value="Muni">Muni</option>
-      <option value="Sarath">Sarath</option>
-      <option value="Yamuna">Yamuna</option>
-      <option value="Antony">Antony</option>
-    </select>
-  </div>
-
-  <div>
-    <div class="field-label">Travel Date</div>
-    <input type="date" id="travel-date" class="form-input"/>
-  </div>
-
-  <div>
-    <div class="field-label">From</div>
-
-    <div class="ac-wrap">
-      <input
-        type="text"
-        id="from-loc"
-        class="form-input"
-        placeholder="Enter starting location..."
-        autocomplete="off"
-        oninput="acSearch(this,'from-list')"
-      />
-
-      <div class="ac-list" id="from-list"></div>
-    </div>
-  </div>
-
-  <div>
-    <div class="field-label">To</div>
-
-    <div class="ac-wrap">
-      <input
-        type="text"
-        id="to-loc"
-        class="form-input"
-        placeholder="Enter destination..."
-        autocomplete="off"
-        oninput="acSearch(this,'to-list')"
-      />
-
-      <div class="ac-list" id="to-list"></div>
-    </div>
-  </div>
-
-  <div>
-    <div class="field-label">Vehicle Type</div>
-
-    <div class="vehicle-selector">
-      <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">
-        Bike Rs.3.5/km
-      </button>
-
-      <button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">
-        Car Rs.20/km
-      </button>
-    </div>
-  </div>
-
-  <button class="btn-calc" onclick="calculateRoute()">
-    Calculate Route
-  </button>
-
-  <div class="result-card" id="result-card">
-
-    <div class="rc-top">
-
-      <div class="rc-metric">
-        <div>Distance</div>
-        <div class="rc-value" id="r-dist">-</div>
-      </div>
-
-      <div class="rc-metric">
-        <div>Duration</div>
-        <div class="rc-value" id="r-dur">-</div>
-      </div>
-
-    </div>
-
-    <div id="r-name"></div>
-    <div id="r-date"></div>
-    <div id="r-from"></div>
-    <div id="r-to"></div>
-    <div id="r-cost"></div>
-
-    <button class="btn-submit" onclick="submitToZoho()">
-      Save to Zoho Report
-    </button>
-
-  </div>
+<select id="person-name" class="form-input">
+<option value="">Select Employee</option>
+<option value="Madhumita">Madhumita</option>
+<option value="Muni">Muni</option>
+<option value="Sarath">Sarath</option>
+<option value="Yamuna">Yamuna</option>
+<option value="Antony">Antony</option>
+</select>
 
 </div>
+
+<div>
+<div class="field-label">Travel Date</div>
+<input type="date" id="travel-date" class="form-input"/>
+</div>
+
+<div>
+<div class="field-label">From</div>
+
+<div class="ac-wrap">
+
+<input
+type="text"
+id="from-loc"
+class="form-input"
+placeholder="Enter starting location..."
+autocomplete="off"
+oninput="acSearch(this,'from-list')"
+/>
+
+<div class="ac-list" id="from-list"></div>
+
+</div>
+</div>
+
+<div>
+<div class="field-label">To</div>
+
+<div class="ac-wrap">
+
+<input
+type="text"
+id="to-loc"
+class="form-input"
+placeholder="Enter destination..."
+autocomplete="off"
+oninput="acSearch(this,'to-list')"
+/>
+
+<div class="ac-list" id="to-list"></div>
+
+</div>
+</div>
+
+<div>
+<div class="field-label">Manual Pin Location</div>
+
+<div class="pin-row">
+
+<button
+class="btn-pin"
+id="btn-pin-from"
+onclick="startPin('from')">
+📍 Pin From
+</button>
+
+<button
+class="btn-pin"
+id="btn-pin-to"
+onclick="startPin('to')">
+📍 Pin To
+</button>
+
+</div>
+</div>
+
+<div>
+<div class="field-label">Vehicle Type</div>
+
+<div class="vehicle-selector">
+
+<button
+class="vehicle-btn active"
+id="btn-bike"
+onclick="selectVehicle('bike')">
+Bike Rs.3.5/km
+</button>
+
+<button
+class="vehicle-btn"
+id="btn-car"
+onclick="selectVehicle('car')">
+Car Rs.20/km
+</button>
+
+</div>
+</div>
+
+<button class="btn-calc" onclick="calculateRoute()">
+Calculate Route
+</button>
+
+<div class="result-card" id="result-card">
+
+<div>
+Distance:
+<div class="rc-value" id="r-dist">0</div>
+</div>
+
+<div>
+Duration:
+<div class="rc-value" id="r-dur">0</div>
+</div>
+
+<div id="r-cost"></div>
+
+<button class="btn-submit" onclick="submitToZoho()">
+Save to Zoho
+</button>
+
+</div>
+
+</div>
+
 </aside>
 
 <div id="map"></div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 
 var ZOHO_WEBHOOK_URL =
-"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=YOUR_WEBHOOK";
+"YOUR_ZOHO_WEBHOOK_URL";
 
 document.getElementById('travel-date').value =
 new Date().toISOString().split('T')[0];
 
-var map = L.map('map').setView([13.0827, 80.2707],12);
+var map = L.map('map').setView([13.0827,80.2707],12);
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
-  maxZoom:19,
-  attribution:'© OpenStreetMap'
+maxZoom:19,
+attribution:'© OpenStreetMap'
 }
 ).addTo(map);
 
 var selectedVehicle = 'bike';
 
 var routeLayer = null;
+
 var fromMarker = null;
 var toMarker = null;
 
+var fromCoords = null;
+var toCoords = null;
+
 var tripData = null;
 
-var greenIcon = new L.Icon({
-  iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-  shadowUrl:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  iconSize:[25,41],
-  iconAnchor:[12,41],
-  popupAnchor:[1,-34],
-  shadowSize:[41,41]
-});
+var pinMode = null;
 
-var redIcon = new L.Icon({
-  iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-  shadowUrl:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  iconSize:[25,41],
-  iconAnchor:[12,41],
-  popupAnchor:[1,-34],
-  shadowSize:[41,41]
-});
+function toast(msg){
+
+var t = document.getElementById('toast');
+
+t.textContent = msg;
+
+t.classList.add('show');
+
+clearTimeout(t._t);
+
+t._t = setTimeout(function(){
+
+t.classList.remove('show');
+
+},2500);
+
+}
 
 function selectVehicle(type){
 
-  selectedVehicle = type;
+selectedVehicle = type;
 
-  document.getElementById('btn-bike')
-  .classList.toggle('active',type==='bike');
+document.getElementById('btn-bike')
+.classList.toggle('active',type==='bike');
 
-  document.getElementById('btn-car')
-  .classList.toggle('active',type==='car');
+document.getElementById('btn-car')
+.classList.toggle('active',type==='car');
+
+}
+
+function startPin(type){
+
+pinMode = type;
+
+document.getElementById('btn-pin-from')
+.classList.toggle('active',type==='from');
+
+document.getElementById('btn-pin-to')
+.classList.toggle('active',type==='to');
+
+map.getContainer().style.cursor = 'crosshair';
+
+toast('Click on map to pin ' + type + ' location');
+
 }
 
 async function acSearch(input,listId){
 
-  var query = input.value.trim();
+var query = input.value.trim();
 
-  var list = document.getElementById(listId);
+var list = document.getElementById(listId);
 
-  if(query.length < 3){
-    list.innerHTML = '';
-    list.classList.remove('show');
-    return;
-  }
+if(query.length < 3){
 
-  try{
+list.classList.remove('show');
+list.innerHTML = '';
 
-    var url =
-    'https://nominatim.openstreetmap.org/search?format=json&q='
-    + encodeURIComponent(query)
-    + '&countrycodes=in&limit=10';
+return;
 
-    var r = await fetch(url);
+}
 
-    var d = await r.json();
+try{
 
-    list.innerHTML = d.map(function(item){
+var url =
+'https://nominatim.openstreetmap.org/search?format=json&q=' +
+encodeURIComponent(query) +
+'&countrycodes=in&limit=5';
 
-      var safe = item.display_name
-      .replace(/\\/g,'\\\\')
-      .replace(/'/g,"\\'");
+var r = await fetch(url,{
+headers:{
+'Accept-Language':'en',
+'User-Agent':'DistanceCalculatorApp'
+}
+});
 
-      return `
-      <div class="ac-item"
-      onmousedown="acSelect('${listId}','${safe}')">
+var d = await r.json();
 
-      <div class="ac-main">
-      ${item.display_name.split(',')[0]}
-      </div>
+list.innerHTML = d.map(function(item){
 
-      <div class="ac-sub">
-      ${item.display_name}
-      </div>
+var safe = item.display_name
+.replace(/\\/g,'\\\\')
+.replace(/'/g,"\\'");
 
-      </div>
-      `;
+return `
+<div class="ac-item"
+onmousedown="acSelect('${listId}','${safe}')">
+${item.display_name}
+</div>
+`;
 
-    }).join('');
+}).join('');
 
-    list.classList.add('show');
+list.classList.add('show');
 
-  }catch(e){
-    console.error(e);
-  }
+}catch(e){
+
+console.error(e);
+
+}
+
 }
 
 async function geocode(address){
 
-  var r = await fetch(
-    'https://nominatim.openstreetmap.org/search?format=json&q='
-    + encodeURIComponent(address)
-    + '&countrycodes=in&limit=1'
-  );
+var r = await fetch(
+'https://nominatim.openstreetmap.org/search?format=json&q=' +
+encodeURIComponent(address) +
+'&limit=1',
+{
+headers:{
+'Accept-Language':'en',
+'User-Agent':'DistanceCalculatorApp'
+}
+}
+);
 
-  var d = await r.json();
+var d = await r.json();
 
-  if(!d.length){
-    throw new Error('Location not found');
-  }
+if(!d.length){
 
-  return {
-    lat:parseFloat(d[0].lat),
-    lon:parseFloat(d[0].lon)
-  };
+throw new Error('Location not found');
+
 }
 
-async function autoPinLocation(type,address){
+return {
 
-  try{
+lat:parseFloat(d[0].lat),
+lon:parseFloat(d[0].lon)
 
-    var loc = await geocode(address);
+};
 
-    if(type === 'from'){
-
-      if(fromMarker){
-        map.removeLayer(fromMarker);
-      }
-
-      fromMarker = L.marker(
-        [loc.lat,loc.lon],
-        {icon:greenIcon}
-      )
-      .addTo(map)
-      .bindPopup('FROM: '+address);
-
-    }else{
-
-      if(toMarker){
-        map.removeLayer(toMarker);
-      }
-
-      toMarker = L.marker(
-        [loc.lat,loc.lon],
-        {icon:redIcon}
-      )
-      .addTo(map)
-      .bindPopup('TO: '+address);
-    }
-
-    var bounds = [];
-
-    if(fromMarker){
-      bounds.push(fromMarker.getLatLng());
-    }
-
-    if(toMarker){
-      bounds.push(toMarker.getLatLng());
-    }
-
-    if(bounds.length > 0){
-      map.fitBounds(bounds,{padding:[50,50]});
-    }
-
-  }catch(e){
-    console.error(e);
-  }
 }
 
-function acSelect(listId,value){
+async function acSelect(listId,value){
 
-  var isFrom = listId === 'from-list';
+var isFrom = listId === 'from-list';
 
-  var inputId = isFrom ? 'from-loc' : 'to-loc';
+var inputId = isFrom ? 'from-loc' : 'to-loc';
 
-  document.getElementById(inputId).value = value;
+document.getElementById(inputId).value = value;
 
-  document.getElementById(listId)
-  .classList.remove('show');
+document.getElementById(listId).classList.remove('show');
 
-  autoPinLocation(
-    isFrom ? 'from' : 'to',
-    value
-  );
+try{
+
+var loc = await geocode(value);
+
+var latlng = [loc.lat,loc.lon];
+
+if(isFrom){
+
+fromCoords = loc;
+
+if(fromMarker){
+map.removeLayer(fromMarker);
 }
+
+var greenIcon = L.icon({
+
+iconUrl:
+'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+
+shadowUrl:
+'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+iconSize:[25,41],
+iconAnchor:[12,41]
+
+});
+
+fromMarker = L.marker(latlng,{
+icon:greenIcon
+})
+.addTo(map)
+.bindPopup('FROM');
+
+}else{
+
+toCoords = loc;
+
+if(toMarker){
+map.removeLayer(toMarker);
+}
+
+var redIcon = L.icon({
+
+iconUrl:
+'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+
+shadowUrl:
+'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+iconSize:[25,41],
+iconAnchor:[12,41]
+
+});
+
+toMarker = L.marker(latlng,{
+icon:redIcon
+})
+.addTo(map)
+.bindPopup('TO');
+
+}
+
+if(fromCoords && toCoords){
+
+var bounds = L.latLngBounds([
+[fromCoords.lat,fromCoords.lon],
+[toCoords.lat,toCoords.lon]
+]);
+
+map.fitBounds(bounds,{
+padding:[50,50]
+});
+
+}else{
+
+map.flyTo(latlng,14);
+
+}
+
+}catch(e){
+
+console.error(e);
+
+toast('Unable to pin location');
+
+}
+
+}
+
+map.on('click', async function(e){
+
+if(!pinMode) return;
+
+var lat = e.latlng.lat;
+var lng = e.latlng.lng;
+
+var type = pinMode;
+
+pinMode = null;
+
+document.getElementById('btn-pin-from')
+.classList.remove('active');
+
+document.getElementById('btn-pin-to')
+.classList.remove('active');
+
+map.getContainer().style.cursor = '';
+
+try{
+
+var r = await fetch(
+'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+lat +
+'&lon=' +
+lng,
+{
+headers:{
+'Accept-Language':'en',
+'User-Agent':'DistanceCalculatorApp'
+}
+}
+);
+
+var d = await r.json();
+
+var addr =
+d.display_name ||
+(lat.toFixed(5) + ', ' + lng.toFixed(5));
+
+var latlng = [lat,lng];
+
+if(type === 'from'){
+
+document.getElementById('from-loc').value = addr;
+
+fromCoords = {
+lat:lat,
+lon:lng
+};
+
+if(fromMarker){
+map.removeLayer(fromMarker);
+}
+
+var greenIcon = L.icon({
+
+iconUrl:
+'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+
+shadowUrl:
+'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+iconSize:[25,41],
+iconAnchor:[12,41]
+
+});
+
+fromMarker = L.marker(latlng,{
+icon:greenIcon
+})
+.addTo(map)
+.bindPopup('FROM');
+
+}else{
+
+document.getElementById('to-loc').value = addr;
+
+toCoords = {
+lat:lat,
+lon:lng
+};
+
+if(toMarker){
+map.removeLayer(toMarker);
+}
+
+var redIcon = L.icon({
+
+iconUrl:
+'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+
+shadowUrl:
+'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+iconSize:[25,41],
+iconAnchor:[12,41]
+
+});
+
+toMarker = L.marker(latlng,{
+icon:redIcon
+})
+.addTo(map)
+.bindPopup('TO');
+
+}
+
+if(fromCoords && toCoords){
+
+var bounds = L.latLngBounds([
+[fromCoords.lat,fromCoords.lon],
+[toCoords.lat,toCoords.lon]
+]);
+
+map.fitBounds(bounds,{
+padding:[50,50]
+});
+
+}else{
+
+map.flyTo(latlng,15);
+
+}
+
+toast(
+(type === 'from' ? 'FROM' : 'TO') +
+' location pinned!'
+);
+
+}catch(ex){
+
+console.error(ex);
+
+toast('Pinning failed');
+
+}
+
+});
 
 async function getRoute(from,to){
 
-  var url =
-  'https://router.project-osrm.org/route/v1/driving/'
-  + from.lon + ',' + from.lat + ';'
-  + to.lon + ',' + to.lat
-  + '?overview=full&geometries=geojson';
+var url =
+'https://router.project-osrm.org/route/v1/driving/' +
+from.lon + ',' + from.lat + ';' +
+to.lon + ',' + to.lat +
+'?overview=full&geometries=geojson';
 
-  var r = await fetch(url);
+var r = await fetch(url);
 
-  var d = await r.json();
+var d = await r.json();
 
-  var route = d.routes[0];
+if(!d.routes || !d.routes.length){
 
-  return {
-    distKm:(route.distance/1000).toFixed(2),
-    durMin:Math.round(route.duration/60),
-    coords:route.geometry.coordinates.map(
-      c => [c[1],c[0]]
-    )
-  };
+throw new Error('Route not found');
+
+}
+
+var route = d.routes[0];
+
+return {
+
+distKm:(route.distance/1000).toFixed(2),
+
+durMin:Math.round(route.duration/60),
+
+coords:route.geometry.coordinates.map(function(c){
+
+return [c[1],c[0]];
+
+})
+
+};
+
 }
 
 async function calculateRoute(){
 
-  var name =
-  document.getElementById('person-name').value;
+try{
 
-  var date =
-  document.getElementById('travel-date').value;
+var name =
+document.getElementById('person-name').value;
 
-  var from =
-  document.getElementById('from-loc').value;
+var date =
+document.getElementById('travel-date').value;
 
-  var to =
-  document.getElementById('to-loc').value;
+var from =
+document.getElementById('from-loc').value;
 
-  if(!name || !from || !to){
-    alert('Please fill all fields');
-    return;
-  }
+var to =
+document.getElementById('to-loc').value;
 
-  try{
+if(!name || !from || !to){
 
-    var fromLL = await geocode(from);
+alert('Please fill all fields');
 
-    var toLL = await geocode(to);
+return;
 
-    var route = await getRoute(fromLL,toLL);
+}
 
-    if(routeLayer){
-      map.removeLayer(routeLayer);
-    }
+var fromLL = fromCoords || await geocode(from);
 
-    routeLayer = L.polyline(
-      route.coords,
-      {
-        color:'#3b82f6',
-        weight:6
-      }
-    ).addTo(map);
+var toLL = toCoords || await geocode(to);
 
-    map.fitBounds(routeLayer.getBounds(),{
-      padding:[40,40]
-    });
+var route = await getRoute(fromLL,toLL);
 
-    var rate =
-    selectedVehicle === 'car' ? 20 : 3.5;
+if(routeLayer){
 
-    var cost =
-    (parseFloat(route.distKm) * rate)
-    .toFixed(2);
+map.removeLayer(routeLayer);
 
-    tripData = {
-      name:name,
-      date:date,
-      start:from,
-      end:to,
-      distance:route.distKm,
-      duration:route.durMin,
-      mode:selectedVehicle,
-      cost:cost
-    };
+}
 
-    document.getElementById('r-dist')
-    .textContent = route.distKm + ' km';
+routeLayer = L.polyline(route.coords,{
+color:'#3b82f6',
+weight:6
+}).addTo(map);
 
-    document.getElementById('r-dur')
-    .textContent = route.durMin + ' min';
+map.fitBounds(routeLayer.getBounds(),{
+padding:[40,40]
+});
 
-    document.getElementById('r-name')
-    .innerHTML = '<b>'+name+'</b>';
+var rate =
+selectedVehicle === 'car' ? 20 : 3.5;
 
-    document.getElementById('r-date')
-    .innerHTML = 'Date: <b>'+date+'</b>';
+var cost =
+(parseFloat(route.distKm) * rate).toFixed(2);
 
-    document.getElementById('r-from')
-    .innerHTML = 'From: <b>'+from+'</b>';
+var months = [
+'Jan','Feb','Mar','Apr','May','Jun',
+'Jul','Aug','Sep','Oct','Nov','Dec'
+];
 
-    document.getElementById('r-to')
-    .innerHTML = 'To: <b>'+to+'</b>';
+var dp = date.split('-');
 
-    document.getElementById('r-cost')
-    .innerHTML = '<b>Estimated Cost: Rs.'
-    + cost + '</b>';
+var zohoDate =
+dp[2] + '-' +
+months[parseInt(dp[1])-1] + '-' +
+dp[0];
 
-    document.getElementById('result-card')
-    .classList.add('show');
+tripData = {
 
-  }catch(e){
+name:name,
+date:zohoDate,
+start:from,
+end:to,
+distance:route.distKm,
+duration:route.durMin,
+mode:selectedVehicle,
+cost:cost
 
-    console.error(e);
+};
 
-    alert(e.message);
-  }
+document.getElementById('r-dist')
+.textContent = route.distKm + ' KM';
+
+document.getElementById('r-dur')
+.textContent = route.durMin + ' MIN';
+
+document.getElementById('r-cost')
+.innerHTML = 'Estimated Cost: Rs.' + cost;
+
+document.getElementById('result-card')
+.classList.add('show');
+
+toast('Route Calculated');
+
+}catch(e){
+
+console.error(e);
+
+toast('Failed to fetch route');
+
+}
+
 }
 
 function submitToZoho(){
 
-  if(!tripData){
-    alert('Calculate route first');
-    return;
-  }
+if(!tripData){
 
-  var params = new URLSearchParams();
+toast('Calculate route first');
 
-  Object.keys(tripData).forEach(function(k){
-    params.append(k,tripData[k]);
-  });
+return;
 
-  fetch(
-    ZOHO_WEBHOOK_URL + '&' + params.toString(),
-    {
-      method:'GET',
-      mode:'no-cors'
-    }
-  );
+}
 
-  alert('Saved to Zoho!');
+var params = new URLSearchParams();
+
+Object.keys(tripData).forEach(function(k){
+
+params.append(k,String(tripData[k]));
+
+});
+
+fetch(
+ZOHO_WEBHOOK_URL + '&' + params.toString(),
+{
+method:'GET'
+}
+)
+
+.then(function(){
+
+toast('Saved to Zoho');
+
+})
+
+.catch(function(){
+
+toast('Failed to save');
+
+});
+
 }
 
 </script>
+
 </body>
 </html>
