@@ -964,6 +964,8 @@ ZOHO_WEBHOOK_URL,
 {
 method:'POST',
 
+mode:'no-cors',
+
 headers:{
 'Content-Type':'application/json'
 },
@@ -973,15 +975,13 @@ body: JSON.stringify(tripData)
 }
 );
 
-const result = await response.text();
-
-console.log(result);
-
 btn.innerHTML = 'Saved ✓';
 
 btn.style.background = '#22c55e';
 
 toast('Saved to Zoho');
+
+console.log('Data sent to Zoho');
 
 }catch(error){
 
