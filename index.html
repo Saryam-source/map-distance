@@ -922,14 +922,6 @@ mode: selectedVehicle,
 
 cost: cost,
 
-start_time: trackingStartTime
-? trackingStartTime.toLocaleTimeString()
-: '',
-
-end_time: trackingEndTime
-? trackingEndTime.toLocaleTimeString()
-: '',
-
 travel_time:
 trackingStartTime && trackingEndTime
 ? trackingStartTime.toLocaleTimeString()
