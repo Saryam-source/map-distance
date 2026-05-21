@@ -820,7 +820,12 @@ document.getElementById('person-name').value;
 var rawDate =
 document.getElementById('travel-date').value;
 
-var d = new Date(rawDate);
+if(!rawDate){
+   toast('Please select date');
+   return;
+}
+
+var parts = rawDate.split('-');
 
 var months = [
 "Jan","Feb","Mar","Apr","May","Jun",
@@ -828,11 +833,9 @@ var months = [
 ];
 
 var date =
-String(d.getDate()).padStart(2,'0') +
-'-' +
-months[d.getMonth()] +
-'-' +
-d.getFullYear();
+parts[2] + '-' +
+months[parseInt(parts[1]) - 1] + '-' +
+parts[0];
 
 /* END DATE FIX */
 
