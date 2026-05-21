@@ -866,25 +866,17 @@ var cost =
 (parseFloat(route.distKm) * rate)
 .toFixed(2);
 
-tripData = {
-
-Employee_Name:name,
-
-Travel_Date:date,
-
-From_Location:from,
-
-To_Location:to,
-
-Distance:route.distKm,
-
-Duration:route.durMin,
-
-Vehicle_Mode:selectedVehicle,
-
-Travel_Cost:cost
-
-};
+  tripData = {
+      name: name,
+      date: zohoDate,
+      start: from,
+      end: to,
+      distance: route.distKm,
+      duration: String(route.durMin),
+      mode: selectedVehicle,
+      cost: cost,
+      timestamp: new Date().toISOString()
+    };
 
 document.getElementById('r-dist')
 .textContent =
