@@ -958,18 +958,24 @@ btn.innerHTML = 'Saving...';
 
 try{
 
+const formData = new FormData();
+
+formData.append("name", tripData.name);
+formData.append("date", tripData.date);
+formData.append("start", tripData.start);
+formData.append("end", tripData.end);
+formData.append("distance", tripData.distance);
+formData.append("duration", tripData.duration);
+formData.append("mode", tripData.mode);
+formData.append("cost", tripData.cost);
+formData.append("timestamp", tripData.timestamp);
+
 await fetch(
 ZOHO_WEBHOOK_URL,
 {
 method:'POST',
 mode:'no-cors',
-
-headers:{
-'Content-Type':'application/json'
-},
-
-body: JSON.stringify(tripData)
-
+body: formData
 }
 );
 
