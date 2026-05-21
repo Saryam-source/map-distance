@@ -959,11 +959,10 @@ btn.innerHTML = 'Saving...';
 
 try{
 
-const response = await fetch(
+await fetch(
 ZOHO_WEBHOOK_URL,
 {
 method:'POST',
-
 mode:'no-cors',
 
 headers:{
@@ -981,8 +980,6 @@ btn.style.background = '#22c55e';
 
 toast('Saved to Zoho');
 
-console.log('Data sent to Zoho');
-
 }catch(error){
 
 console.error(error);
@@ -996,7 +993,6 @@ toast('Failed to save');
 }
 
 }
-
 </script>
 
 </body>
