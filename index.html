@@ -390,6 +390,14 @@ Calculate Route
 
 </button>
 
+<button
+class="btn-submit"
+onclick="startLiveTracking()">
+
+Start Live Tracking
+
+</button>
+
 <div class="result-card" id="result-card">
 
 <div>
@@ -454,6 +462,18 @@ var toCoords = null;
 var tripData = null;
 
 var pinMode = null;
+
+var liveTracking = false;
+
+var watchId = null;
+
+var currentMarker = null;
+
+var destinationReached = false;
+
+var trackingStartTime = null;
+
+var trackingEndTime = null;
 
 function toast(msg){
 
@@ -684,8 +704,7 @@ map.fitBounds(bounds,{
 padding:[50,50]
 });
 
-}else{
-
+}
 map.flyTo(latlng,15);
 
 }
@@ -887,23 +906,38 @@ var cost =
 
   tripData = {
 
-    name: name,
+name: name,
 
-    Travel_Date: date,
+Travel_Date: date,
 
-    start: from,
+start: from,
 
-    end: to,
+end: to,
 
-    distance: route.distKm,
+distance: route.distKm,
 
-    duration: String(route.durMin),
+duration: String(route.durMin),
 
-    mode: selectedVehicle,
+mode: selectedVehicle,
 
-    cost: cost,
+cost: cost,
 
-    timestamp: new Date().toISOString()
+start_time: trackingStartTime
+? trackingStartTime.toLocaleTimeString()
+: '',
+
+end_time: trackingEndTime
+? trackingEndTime.toLocaleTimeString()
+: '',
+
+travel_time:
+trackingStartTime && trackingEndTime
+? trackingStartTime.toLocaleTimeString()
+  + ' - ' +
+  trackingEndTime.toLocaleTimeString()
+: '',
+
+timestamp: new Date().toISOString()
 
 };
 
@@ -993,6 +1027,97 @@ toast('Failed to save');
 });
 
 }
+function startLiveTracking(){
+
+if(!navigator.geolocation){
+
+toast('Geolocation not supported');
+return;
+
+}
+
+if(!toCoords){
+
+toast('Please select destination');
+return;
+
+}
+
+liveTracking = true;
+
+destinationReached = false;
+
+trackingStartTime = new Date();
+
+toast('Live tracking started');
+
+watchId = navigator.geolocation.watchPosition(
+
+function(position){
+
+var lat = position.coords.latitude;
+var lon = position.coords.longitude;
+
+var currentLatLng = [lat, lon];
+
+if(currentMarker){
+map.removeLayer(currentMarker);
+}
+
+currentMarker = L.marker(currentLatLng)
+.addTo(map)
+.bindPopup('Live Location')
+.openPopup();
+
+map.setView(currentLatLng, 15);
+
+var remaining =
+map.distance(
+currentLatLng,
+[toCoords.lat, toCoords.lon]
+);
+
+if(remaining < 100 && !destinationReached){
+
+destinationReached = true;
+
+trackingEndTime = new Date();
+
+toast('Destination reached');
+
+navigator.geolocation.clearWatch(watchId);
+
+liveTracking = false;
+
+calculateRoute().then(function(){
+
+submitToZoho();
+
+});
+
+}
+
+},
+
+function(error){
+
+console.error(error);
+
+toast('Location access denied');
+
+},
+
+{
+enableHighAccuracy:true,
+maximumAge:0,
+timeout:10000
+}
+
+);
+
+
+}
+
 </script>
 
 </body>
