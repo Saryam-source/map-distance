@@ -426,7 +426,7 @@ Save to Zoho
 <script>
 
 var ZOHO_WEBHOOK_URL =
-"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.58b0cffba163f4ea57d976e0741fdc03.f62a2ca4835d8b19a859b396465abff4&isdebug=true";
 
 document.getElementById('travel-date').value =
 new Date().toISOString().split('T')[0];
@@ -941,7 +941,7 @@ toast('Failed to calculate route');
 
 }
 
-function submitToZoho(){
+async function submitToZoho(){
 
 if(!tripData){
 
@@ -957,30 +957,25 @@ btn.disabled = true;
 
 btn.innerHTML = 'Saving...';
 
-var params = new URLSearchParams();
+try{
 
-Object.keys(tripData).forEach(function(k){
-
-params.append(k,tripData[k]);
-
-});
-
-fetch(
+const response = await fetch(
 ZOHO_WEBHOOK_URL,
 {
 method:'POST',
 
 headers:{
-'Content-Type':
-'application/x-www-form-urlencoded'
+'Content-Type':'application/json'
 },
 
-body:params
+body: JSON.stringify(tripData)
 
 }
-)
+);
 
-.then(function(response){
+const result = await response.text();
+
+console.log(result);
 
 btn.innerHTML = 'Saved ✓';
 
@@ -988,11 +983,7 @@ btn.style.background = '#22c55e';
 
 toast('Saved to Zoho');
 
-console.log(response);
-
-})
-
-.catch(function(error){
+}catch(error){
 
 console.error(error);
 
@@ -1002,7 +993,7 @@ btn.innerHTML = 'Save to Zoho';
 
 toast('Failed to save');
 
-});
+}
 
 }
 
