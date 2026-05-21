@@ -704,7 +704,8 @@ map.fitBounds(bounds,{
 padding:[50,50]
 });
 
-}
+}else{
+
 map.flyTo(latlng,15);
 
 }
@@ -715,7 +716,6 @@ toast(
 );
 
 }
-
 map.on('click',async function(e){
 
 if(!pinMode) return;
