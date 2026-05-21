@@ -113,9 +113,10 @@ background:var(--surface);
 border:1px solid var(--border);
 border-top:none;
 z-index:9999;
-max-height:220px;
+max-height:240px;
 overflow-y:auto;
 display:none;
+border-radius:0 0 10px 10px;
 }
 
 .ac-list.show{
@@ -126,10 +127,22 @@ display:block;
 padding:10px 14px;
 cursor:pointer;
 border-bottom:1px solid var(--border);
+transition:.2s;
 }
 
 .ac-item:hover{
 background:var(--surface2);
+}
+
+.ac-main{
+font-weight:600;
+font-size:13px;
+}
+
+.ac-sub{
+font-size:11px;
+color:var(--muted);
+margin-top:2px;
 }
 
 .vehicle-selector{
@@ -146,6 +159,7 @@ cursor:pointer;
 font-weight:700;
 background:var(--surface2);
 color:var(--text);
+transition:.2s;
 }
 
 .vehicle-btn.active{
@@ -166,6 +180,7 @@ cursor:pointer;
 font-weight:700;
 background:var(--surface2);
 color:var(--text);
+transition:.2s;
 }
 
 .btn-pin.active{
@@ -181,6 +196,7 @@ font-size:15px;
 font-weight:700;
 cursor:pointer;
 color:#fff;
+transition:.2s;
 }
 
 .btn-calc{
@@ -477,190 +493,190 @@ toast('Click on map to pin ' + type + ' location');
 
 }
 
-async function acSearch(input,listId){
+async function acSearch(input, listId) {
 
-var query = input.value.trim();
+  var query = input.value.trim();
 
-var list = document.getElementById(listId);
+  var list = document.getElementById(listId);
 
-if(query.length < 3){
+  if (query.length < 3) {
 
-list.classList.remove('show');
-list.innerHTML = '';
+    list.classList.remove('show');
+    list.innerHTML = '';
 
-return;
+    return;
+  }
 
+  try {
+
+    var url =
+      'https://nominatim.openstreetmap.org/search?format=json&q=' +
+      encodeURIComponent(query) +
+      '&countrycodes=in&limit=5&addressdetails=1';
+
+    var r = await fetch(url, {
+      headers: {
+        'Accept-Language': 'en',
+        'User-Agent': 'EmployeeTravelTracker'
+      }
+    });
+
+    var d = await r.json();
+
+    if (!d.length) {
+
+      list.classList.remove('show');
+      return;
+    }
+
+    list.innerHTML = d.map(function(item) {
+
+      var full = item.display_name;
+
+      var safe = full
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'");
+
+      return `
+        <div class="ac-item"
+          onmousedown="acSelect(
+            '${listId}',
+            '${safe}',
+            '${item.lat}',
+            '${item.lon}'
+          )">
+
+          <div class="ac-main">
+            ${full.split(',')[0]}
+          </div>
+
+          <div class="ac-sub">
+            ${full}
+          </div>
+
+        </div>
+      `;
+
+    }).join('');
+
+    list.classList.add('show');
+
+  } catch (e) {
+
+    console.error(e);
+
+  }
 }
 
-try{
+function acSelect(listId, value, lat, lon) {
 
-var url =
-'https://nominatim.openstreetmap.org/search?format=json&q=' +
-encodeURIComponent(query) +
-'&countrycodes=in&limit=5';
+  var isFrom = listId === 'from-list';
 
-var r = await fetch(url,{
-headers:{
-'Accept-Language':'en',
-'User-Agent':'DistanceCalculatorApp'
-}
-});
+  var inputId = isFrom
+    ? 'from-loc'
+    : 'to-loc';
 
-var d = await r.json();
+  document.getElementById(inputId).value = value;
 
-list.innerHTML = d.map(function(item){
+  document.getElementById(listId)
+    .classList.remove('show');
 
-var safe = item.display_name
-.replace(/\\/g,'\\\\')
-.replace(/'/g,"\\'");
+  lat = parseFloat(lat);
+  lon = parseFloat(lon);
 
-return `
-<div class="ac-item"
-onmousedown="acSelect('${listId}','${safe}')">
-${item.display_name}
-</div>
-`;
+  var latlng = [lat, lon];
 
-}).join('');
+  if (isFrom) {
 
-list.classList.add('show');
+    fromCoords = {
+      lat: lat,
+      lon: lon
+    };
 
-}catch(e){
+    if (fromMarker) {
+      map.removeLayer(fromMarker);
+    }
 
-console.error(e);
+    var greenIcon = L.icon({
 
-}
+      iconUrl:
+      'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
 
-}
+      shadowUrl:
+      'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 
-async function geocode(address){
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34]
 
-var r = await fetch(
-'https://nominatim.openstreetmap.org/search?format=json&q=' +
-encodeURIComponent(address) +
-'&limit=1',
-{
-headers:{
-'Accept-Language':'en',
-'User-Agent':'DistanceCalculatorApp'
-}
-}
-);
+    });
 
-var d = await r.json();
+    fromMarker = L.marker(latlng, {
+      icon: greenIcon
+    })
+    .addTo(map)
+    .bindPopup(
+      '<b>FROM</b><br>' + value
+    )
+    .openPopup();
 
-if(!d.length){
+  } else {
 
-throw new Error('Location not found');
+    toCoords = {
+      lat: lat,
+      lon: lon
+    };
 
-}
+    if (toMarker) {
+      map.removeLayer(toMarker);
+    }
 
-return {
+    var redIcon = L.icon({
 
-lat:parseFloat(d[0].lat),
-lon:parseFloat(d[0].lon)
+      iconUrl:
+      'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
 
-};
+      shadowUrl:
+      'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 
-}
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34]
 
-async function acSelect(listId,value){
+    });
 
-var isFrom = listId === 'from-list';
+    toMarker = L.marker(latlng, {
+      icon: redIcon
+    })
+    .addTo(map)
+    .bindPopup(
+      '<b>TO</b><br>' + value
+    )
+    .openPopup();
 
-var inputId = isFrom ? 'from-loc' : 'to-loc';
+  }
 
-document.getElementById(inputId).value = value;
+  if (fromCoords && toCoords) {
 
-document.getElementById(listId).classList.remove('show');
+    var bounds = L.latLngBounds([
+      [fromCoords.lat, fromCoords.lon],
+      [toCoords.lat, toCoords.lon]
+    ]);
 
-try{
+    map.fitBounds(bounds, {
+      padding: [50, 50]
+    });
 
-var loc = await geocode(value);
+  } else {
 
-var latlng = [loc.lat,loc.lon];
+    map.flyTo(latlng, 15);
 
-if(isFrom){
+  }
 
-fromCoords = loc;
-
-if(fromMarker){
-map.removeLayer(fromMarker);
-}
-
-var greenIcon = L.icon({
-
-iconUrl:
-'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-
-shadowUrl:
-'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-
-iconSize:[25,41],
-iconAnchor:[12,41]
-
-});
-
-fromMarker = L.marker(latlng,{
-icon:greenIcon
-})
-.addTo(map)
-.bindPopup('FROM');
-
-}else{
-
-toCoords = loc;
-
-if(toMarker){
-map.removeLayer(toMarker);
-}
-
-var redIcon = L.icon({
-
-iconUrl:
-'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-
-shadowUrl:
-'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-
-iconSize:[25,41],
-iconAnchor:[12,41]
-
-});
-
-toMarker = L.marker(latlng,{
-icon:redIcon
-})
-.addTo(map)
-.bindPopup('TO');
-
-}
-
-if(fromCoords && toCoords){
-
-var bounds = L.latLngBounds([
-[fromCoords.lat,fromCoords.lon],
-[toCoords.lat,toCoords.lon]
-]);
-
-map.fitBounds(bounds,{
-padding:[50,50]
-});
-
-}else{
-
-map.flyTo(latlng,14);
-
-}
-
-}catch(e){
-
-console.error(e);
-
-toast('Unable to pin location');
-
-}
-
+  toast(
+    (isFrom ? 'FROM' : 'TO') +
+    ' pinned successfully'
+  );
 }
 
 map.on('click', async function(e){
@@ -692,7 +708,7 @@ lng,
 {
 headers:{
 'Accept-Language':'en',
-'User-Agent':'DistanceCalculatorApp'
+'User-Agent':'EmployeeTravelTracker'
 }
 }
 );
@@ -703,95 +719,17 @@ var addr =
 d.display_name ||
 (lat.toFixed(5) + ', ' + lng.toFixed(5));
 
-var latlng = [lat,lng];
-
 if(type === 'from'){
 
-document.getElementById('from-loc').value = addr;
-
-fromCoords = {
-lat:lat,
-lon:lng
-};
-
-if(fromMarker){
-map.removeLayer(fromMarker);
-}
-
-var greenIcon = L.icon({
-
-iconUrl:
-'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-
-shadowUrl:
-'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-
-iconSize:[25,41],
-iconAnchor:[12,41]
-
-});
-
-fromMarker = L.marker(latlng,{
-icon:greenIcon
-})
-.addTo(map)
-.bindPopup('FROM');
+acSelect('from-list', addr, lat, lng);
 
 }else{
 
-document.getElementById('to-loc').value = addr;
-
-toCoords = {
-lat:lat,
-lon:lng
-};
-
-if(toMarker){
-map.removeLayer(toMarker);
-}
-
-var redIcon = L.icon({
-
-iconUrl:
-'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-
-shadowUrl:
-'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-
-iconSize:[25,41],
-iconAnchor:[12,41]
-
-});
-
-toMarker = L.marker(latlng,{
-icon:redIcon
-})
-.addTo(map)
-.bindPopup('TO');
+acSelect('to-list', addr, lat, lng);
 
 }
 
-if(fromCoords && toCoords){
-
-var bounds = L.latLngBounds([
-[fromCoords.lat,fromCoords.lon],
-[toCoords.lat,toCoords.lon]
-]);
-
-map.fitBounds(bounds,{
-padding:[50,50]
-});
-
-}else{
-
-map.flyTo(latlng,15);
-
-}
-
-toast(
-(type === 'from' ? 'FROM' : 'TO') +
-' location pinned!'
-);
+toast('Location pinned successfully');
 
 }catch(ex){
 
@@ -863,11 +801,7 @@ return;
 
 }
 
-var fromLL = fromCoords || await geocode(from);
-
-var toLL = toCoords || await geocode(to);
-
-var route = await getRoute(fromLL,toLL);
+var route = await getRoute(fromCoords,toCoords);
 
 if(routeLayer){
 
@@ -933,7 +867,7 @@ toast('Route Calculated');
 
 console.error(e);
 
-toast('Failed to fetch route');
+toast('Failed to calculate route');
 
 }
 
