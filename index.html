@@ -923,12 +923,8 @@ mode: selectedVehicle,
 cost: parseFloat(cost),
 
 travel_time:
-trackingStartTime && trackingEndTime
-? (
-    trackingStartTime.toLocaleTimeString() +
-    ' - ' +
-    trackingEndTime.toLocaleTimeString()
-  )
+tripData && tripData.travel_time
+? tripData.travel_time
 : '',
 
 timestamp: new Date().toISOString()
