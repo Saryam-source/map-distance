@@ -924,10 +924,12 @@ cost: parseFloat(cost),
 
 travel_time:
 trackingStartTime && trackingEndTime
-? trackingStartTime.toLocaleTimeString()
-  + ' - ' +
-  trackingEndTime.toLocaleTimeString()
-: 'N/A',
+? (
+    trackingStartTime.toLocaleTimeString() +
+    ' - ' +
+    trackingEndTime.toLocaleTimeString()
+  )
+: '',
 
 timestamp: new Date().toISOString()
 
@@ -1069,7 +1071,7 @@ currentLatLng,
 [toCoords.lat, toCoords.lon]
 );
 
-if(remaining < 100 && !destinationReached){
+if(remaining < 500 && !destinationReached){
 
 destinationReached = true;
 
