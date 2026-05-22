@@ -989,6 +989,9 @@ Object.keys(tripData).forEach(function(k){
 params.append(k, String(tripData[k]));
 });
 
+console.log(tripData);
+
+
 fetch(
 ZOHO_WEBHOOK_URL + '&' + params.toString(),
 {
@@ -1082,7 +1085,38 @@ navigator.geolocation.clearWatch(watchId);
 
 liveTracking = false;
 
+/* CREATE TRAVEL TIME */
+
+var start =
+trackingStartTime.toLocaleTimeString();
+
+var end =
+trackingEndTime.toLocaleTimeString();
+
+var totalMinutes =
+Math.round(
+(trackingEndTime - trackingStartTime) / 60000
+);
+
+var finalTravelTime =
+start + ' - ' + end +
+' (' + totalMinutes + ' mins)';
+
+/* UPDATE tripData */
+
+if(tripData){
+
+tripData.travel_time =
+finalTravelTime;
+
+}
+
+/* NOW SAVE */
+
 calculateRoute().then(function(){
+
+tripData.travel_time =
+finalTravelTime;
 
 submitToZoho();
 
