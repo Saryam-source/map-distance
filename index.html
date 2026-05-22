@@ -914,20 +914,20 @@ start: from,
 
 end: to,
 
-distance: route.distKm,
+distance: parseFloat(route.distKm),
 
 duration: String(route.durMin),
 
 mode: selectedVehicle,
 
-cost: cost,
+cost: parseFloat(cost),
 
 travel_time:
 trackingStartTime && trackingEndTime
 ? trackingStartTime.toLocaleTimeString()
   + ' - ' +
   trackingEndTime.toLocaleTimeString()
-: '',
+: 'N/A',
 
 timestamp: new Date().toISOString()
 
