@@ -275,11 +275,14 @@ Distance · Route · Zoho Sync
 <div>
 <div class="field-label">Employee Name</div>
 
-<input
-type="text"
-id="person-name"
-class="form-input"
-placeholder="Enter employee name"/>
+<select id="person-name" class="form-input">
+<option value="">Select Employee</option>
+<option>Madhumita</option>
+<option>Muni</option>
+<option>Sarath</option>
+<option>Yamuna</option>
+<option>Antony</option>
+</select>
 </div>
 
 <div>
@@ -901,9 +904,9 @@ var cost =
 (parseFloat(route.distKm) * rate)
 .toFixed(2);
 
- tripData = {
+  tripData = {
 
-name: name,
+Name: name,
 
 Travel_Date: date,
 
@@ -911,13 +914,13 @@ start: from,
 
 end: to,
 
-distance: Number(route.distKm) || 0,
+distance: parseFloat(route.distKm),
 
-duration: String(route.durMin || 0),
+duration: String(route.durMin),
 
 mode: selectedVehicle,
 
-cost: Number(cost) || 0,
+cost: parseFloat(cost),
 
 travel_time:
 tripData && tripData.travel_time
