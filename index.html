@@ -901,7 +901,7 @@ var cost =
 (parseFloat(route.distKm) * rate)
 .toFixed(2);
 
-  tripData = {
+ tripData = {
 
 name: name,
 
@@ -911,13 +911,13 @@ start: from,
 
 end: to,
 
-distance: parseFloat(route.distKm),
+distance: Number(route.distKm) || 0,
 
-duration: String(route.durMin),
+duration: String(route.durMin || 0),
 
 mode: selectedVehicle,
 
-cost: parseFloat(cost),
+cost: Number(cost) || 0,
 
 travel_time:
 tripData && tripData.travel_time
