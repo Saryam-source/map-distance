@@ -275,14 +275,21 @@ Distance · Route · Zoho Sync
 <div>
 <div class="field-label">Employee Name</div>
 
-<select id="person-name" class="form-input">
-<option value="">Select Employee</option>
-<option>Madhumita</option>
-<option>Muni</option>
-<option>Sarath</option>
-<option>Yamuna</option>
-<option>Antony</option>
-</select>
+<input
+type="text"
+id="person-name"
+class="form-input"
+placeholder="Select or type employee name"
+list="employee-list"
+/>
+
+<datalist id="employee-list">
+<option value="Madhumita">
+<option value="Muni">
+<option value="Sarath">
+<option value="Yamuna">
+<option value="Antony">
+</datalist>
 </div>
 
 <div>
