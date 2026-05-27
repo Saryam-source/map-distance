@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Employee Travel Tracker App</title>
+<title>Employee Travel Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <link rel="stylesheet"
@@ -14,18 +14,18 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 rel="stylesheet"/>
 
 <style>
-
 :root{
---bg:#020617;
---surface:rgba(15,23,42,.78);
---surface2:rgba(30,41,59,.72);
---border:rgba(255,255,255,.08);
---text:#e2e8f0;
---muted:#94a3b8;
---accent:#3b82f6;
---green:#22c55e;
+--bg:#f1f5f9;
+--surface:#ffffffee;
+--surface2:#ffffff;
+--border:#dbe4ee;
+--text:#0f172a;
+--muted:#64748b;
+--accent:#2563eb;
+--green:#16a34a;
 --red:#ef4444;
 --radius:18px;
+--shadow:0 10px 35px rgba(15,23,42,.08);
 }
 
 /* RESET */
@@ -44,162 +44,103 @@ scroll-behavior:smooth;
 
 body{
 font-family:'DM Sans',sans-serif;
-
-background:
-radial-gradient(circle at top left,#1e3a8a 0%,#0f172a 40%,#020617 100%);
-
+background:#e2e8f0;
 color:var(--text);
-
 display:flex;
-
 height:100vh;
-
 overflow:hidden;
-
-animation:fadePage .8s ease;
+animation:fadePage .6s ease;
 }
 
 /* SIDEBAR */
 
 .sidebar{
-
 width:390px;
-
 background:var(--surface);
-
-backdrop-filter:blur(24px);
-
+backdrop-filter:blur(10px);
 border-right:1px solid var(--border);
-
 display:flex;
-
 flex-direction:column;
-
 overflow-y:auto;
-
-box-shadow:
-0 15px 45px rgba(0,0,0,.45);
-
-animation:slideLeft .7s ease;
+box-shadow:var(--shadow);
+z-index:999;
+animation:slideLeft .6s ease;
 }
 
-/* CUSTOM SCROLL */
+/* CUSTOM SCROLLBAR */
 
 .sidebar::-webkit-scrollbar{
 width:6px;
 }
 
 .sidebar::-webkit-scrollbar-thumb{
-background:#334155;
+background:#cbd5e1;
 border-radius:20px;
 }
 
 /* BRAND */
 
 .brand{
-
 padding:24px;
-
 border-bottom:1px solid var(--border);
-
-background:
-linear-gradient(
-180deg,
-rgba(255,255,255,.04),
-rgba(255,255,255,0)
-);
+background:#ffffff;
 }
 
 .brand-title{
-
 font-size:24px;
-
 font-weight:700;
-
 letter-spacing:.4px;
-
-background:linear-gradient(90deg,#ffffff,#93c5fd);
-
--webkit-background-clip:text;
-
--webkit-text-fill-color:transparent;
+color:#0f172a;
 }
 
 .brand-sub{
-
 font-size:13px;
-
 color:var(--muted);
-
 margin-top:6px;
 }
 
 /* FORM AREA */
 
 .pane{
-
 padding:22px;
-
 display:flex;
-
 flex-direction:column;
-
 gap:18px;
 }
 
 /* LABEL */
 
 .field-label{
-
 font-size:11px;
-
 font-weight:700;
-
 letter-spacing:1px;
-
 margin-bottom:8px;
-
 color:var(--muted);
-
 text-transform:uppercase;
 }
 
 /* INPUT */
 
 .form-input{
-
 width:100%;
-
 padding:14px 16px;
-
 border-radius:16px;
-
-border:1px solid rgba(255,255,255,.06);
-
-background:rgba(255,255,255,.05);
-
-backdrop-filter:blur(12px);
-
-color:var(--text);
-
+border:1px solid var(--border);
+background:#fff;
 font-size:14px;
-
 outline:none;
-
-transition:all .28s ease;
+transition:.25s;
+color:#0f172a;
+box-shadow:
+0 2px 6px rgba(15,23,42,.03);
 }
 
 .form-input:focus{
-
 border-color:#60a5fa;
-
 transform:translateY(-2px);
-
-background:rgba(255,255,255,.08);
-
 box-shadow:
-0 0 0 4px rgba(59,130,246,.15),
-0 10px 30px rgba(59,130,246,.20);
+0 0 0 4px rgba(37,99,235,.12),
+0 8px 20px rgba(37,99,235,.08);
 }
 
 /* AUTOCOMPLETE */
@@ -209,33 +150,20 @@ position:relative;
 }
 
 .ac-list{
-
 position:absolute;
-
 top:100%;
 left:0;
 right:0;
-
-margin-top:8px;
-
-background:rgba(15,23,42,.96);
-
-backdrop-filter:blur(20px);
-
-border:1px solid rgba(255,255,255,.08);
-
+background:#fff;
+border:1px solid var(--border);
 border-radius:16px;
-
 overflow:hidden;
-
 max-height:250px;
-
 overflow-y:auto;
-
 display:none;
-
 z-index:99999;
-
+box-shadow:var(--shadow);
+margin-top:8px;
 animation:fadeUp .25s ease;
 }
 
@@ -244,36 +172,25 @@ display:block;
 }
 
 .ac-item{
-
 padding:14px;
-
 cursor:pointer;
-
-transition:.25s;
-
-border-bottom:1px solid rgba(255,255,255,.04);
+transition:.2s;
+border-bottom:1px solid #f1f5f9;
 }
 
 .ac-item:hover{
-
-background:rgba(59,130,246,.14);
-
+background:#eff6ff;
 padding-left:18px;
 }
 
 .ac-main{
-
 font-size:13px;
-
 font-weight:600;
 }
 
 .ac-sub{
-
 font-size:11px;
-
 margin-top:4px;
-
 color:var(--muted);
 }
 
@@ -281,9 +198,7 @@ color:var(--muted);
 
 .pin-row,
 .vehicle-selector{
-
 display:flex;
-
 gap:12px;
 }
 
@@ -293,165 +208,122 @@ gap:12px;
 .vehicle-btn,
 .btn-calc,
 .btn-submit{
-
 padding:14px;
-
 border:none;
-
 border-radius:16px;
-
 font-weight:700;
-
 cursor:pointer;
-
-transition:all .28s ease;
-
+transition:all .25s ease;
 position:relative;
-
 overflow:hidden;
+font-size:14px;
 }
+
+/* FLOATING LIGHT EFFECT */
 
 .btn-pin::before,
 .vehicle-btn::before,
 .btn-calc::before,
 .btn-submit::before{
-
 content:'';
-
 position:absolute;
-
 top:0;
 left:-120%;
-
 width:100%;
 height:100%;
-
 background:
 linear-gradient(
 90deg,
 transparent,
-rgba(255,255,255,.18),
+rgba(255,255,255,.45),
 transparent
 );
-
-transition:.5s;
+transition:.6s;
 }
 
 .btn-pin:hover::before,
 .vehicle-btn:hover::before,
 .btn-calc:hover::before,
 .btn-submit:hover::before{
-
 left:120%;
 }
 
-/* VEHICLE */
+/* SECONDARY BUTTONS */
 
 .btn-pin,
 .vehicle-btn{
-
-background:rgba(255,255,255,.05);
-
-backdrop-filter:blur(12px);
-
-color:var(--text);
-
-border:1px solid rgba(255,255,255,.06);
+background:#f8fafc;
+border:1px solid var(--border);
+color:#0f172a;
 }
 
 .vehicle-btn.active{
-
-background:linear-gradient(
-135deg,
-#3b82f6,
-#2563eb
-);
-
+background:#2563eb;
+color:#fff;
 box-shadow:
-0 0 20px rgba(59,130,246,.45);
+0 10px 24px rgba(37,99,235,.22);
 }
 
 .btn-pin.active{
+background:#16a34a;
+color:#fff;
+box-shadow:
+0 10px 24px rgba(22,163,74,.2);
+}
 
+/* PRIMARY BUTTONS */
+
+.btn-calc{
 background:linear-gradient(
 135deg,
 #22c55e,
 #16a34a
 );
-
-box-shadow:
-0 0 20px rgba(34,197,94,.45);
-}
-
-/* MAIN BUTTONS */
-
-.btn-calc{
-
-background:
-linear-gradient(
-135deg,
-#22c55e,
-#16a34a
-);
-
 color:#fff;
+box-shadow:
+0 10px 24px rgba(22,163,74,.2);
 }
 
 .btn-submit{
-
-background:
-linear-gradient(
+background:linear-gradient(
 135deg,
 #3b82f6,
 #2563eb
 );
-
 color:#fff;
+box-shadow:
+0 10px 24px rgba(37,99,235,.2);
 }
+
+/* HOVER FLOAT EFFECT */
 
 .btn-pin:hover,
 .vehicle-btn:hover,
 .btn-calc:hover,
 .btn-submit:hover{
-
 transform:
 translateY(-3px)
 scale(1.01);
-
-box-shadow:
-0 14px 34px rgba(0,0,0,.35);
 }
 
+/* DISABLED */
+
 .btn-submit:disabled{
-
 opacity:.7;
-
 cursor:not-allowed;
 }
 
 /* RESULT CARD */
 
 .result-card{
-
 display:none;
-
 flex-direction:column;
-
 gap:16px;
-
 padding:20px;
-
-border-radius:22px;
-
-background:rgba(255,255,255,.05);
-
-backdrop-filter:blur(20px);
-
-border:1px solid rgba(255,255,255,.08);
-
-box-shadow:
-0 15px 45px rgba(0,0,0,.35);
-
+border-radius:20px;
+background:#fff;
+border:1px solid var(--border);
+box-shadow:var(--shadow);
 animation:fadeUp .45s ease;
 }
 
@@ -459,120 +331,94 @@ animation:fadeUp .45s ease;
 display:flex;
 }
 
+/* METRICS */
+
 .metric{
-
 font-size:32px;
-
 font-weight:700;
-
 letter-spacing:.5px;
+color:#0f172a;
 }
 
 #r-cost{
-
 font-size:15px;
-
 font-weight:600;
-
-color:#93c5fd;
+color:#2563eb;
 }
 
 /* MAP */
 
 #map{
-
 flex:1;
-
 height:100vh;
-
-filter:
-saturate(1.15)
-contrast(1.02)
-brightness(.95);
+background:#cbd5e1;
 }
 
 /* TOAST */
 
 .toast{
-
 position:fixed;
-
 bottom:24px;
 left:50%;
-
 transform:translateX(-50%);
-
-background:rgba(15,23,42,.92);
-
-backdrop-filter:blur(18px);
-
+background:#0f172a;
+color:#fff;
 padding:14px 22px;
-
 border-radius:30px;
-
 font-size:13px;
-
 opacity:0;
-
 transition:.3s;
-
 z-index:999999;
-
-border:1px solid rgba(255,255,255,.08);
-
 box-shadow:
-0 12px 30px rgba(0,0,0,.45);
+0 10px 30px rgba(0,0,0,.2);
 }
 
 .toast.show{
-
 opacity:1;
-
 bottom:34px;
 }
 
-/* ANIMATIONS */
+/* LEAFLET */
+
+.leaflet-popup-content-wrapper{
+border-radius:14px;
+}
+
+.leaflet-control-zoom a{
+border:none!important;
+}
+
+/* FLOATING ANIMATIONS */
 
 @keyframes fadePage{
-
 from{
 opacity:0;
-transform:scale(1.01);
 }
-
 to{
 opacity:1;
-transform:scale(1);
 }
-
 }
 
 @keyframes fadeUp{
-
 from{
 opacity:0;
-transform:translateY(25px);
+transform:translateY(20px);
 }
-
 to{
 opacity:1;
 transform:translateY(0);
 }
-
 }
 
 @keyframes slideLeft{
-
 from{
 opacity:0;
-transform:translateX(-50px);
+transform:translateX(-40px);
 }
-
 to{
 opacity:1;
 transform:translateX(0);
 }
-
 }
 
 /* MOBILE */
@@ -731,9 +577,9 @@ Car Rs.20/km
 </div>
 
 <button
+type="button"
 class="btn-calc"
 onclick="calculateRoute()">
-
 Calculate Route
 
 </button>
@@ -1401,14 +1247,23 @@ var lon = position.coords.longitude;
 var currentLatLng = [lat, lon];
 
 if(currentMarker){
-map.removeLayer(currentMarker);
-}
 
-currentMarker = L.marker(currentLatLng)
+currentMarker.setLatLng(currentLatLng);
+
+}else{
+
+currentMarker = L.circleMarker(currentLatLng,{
+radius:10,
+fillColor:"#2563eb",
+color:"#ffffff",
+weight:3,
+opacity:1,
+fillOpacity:0.9
+})
 .addTo(map)
-.bindPopup('Live Location')
-.openPopup();
+.bindPopup('Live Location');
 
+}
 map.setView(currentLatLng, 15);
 
 var remaining =
