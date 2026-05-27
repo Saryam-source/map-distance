@@ -322,7 +322,7 @@ overflow:hidden;
 font-size:14px;
 }
 
-/* LIGHT EFFECT */
+/* LIGHT FLOAT EFFECT */
 
 .btn-pin::before,
 .vehicle-btn::before,
@@ -370,6 +370,8 @@ border:1px solid var(--border);
 color:var(--text);
 }
 
+/* ACTIVE VEHICLE */
+
 .vehicle-btn.active{
 
 background:#d8cfb5;
@@ -380,11 +382,16 @@ box-shadow:
 0 8px 20px rgba(0,0,0,.06);
 }
 
+/* ACTIVE PIN BUTTON */
+
 .btn-pin.active{
 
-background:#22c55e;
+background:#d8cfb5;
 
-color:#fff;
+color:#3c3a36;
+
+box-shadow:
+0 8px 20px rgba(0,0,0,.06);
 }
 
 /* PRIMARY BUTTONS */
@@ -409,7 +416,7 @@ box-shadow:
 0 8px 20px rgba(0,0,0,.05);
 }
 
-/* HOVER EFFECT */
+/* HOVER FLOAT EFFECT */
 
 .btn-pin:hover,
 .vehicle-btn:hover,
@@ -1244,10 +1251,11 @@ map.removeLayer(routeLayer);
 }
 
 routeLayer = L.polyline(route.coords,{
-color:'#3b82f6',
-weight:6
+color:'#2563eb',
+weight:7,
+opacity:0.9,
+smoothFactor:1.5
 }).addTo(map);
-
 map.fitBounds(routeLayer.getBounds(),{
 padding:[40,40]
 });
