@@ -1,14 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Employee Travel Tracker App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap"
+rel="stylesheet"/>
+
+<style>
+
 :root{
---bg:#f1f5f9;
---panel:#ffffffee;
---border:#dbe4ee;
---text:#0f172a;
---muted:#64748b;
---accent:#2563eb;
---green:#16a34a;
---shadow:0 10px 35px rgba(15,23,42,.08);
+--bg:#020617;
+--surface:rgba(15,23,42,.78);
+--surface2:rgba(30,41,59,.72);
+--border:rgba(255,255,255,.08);
+--text:#e2e8f0;
+--muted:#94a3b8;
+--accent:#3b82f6;
+--green:#22c55e;
+--red:#ef4444;
 --radius:18px;
 }
+
+/* RESET */
 
 *{
 margin:0;
@@ -16,87 +36,170 @@ padding:0;
 box-sizing:border-box;
 }
 
+html{
+scroll-behavior:smooth;
+}
+
+/* BODY */
+
 body{
 font-family:'DM Sans',sans-serif;
-background:#e2e8f0;
+
+background:
+radial-gradient(circle at top left,#1e3a8a 0%,#0f172a 40%,#020617 100%);
+
 color:var(--text);
+
 display:flex;
+
 height:100vh;
+
 overflow:hidden;
+
+animation:fadePage .8s ease;
 }
 
 /* SIDEBAR */
 
 .sidebar{
+
 width:390px;
-background:var(--panel);
-backdrop-filter:blur(10px);
+
+background:var(--surface);
+
+backdrop-filter:blur(24px);
+
 border-right:1px solid var(--border);
+
 display:flex;
+
 flex-direction:column;
+
 overflow-y:auto;
-box-shadow:var(--shadow);
-z-index:999;
+
+box-shadow:
+0 15px 45px rgba(0,0,0,.45);
+
+animation:slideLeft .7s ease;
+}
+
+/* CUSTOM SCROLL */
+
+.sidebar::-webkit-scrollbar{
+width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+background:#334155;
+border-radius:20px;
 }
 
 /* BRAND */
 
 .brand{
+
 padding:24px;
+
 border-bottom:1px solid var(--border);
-background:#ffffff;
+
+background:
+linear-gradient(
+180deg,
+rgba(255,255,255,.04),
+rgba(255,255,255,0)
+);
 }
 
 .brand-title{
+
 font-size:24px;
+
 font-weight:700;
-color:#0f172a;
+
+letter-spacing:.4px;
+
+background:linear-gradient(90deg,#ffffff,#93c5fd);
+
+-webkit-background-clip:text;
+
+-webkit-text-fill-color:transparent;
 }
 
 .brand-sub{
+
 font-size:13px;
-margin-top:5px;
+
 color:var(--muted);
+
+margin-top:6px;
 }
 
 /* FORM AREA */
 
 .pane{
+
 padding:22px;
+
 display:flex;
+
 flex-direction:column;
+
 gap:18px;
 }
 
 /* LABEL */
 
 .field-label{
+
 font-size:11px;
+
 font-weight:700;
+
 letter-spacing:1px;
+
 margin-bottom:8px;
+
 color:var(--muted);
+
 text-transform:uppercase;
 }
 
 /* INPUT */
 
 .form-input{
+
 width:100%;
+
 padding:14px 16px;
+
 border-radius:16px;
-border:1px solid var(--border);
-background:#fff;
+
+border:1px solid rgba(255,255,255,.06);
+
+background:rgba(255,255,255,.05);
+
+backdrop-filter:blur(12px);
+
+color:var(--text);
+
 font-size:14px;
+
 outline:none;
-transition:.25s;
-color:#0f172a;
+
+transition:all .28s ease;
 }
 
 .form-input:focus{
+
 border-color:#60a5fa;
+
+transform:translateY(-2px);
+
+background:rgba(255,255,255,.08);
+
 box-shadow:
-0 0 0 4px rgba(37,99,235,.12);
+0 0 0 4px rgba(59,130,246,.15),
+0 10px 30px rgba(59,130,246,.20);
 }
 
 /* AUTOCOMPLETE */
@@ -106,20 +209,34 @@ position:relative;
 }
 
 .ac-list{
+
 position:absolute;
+
 top:100%;
 left:0;
 right:0;
-background:#fff;
-border:1px solid var(--border);
-border-radius:16px;
-overflow:hidden;
-max-height:250px;
-overflow-y:auto;
-display:none;
-z-index:99999;
-box-shadow:var(--shadow);
+
 margin-top:8px;
+
+background:rgba(15,23,42,.96);
+
+backdrop-filter:blur(20px);
+
+border:1px solid rgba(255,255,255,.08);
+
+border-radius:16px;
+
+overflow:hidden;
+
+max-height:250px;
+
+overflow-y:auto;
+
+display:none;
+
+z-index:99999;
+
+animation:fadeUp .25s ease;
 }
 
 .ac-list.show{
@@ -127,24 +244,36 @@ display:block;
 }
 
 .ac-item{
+
 padding:14px;
+
 cursor:pointer;
-transition:.2s;
-border-bottom:1px solid #f1f5f9;
+
+transition:.25s;
+
+border-bottom:1px solid rgba(255,255,255,.04);
 }
 
 .ac-item:hover{
-background:#eff6ff;
+
+background:rgba(59,130,246,.14);
+
+padding-left:18px;
 }
 
 .ac-main{
+
 font-size:13px;
+
 font-weight:600;
 }
 
 .ac-sub{
+
 font-size:11px;
+
 margin-top:4px;
+
 color:var(--muted);
 }
 
@@ -152,7 +281,9 @@ color:var(--muted);
 
 .pin-row,
 .vehicle-selector{
+
 display:flex;
+
 gap:12px;
 }
 
@@ -162,43 +293,119 @@ gap:12px;
 .vehicle-btn,
 .btn-calc,
 .btn-submit{
+
 padding:14px;
+
 border:none;
+
 border-radius:16px;
+
 font-weight:700;
+
 cursor:pointer;
-transition:.25s;
-font-size:14px;
+
+transition:all .28s ease;
+
+position:relative;
+
+overflow:hidden;
 }
 
-/* SECONDARY BUTTONS */
+.btn-pin::before,
+.vehicle-btn::before,
+.btn-calc::before,
+.btn-submit::before{
+
+content:'';
+
+position:absolute;
+
+top:0;
+left:-120%;
+
+width:100%;
+height:100%;
+
+background:
+linear-gradient(
+90deg,
+transparent,
+rgba(255,255,255,.18),
+transparent
+);
+
+transition:.5s;
+}
+
+.btn-pin:hover::before,
+.vehicle-btn:hover::before,
+.btn-calc:hover::before,
+.btn-submit:hover::before{
+
+left:120%;
+}
+
+/* VEHICLE */
 
 .btn-pin,
 .vehicle-btn{
-background:#f8fafc;
-border:1px solid var(--border);
-color:#0f172a;
+
+background:rgba(255,255,255,.05);
+
+backdrop-filter:blur(12px);
+
+color:var(--text);
+
+border:1px solid rgba(255,255,255,.06);
 }
 
 .vehicle-btn.active{
-background:#2563eb;
-color:#fff;
+
+background:linear-gradient(
+135deg,
+#3b82f6,
+#2563eb
+);
+
+box-shadow:
+0 0 20px rgba(59,130,246,.45);
 }
 
 .btn-pin.active{
-background:#16a34a;
-color:#fff;
+
+background:linear-gradient(
+135deg,
+#22c55e,
+#16a34a
+);
+
+box-shadow:
+0 0 20px rgba(34,197,94,.45);
 }
 
-/* PRIMARY BUTTONS */
+/* MAIN BUTTONS */
 
 .btn-calc{
-background:#16a34a;
+
+background:
+linear-gradient(
+135deg,
+#22c55e,
+#16a34a
+);
+
 color:#fff;
 }
 
 .btn-submit{
-background:#2563eb;
+
+background:
+linear-gradient(
+135deg,
+#3b82f6,
+#2563eb
+);
+
 color:#fff;
 }
 
@@ -206,22 +413,46 @@ color:#fff;
 .vehicle-btn:hover,
 .btn-calc:hover,
 .btn-submit:hover{
-transform:translateY(-2px);
+
+transform:
+translateY(-3px)
+scale(1.01);
+
 box-shadow:
-0 8px 24px rgba(15,23,42,.12);
+0 14px 34px rgba(0,0,0,.35);
+}
+
+.btn-submit:disabled{
+
+opacity:.7;
+
+cursor:not-allowed;
 }
 
 /* RESULT CARD */
 
 .result-card{
+
 display:none;
+
 flex-direction:column;
+
 gap:16px;
+
 padding:20px;
-border-radius:20px;
-background:#fff;
-border:1px solid var(--border);
-box-shadow:var(--shadow);
+
+border-radius:22px;
+
+background:rgba(255,255,255,.05);
+
+backdrop-filter:blur(20px);
+
+border:1px solid rgba(255,255,255,.08);
+
+box-shadow:
+0 15px 45px rgba(0,0,0,.35);
+
+animation:fadeUp .45s ease;
 }
 
 .result-card.show{
@@ -229,56 +460,119 @@ display:flex;
 }
 
 .metric{
+
 font-size:32px;
+
 font-weight:700;
+
+letter-spacing:.5px;
 }
 
 #r-cost{
+
 font-size:15px;
+
 font-weight:600;
-color:#2563eb;
+
+color:#93c5fd;
 }
 
 /* MAP */
 
 #map{
+
 flex:1;
+
 height:100vh;
-background:#cbd5e1;
+
+filter:
+saturate(1.15)
+contrast(1.02)
+brightness(.95);
 }
 
 /* TOAST */
 
 .toast{
+
 position:fixed;
+
 bottom:24px;
 left:50%;
+
 transform:translateX(-50%);
-background:#0f172a;
-color:#fff;
+
+background:rgba(15,23,42,.92);
+
+backdrop-filter:blur(18px);
+
 padding:14px 22px;
+
 border-radius:30px;
+
 font-size:13px;
+
 opacity:0;
+
 transition:.3s;
+
 z-index:999999;
+
+border:1px solid rgba(255,255,255,.08);
+
 box-shadow:
-0 10px 30px rgba(0,0,0,.2);
+0 12px 30px rgba(0,0,0,.45);
 }
 
 .toast.show{
+
 opacity:1;
+
 bottom:34px;
 }
 
-/* LEAFLET */
+/* ANIMATIONS */
 
-.leaflet-popup-content-wrapper{
-border-radius:14px;
+@keyframes fadePage{
+
+from{
+opacity:0;
+transform:scale(1.01);
 }
 
-.leaflet-control-zoom a{
-border:none!important;
+to{
+opacity:1;
+transform:scale(1);
+}
+
+}
+
+@keyframes fadeUp{
+
+from{
+opacity:0;
+transform:translateY(25px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+@keyframes slideLeft{
+
+from{
+opacity:0;
+transform:translateX(-50px);
+}
+
+to{
+opacity:1;
+transform:translateX(0);
+}
+
 }
 
 /* MOBILE */
@@ -299,3 +593,903 @@ height:55vh;
 }
 
 }
+
+</style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+<div class="brand">
+<div class="brand-title">
+Employee Travel Tracker
+</div>
+
+<div class="brand-sub">
+Distance · Route · Zoho Sync
+</div>
+</div>
+
+<div class="pane">
+
+<div>
+<div class="field-label">Employee Name</div>
+
+<input
+type="text"
+id="person-name"
+class="form-input"
+placeholder="Select or type employee name"
+list="employee-list"
+/>
+
+<datalist id="employee-list">
+<option value="Madhumita">
+<option value="Muni">
+<option value="Sarath">
+<option value="Yamuna">
+<option value="Antony">
+</datalist>
+</div>
+
+<div>
+<div class="field-label">Travel Date</div>
+
+<input
+type="date"
+id="travel-date"
+class="form-input"/>
+</div>
+
+<div>
+<div class="field-label">From</div>
+
+<div class="ac-wrap">
+
+<input
+type="text"
+id="from-loc"
+class="form-input"
+placeholder="Enter starting location..."
+autocomplete="off"
+oninput="acSearch(this,'from-list')"/>
+
+<div class="ac-list" id="from-list"></div>
+
+</div>
+</div>
+
+<div>
+<div class="field-label">To</div>
+
+<div class="ac-wrap">
+
+<input
+type="text"
+id="to-loc"
+class="form-input"
+placeholder="Enter destination..."
+autocomplete="off"
+oninput="acSearch(this,'to-list')"/>
+
+<div class="ac-list" id="to-list"></div>
+
+</div>
+</div>
+
+<div>
+<div class="field-label">Manual Pin Location</div>
+
+<div class="pin-row">
+
+<button
+class="btn-pin"
+id="btn-pin-from"
+onclick="startPin('from')">
+
+📍 Pin From
+
+</button>
+
+<button
+class="btn-pin"
+id="btn-pin-to"
+onclick="startPin('to')">
+
+📍 Pin To
+
+</button>
+
+</div>
+</div>
+
+<div>
+<div class="field-label">Vehicle Type</div>
+
+<div class="vehicle-selector">
+
+<button
+class="vehicle-btn active"
+id="btn-bike"
+onclick="selectVehicle('bike')">
+
+Bike Rs.3.5/km
+
+</button>
+
+<button
+class="vehicle-btn"
+id="btn-car"
+onclick="selectVehicle('car')">
+
+Car Rs.20/km
+
+</button>
+
+</div>
+</div>
+
+<button
+class="btn-calc"
+onclick="calculateRoute()">
+
+Calculate Route
+
+</button>
+
+<button
+class="btn-submit"
+onclick="startLiveTracking()">
+
+Start Live Tracking
+
+</button>
+
+<div class="result-card" id="result-card">
+
+<div>
+Distance
+<div class="metric" id="r-dist">0 KM</div>
+</div>
+
+<div>
+Duration
+<div class="metric" id="r-dur">0 MIN</div>
+</div>
+
+<div id="r-cost"></div>
+
+<button
+class="btn-submit"
+id="save-btn"
+onclick="submitToZoho()">
+
+Save to Zoho
+
+</button>
+
+</div>
+
+</div>
+
+</aside>
+
+<div id="map"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+var ZOHO_WEBHOOK_URL =
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
+document.getElementById('travel-date').value =
+new Date().toISOString().split('T')[0];
+
+var map = L.map('map')
+.setView([13.0827,80.2707],12);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19,
+attribution:'© OpenStreetMap'
+}
+).addTo(map);
+
+var selectedVehicle = 'bike';
+
+var routeLayer = null;
+
+var fromMarker = null;
+var toMarker = null;
+
+var fromCoords = null;
+var toCoords = null;
+
+var tripData = null;
+
+var pinMode = null;
+
+var liveTracking = false;
+
+var watchId = null;
+
+var currentMarker = null;
+
+var destinationReached = false;
+
+var trackingStartTime = null;
+
+var trackingEndTime = null;
+
+function toast(msg){
+
+var t = document.getElementById('toast');
+
+t.textContent = msg;
+
+t.classList.add('show');
+
+clearTimeout(t._t);
+
+t._t = setTimeout(function(){
+
+t.classList.remove('show');
+
+},2500);
+
+}
+
+function selectVehicle(type){
+
+selectedVehicle = type;
+
+document.getElementById('btn-bike')
+.classList.toggle('active',type==='bike');
+
+document.getElementById('btn-car')
+.classList.toggle('active',type==='car');
+
+}
+
+function startPin(type){
+
+pinMode = type;
+
+document.getElementById('btn-pin-from')
+.classList.toggle('active',type==='from');
+
+document.getElementById('btn-pin-to')
+.classList.toggle('active',type==='to');
+
+map.getContainer().style.cursor = 'crosshair';
+
+toast('Click on map to pin ' + type);
+
+}
+
+async function acSearch(input,listId){
+
+var query = input.value.trim();
+
+var list = document.getElementById(listId);
+
+if(query.length < 3){
+
+list.classList.remove('show');
+
+list.innerHTML = '';
+
+return;
+
+}
+
+try{
+
+var url =
+'https://nominatim.openstreetmap.org/search?format=json&q=' +
+encodeURIComponent(query) +
+'&countrycodes=in&limit=5&addressdetails=1';
+
+var r = await fetch(url,{
+headers:{
+'Accept-Language':'en',
+'User-Agent':'EmployeeTravelTracker'
+}
+});
+
+var d = await r.json();
+
+if(!d.length){
+
+list.classList.remove('show');
+return;
+
+}
+
+list.innerHTML = d.map(function(item){
+
+var full = item.display_name;
+
+var safe = full
+.replace(/\\/g,'\\\\')
+.replace(/'/g,"\\'");
+
+return `
+<div class="ac-item"
+
+onmousedown="acSelect(
+'${listId}',
+'${safe}',
+'${item.lat}',
+'${item.lon}'
+)">
+
+<div class="ac-main">
+${full.split(',')[0]}
+</div>
+
+<div class="ac-sub">
+${full}
+</div>
+
+</div>
+`;
+
+}).join('');
+
+list.classList.add('show');
+
+}catch(e){
+
+console.error(e);
+
+}
+
+}
+
+function acSelect(listId,value,lat,lon){
+
+var isFrom = listId === 'from-list';
+
+var inputId =
+isFrom ? 'from-loc' : 'to-loc';
+
+document.getElementById(inputId)
+.value = value;
+
+document.getElementById(listId)
+.classList.remove('show');
+
+lat = parseFloat(lat);
+lon = parseFloat(lon);
+
+var latlng = [lat,lon];
+
+if(isFrom){
+
+fromCoords = {
+lat:lat,
+lon:lon
+};
+
+if(fromMarker){
+map.removeLayer(fromMarker);
+}
+
+var greenIcon = L.icon({
+
+iconUrl:
+'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+
+shadowUrl:
+'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+iconSize:[25,41],
+iconAnchor:[12,41]
+
+});
+
+fromMarker = L.marker(latlng,{
+icon:greenIcon
+})
+
+.addTo(map)
+
+.bindPopup(
+'<b>FROM</b><br>' + value
+)
+
+.openPopup();
+
+}else{
+
+toCoords = {
+lat:lat,
+lon:lon
+};
+
+if(toMarker){
+map.removeLayer(toMarker);
+}
+
+var redIcon = L.icon({
+
+iconUrl:
+'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+
+shadowUrl:
+'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+iconSize:[25,41],
+iconAnchor:[12,41]
+
+});
+
+toMarker = L.marker(latlng,{
+icon:redIcon
+})
+
+.addTo(map)
+
+.bindPopup(
+'<b>TO</b><br>' + value
+)
+
+.openPopup();
+
+}
+
+if(fromCoords && toCoords){
+
+var bounds = L.latLngBounds([
+[fromCoords.lat,fromCoords.lon],
+[toCoords.lat,toCoords.lon]
+]);
+
+map.fitBounds(bounds,{
+padding:[50,50]
+});
+
+}else{
+
+map.flyTo(latlng,15);
+
+}
+
+toast(
+(isFrom ? 'FROM' : 'TO') +
+' pinned successfully'
+);
+
+}
+map.on('click',async function(e){
+
+if(!pinMode) return;
+
+var lat = e.latlng.lat;
+var lon = e.latlng.lng;
+
+try{
+
+var r = await fetch(
+
+'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+lat +
+'&lon=' +
+lon,
+
+{
+headers:{
+'Accept-Language':'en',
+'User-Agent':'EmployeeTravelTracker'
+}
+}
+
+);
+
+var d = await r.json();
+
+var addr =
+d.display_name ||
+(lat.toFixed(5)+','+lon.toFixed(5));
+
+if(pinMode === 'from'){
+
+acSelect(
+'from-list',
+addr,
+lat,
+lon
+);
+
+}else{
+
+acSelect(
+'to-list',
+addr,
+lat,
+lon
+);
+
+}
+
+pinMode = null;
+
+document.getElementById('btn-pin-from')
+.classList.remove('active');
+
+document.getElementById('btn-pin-to')
+.classList.remove('active');
+
+map.getContainer().style.cursor='';
+
+}catch(ex){
+
+console.error(ex);
+
+toast('Pin failed');
+
+}
+
+});
+
+async function getRoute(from,to){
+
+var url =
+'https://router.project-osrm.org/route/v1/driving/' +
+from.lon + ',' + from.lat +
+';' +
+to.lon + ',' + to.lat +
+'?overview=full&geometries=geojson';
+
+var r = await fetch(url);
+
+var d = await r.json();
+
+if(!d.routes || !d.routes.length){
+
+throw new Error('Route not found');
+
+}
+
+var route = d.routes[0];
+
+return {
+
+distKm:
+(route.distance/1000).toFixed(2),
+
+durMin:
+Math.round(route.duration/60),
+
+coords:
+route.geometry.coordinates.map(function(c){
+
+return [c[1],c[0]];
+
+})
+
+};
+
+}
+
+async function calculateRoute(){
+
+try{
+
+var name =
+document.getElementById('person-name').value;
+
+/* UPDATED DATE FORMAT FIX */
+
+var rawDate =
+document.getElementById('travel-date').value;
+
+if(!rawDate){
+   toast('Please select date');
+   return;
+}
+
+var parts = rawDate.split('-');
+
+var months = [
+"Jan","Feb","Mar","Apr","May","Jun",
+"Jul","Aug","Sep","Oct","Nov","Dec"
+];
+
+var date =
+parts[2] + '-' +
+months[parseInt(parts[1]) - 1] + '-' +
+parts[0];
+
+/* END DATE FIX */
+
+var from =
+document.getElementById('from-loc').value;
+
+var to =
+document.getElementById('to-loc').value;
+if(!name || !from || !to){
+
+alert('Please fill all fields');
+return;
+
+}
+
+if(!fromCoords || !toCoords){
+
+toast('Please select valid locations');
+return;
+
+}
+
+var route =
+await getRoute(fromCoords,toCoords);
+
+if(routeLayer){
+
+map.removeLayer(routeLayer);
+
+}
+
+routeLayer = L.polyline(route.coords,{
+color:'#3b82f6',
+weight:6
+}).addTo(map);
+
+map.fitBounds(routeLayer.getBounds(),{
+padding:[40,40]
+});
+
+var rate =
+selectedVehicle === 'car'
+? 20
+: 3.5;
+
+var cost =
+(parseFloat(route.distKm) * rate)
+.toFixed(2);
+
+  tripData = {
+
+Name: name,
+
+Travel_Date: date,
+
+start: from,
+
+end: to,
+
+distance: parseFloat(route.distKm),
+
+duration: String(route.durMin),
+
+mode: selectedVehicle,
+
+cost: parseFloat(cost),
+
+travel_time:
+tripData && tripData.travel_time
+? tripData.travel_time
+: '',
+
+timestamp: new Date().toISOString()
+
+};
+document.getElementById('r-dist')
+.textContent =
+route.distKm + ' KM';
+
+document.getElementById('r-dur')
+.textContent =
+route.durMin + ' MIN';
+
+document.getElementById('r-cost')
+.innerHTML =
+'Estimated Cost: Rs.' + cost;
+
+document.getElementById('result-card')
+.classList.add('show');
+
+document.getElementById('save-btn')
+.disabled = false;
+
+document.getElementById('save-btn')
+.innerHTML = 'Save to Zoho';
+
+document.getElementById('save-btn')
+.style.background = '';
+
+toast('Route calculated');
+
+}catch(e){
+
+console.error(e);
+
+toast('Failed to calculate route');
+
+}
+
+}
+
+function submitToZoho() {
+
+if(!tripData){
+toast('Calculate route first');
+return;
+}
+
+var btn = document.getElementById('save-btn');
+
+btn.disabled = true;
+
+btn.innerHTML = 'Saving...';
+
+var params = new URLSearchParams();
+
+Object.keys(tripData).forEach(function(k){
+params.append(k, String(tripData[k]));
+});
+
+console.log(tripData);
+
+
+fetch(
+ZOHO_WEBHOOK_URL + '&' + params.toString(),
+{
+method:'GET',
+mode:'no-cors'
+}
+)
+
+.then(function(){
+
+btn.innerHTML = 'Saved ✓';
+
+btn.style.background = '#22c55e';
+
+toast('Saved to Zoho');
+
+})
+
+.catch(function(error){
+
+console.error(error);
+
+btn.disabled = false;
+
+btn.innerHTML = 'Save to Zoho';
+
+toast('Failed to save');
+
+});
+
+}
+function startLiveTracking(){
+
+if(!navigator.geolocation){
+
+toast('Geolocation not supported');
+return;
+
+}
+
+if(!toCoords){
+
+toast('Please select destination');
+return;
+
+}
+
+liveTracking = true;
+
+destinationReached = false;
+
+trackingStartTime = new Date();
+
+toast('Live tracking started');
+
+watchId = navigator.geolocation.watchPosition(
+
+function(position){
+
+var lat = position.coords.latitude;
+var lon = position.coords.longitude;
+
+var currentLatLng = [lat, lon];
+
+if(currentMarker){
+map.removeLayer(currentMarker);
+}
+
+currentMarker = L.marker(currentLatLng)
+.addTo(map)
+.bindPopup('Live Location')
+.openPopup();
+
+map.setView(currentLatLng, 15);
+
+var remaining =
+map.distance(
+currentLatLng,
+[toCoords.lat, toCoords.lon]
+);
+
+if(remaining < 500 && !destinationReached){
+
+destinationReached = true;
+
+trackingEndTime = new Date();
+
+toast('Destination reached');
+
+navigator.geolocation.clearWatch(watchId);
+
+liveTracking = false;
+
+/* CREATE TRAVEL TIME */
+
+var start =
+trackingStartTime.toLocaleTimeString();
+
+var end =
+trackingEndTime.toLocaleTimeString();
+
+var totalMinutes =
+Math.round(
+(trackingEndTime - trackingStartTime) / 60000
+);
+
+var finalTravelTime =
+start + ' - ' + end +
+' (' + totalMinutes + ' mins)';
+
+/* UPDATE tripData */
+
+if(tripData){
+
+tripData.travel_time =
+finalTravelTime;
+
+}
+
+/* NOW SAVE */
+
+calculateRoute().then(function(){
+
+tripData.travel_time =
+finalTravelTime;
+
+submitToZoho();
+
+});
+
+}
+
+},
+
+function(error){
+
+console.error(error);
+
+toast('Location access denied');
+
+},
+
+{
+enableHighAccuracy:true,
+maximumAge:0,
+timeout:10000
+}
+
+);
+
+
+}
+
+</script>
+
+</body>
+</html>
