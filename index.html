@@ -14,7 +14,6 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 rel="stylesheet"/>
 
 <style>
-
 :root{
 --bg:#eef8e9;
 --surface:#ffffffee;
@@ -30,30 +29,25 @@ rel="stylesheet"/>
 --shadow:0 12px 35px rgba(35,90,45,.12);
 }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
-html{
-scroll-behavior:smooth;
-}
+html{scroll-behavior:smooth;}
 
 body{
 font-family:'DM Sans',sans-serif;
 background:linear-gradient(135deg,#f4fff0,#e6f7dc);
 color:var(--text);
 display:flex;
-height:100vh;
-overflow:hidden;
+min-height:100vh;
+overflow-x:hidden;
+overflow-y:auto;
 animation:fadePage .6s ease;
 }
 
 /* LEFT FORM PANEL */
-
 .sidebar{
 width:390px;
+min-width:390px;
 background:rgba(255,255,255,.82);
 backdrop-filter:blur(18px);
 border-right:1px solid var(--border);
@@ -65,17 +59,10 @@ z-index:999;
 animation:slideLeft .6s ease;
 }
 
-.sidebar::-webkit-scrollbar{
-width:6px;
-}
+.sidebar::-webkit-scrollbar{width:6px;}
+.sidebar::-webkit-scrollbar-thumb{background:#bde7b0;border-radius:20px;}
 
-.sidebar::-webkit-scrollbar-thumb{
-background:#bde7b0;
-border-radius:20px;
-}
-
-/* BRAND HEADER */
-
+/* BRAND */
 .brand{
 position:relative;
 padding:34px 24px 28px;
@@ -157,8 +144,7 @@ border:1px solid #d8ead1;
 color:#276437;
 }
 
-/* FORM AREA */
-
+/* FORM */
 .pane{
 padding:22px;
 display:flex;
@@ -196,10 +182,7 @@ box-shadow:0 0 0 4px rgba(143,220,125,.25),0 10px 24px rgba(48,120,60,.10);
 }
 
 /* AUTOCOMPLETE */
-
-.ac-wrap{
-position:relative;
-}
+.ac-wrap{position:relative;}
 
 .ac-list{
 position:absolute;
@@ -219,9 +202,7 @@ margin-top:8px;
 animation:fadeUp .25s ease;
 }
 
-.ac-list.show{
-display:block;
-}
+.ac-list.show{display:block;}
 
 .ac-item{
 padding:14px;
@@ -235,19 +216,10 @@ background:#eef9e8;
 padding-left:18px;
 }
 
-.ac-main{
-font-size:13px;
-font-weight:700;
-}
-
-.ac-sub{
-font-size:11px;
-margin-top:4px;
-color:var(--muted);
-}
+.ac-main{font-size:13px;font-weight:700;}
+.ac-sub{font-size:11px;margin-top:4px;color:var(--muted);}
 
 /* BUTTONS */
-
 .pin-row,
 .vehicle-selector{
 display:flex;
@@ -286,9 +258,7 @@ transition:.6s;
 .btn-pin:hover::before,
 .vehicle-btn:hover::before,
 .btn-calc:hover::before,
-.btn-submit:hover::before{
-left:120%;
-}
+.btn-submit:hover::before{left:120%;}
 
 .btn-pin,
 .vehicle-btn{
@@ -323,8 +293,7 @@ box-shadow:0 10px 25px rgba(80,150,70,.18);
 transform:translateY(-3px) scale(1.01);
 }
 
-/* RESULT CARD */
-
+/* RESULT */
 .result-card{
 display:none;
 flex-direction:column;
@@ -337,9 +306,7 @@ box-shadow:var(--shadow);
 animation:fadeUp .45s ease;
 }
 
-.result-card.show{
-display:flex;
-}
+.result-card.show{display:flex;}
 
 .metric{
 font-size:32px;
@@ -355,15 +322,14 @@ color:#367443;
 }
 
 /* MAP */
-
 #map{
 flex:1;
-height:100vh;
+min-height:850px;
+height:auto;
 background:#eef8e9;
 }
 
 /* TOAST */
-
 .toast{
 position:fixed;
 bottom:24px;
@@ -386,15 +352,12 @@ bottom:34px;
 }
 
 /* LEAFLET */
-
 .leaflet-popup-content-wrapper{
 border-radius:14px;
 background:#ffffff;
 }
 
-.leaflet-popup-tip{
-background:#ffffff;
-}
+.leaflet-popup-tip{background:#ffffff;}
 
 .leaflet-control-zoom a{
 background:#ffffff!important;
@@ -403,7 +366,6 @@ border:none!important;
 }
 
 /* ANIMATIONS */
-
 @keyframes fadePage{
 from{opacity:0;}
 to{opacity:1;}
@@ -425,49 +387,34 @@ to{opacity:1;transform:translateX(0);}
 100%{transform:translateY(0) rotate(-3deg);}
 }
 
-/* MOBILE */
-
-@media(max-width:768px){
-
+/* ZOHO CREATOR IFRAME FIX */
+@media screen and (max-width:1400px){
 body{
 flex-direction:column;
-height:auto;
-min-height:100vh;
-overflow-y:auto;
-overflow-x:hidden;
 }
 
 .sidebar{
 width:100%;
+min-width:100%;
 height:auto;
 max-height:none;
 overflow:visible;
+border-right:none;
+border-bottom:1px solid var(--border);
 }
 
-.brand{
-padding:22px;
+#map{
+width:100%;
+height:700px;
+min-height:700px;
+flex:none;
+}
 }
 
-.logo-card{
-width:90px;
-height:90px;
-font-size:34px;
-}
-
-.floating-map{
-font-size:34px;
-}
-
-.brand-title{
-font-size:28px;
-}
-
-.pane{
-padding:16px;
-}
-
-.form-input{
-font-size:16px;
+@media screen and (max-width:1100px){
+#map{
+height:600px;
+min-height:600px;
 }
 
 .pin-row,
@@ -481,19 +428,31 @@ flex-direction:column;
 .btn-submit{
 width:100%;
 }
+}
+
+@media screen and (max-width:768px){
+.brand{padding:22px;}
+
+.logo-card{
+width:90px;
+height:90px;
+font-size:34px;
+}
+
+.floating-map{font-size:32px;}
+
+.brand-title{font-size:28px;}
+
+.pane{padding:16px;}
+
+.form-input{font-size:16px;}
 
 #map{
-width:100%;
-height:65vh;
-min-height:450px;
-display:block;
-flex:none;
+height:500px;
+min-height:500px;
 }
 
-.result-card{
-margin-bottom:20px;
-}
-
+.result-card{margin-bottom:20px;}
 }
 </style>
 </head>
