@@ -904,6 +904,14 @@ var trackingStartTime = null;
 
 var trackingEndTime = null;
 
+var employeeEmails = {
+    "Baraneeswari":"development@saryam.com",
+    "Antony Daniel":"antony@saryam.com",
+    "Yamuna":"yamuna@saryam.com",
+    "Murugan":"murugan@saryam.com",
+    "Arunmani":"arunmani.g@saryam.com"
+};
+
 function toast(msg){
 
 var t = document.getElementById('toast');
@@ -1337,6 +1345,8 @@ var cost =
   tripData = {
 
 Name: name,
+
+Employee_Email: employeeEmails[name] || "",
 
 Travel_Date: date,
 
