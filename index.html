@@ -726,8 +726,11 @@ class="form-input"/>
 <div>
 <div class="field-label">From</div>
 
-<div class="ac-wrap">
+<button class="btn-pin" onclick="useCurrentLocation('from')">
+📍 Your Location
+</button>
 
+<div class="ac-wrap">
 <input
 type="text"
 id="from-loc"
@@ -737,15 +740,18 @@ autocomplete="off"
 oninput="acSearch(this,'from-list')"/>
 
 <div class="ac-list" id="from-list"></div>
+</div>
+</div>
 
-</div>
-</div>
 
 <div>
 <div class="field-label">To</div>
 
-<div class="ac-wrap">
+<button class="btn-pin" onclick="useCurrentLocation('to')">
+📍 Your Location
+</button>
 
+<div class="ac-wrap">
 <input
 type="text"
 id="to-loc"
@@ -755,7 +761,6 @@ autocomplete="off"
 oninput="acSearch(this,'to-list')"/>
 
 <div class="ac-list" id="to-list"></div>
-
 </div>
 </div>
 
@@ -1449,6 +1454,77 @@ toast('Failed to save');
 });
 
 }
+
+function useCurrentLocation(type){
+
+if(!navigator.geolocation){
+toast('Geolocation not supported');
+return;
+}
+
+toast('Getting your current location...');
+
+navigator.geolocation.getCurrentPosition(
+
+async function(position){
+
+var lat = position.coords.latitude;
+var lon = position.coords.longitude;
+
+try{
+
+var r = await fetch(
+'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+lat +
+'&lon=' +
+lon,
+{
+headers:{
+'Accept-Language':'en',
+'User-Agent':'EmployeeTravelTracker'
+}
+}
+);
+
+var d = await r.json();
+
+var addr =
+d.display_name ||
+(lat.toFixed(5)+','+lon.toFixed(5));
+
+if(type === 'from'){
+acSelect('from-list', addr, lat, lon);
+toast('Current location added as FROM');
+}
+else{
+acSelect('to-list', addr, lat, lon);
+toast('Current location added as TO');
+}
+
+}catch(e){
+
+console.error(e);
+toast('Unable to get address');
+
+}
+
+},
+
+function(error){
+console.error(error);
+toast('Location permission denied');
+},
+
+{
+enableHighAccuracy:true,
+maximumAge:0,
+timeout:10000
+}
+
+);
+
+}
+
 function startLiveTracking(){
 
 if(!navigator.geolocation){
