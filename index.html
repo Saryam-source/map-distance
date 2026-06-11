@@ -1499,6 +1499,10 @@ toast('Current location added as FROM');
 else{
 acSelect('to-list', addr, lat, lon);
 toast('Current location added as TO');
+
+if(liveTracking && fromCoords && toCoords){
+toast('Destination added. Tracking will stop automatically when reached.');
+}
 }
 
 }catch(e){
@@ -1527,24 +1531,23 @@ timeout:10000
 
 function startLiveTracking(){
 
-if(!navigator.geolocation){
-
-toast('Geolocation not supported');
+if(liveTracking){
+toast('Live tracking already started');
 return;
-
 }
 
-if(!toCoords){
-
-toast('Please select destination');
+if(!navigator.geolocation){
+toast('Geolocation not supported');
 return;
+}
 
+if(!fromCoords){
+toast('Please select FROM location first');
+return;
 }
 
 liveTracking = true;
-
 destinationReached = false;
-
 trackingStartTime = new Date();
 
 toast('Live tracking started');
@@ -1559,11 +1562,9 @@ var lon = position.coords.longitude;
 var currentLatLng = [lat, lon];
 
 if(currentMarker){
-
 currentMarker.setLatLng(currentLatLng);
-
-}else{
-
+}
+else{
 currentMarker = L.circleMarker(currentLatLng,{
 radius:10,
 fillColor:"#2563eb",
@@ -1574,85 +1575,62 @@ fillOpacity:0.9
 })
 .addTo(map)
 .bindPopup('Live Location');
-
 }
-map.setView(currentLatLng, 15);
 
-var remaining =
-map.distance(
+map.setView(currentLatLng,15);
+
+if(toCoords){
+
+var remaining = map.distance(
 currentLatLng,
-[toCoords.lat, toCoords.lon]
+[toCoords.lat,toCoords.lon]
 );
 
-if(remaining < 500 && !destinationReached){
+if(remaining < 100 && !destinationReached){
 
 destinationReached = true;
-
 trackingEndTime = new Date();
 
 toast('Destination reached');
 
 navigator.geolocation.clearWatch(watchId);
-
 liveTracking = false;
 
-/* CREATE TRAVEL TIME */
+var start = trackingStartTime.toLocaleTimeString();
+var end = trackingEndTime.toLocaleTimeString();
 
-var start =
-trackingStartTime.toLocaleTimeString();
-
-var end =
-trackingEndTime.toLocaleTimeString();
-
-var totalMinutes =
-Math.round(
+var totalMinutes = Math.round(
 (trackingEndTime - trackingStartTime) / 60000
 );
 
 var finalTravelTime =
-start + ' - ' + end +
-' (' + totalMinutes + ' mins)';
-
-/* UPDATE tripData */
-
-if(tripData){
-
-tripData.travel_time =
-finalTravelTime;
-
-}
-
-/* NOW SAVE */
+start + ' - ' + end + ' (' + totalMinutes + ' mins)';
 
 calculateRoute().then(function(){
-
-tripData.travel_time =
-finalTravelTime;
-
+if(tripData){
+tripData.travel_time = finalTravelTime;
 submitToZoho();
-
+}
 });
+
+}
 
 }
 
 },
 
 function(error){
-
 console.error(error);
-
 toast('Location access denied');
-
 },
 
 {
 enableHighAccuracy:true,
 maximumAge:0,
-timeout:10000
+timeout:30000
 }
 
 );
-
 
 }
 
