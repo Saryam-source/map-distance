@@ -909,6 +909,8 @@ var trackingStartTime = null;
 
 var trackingEndTime = null;
 
+var latestLiveCoords = null;
+
 function toast(msg){
 
 var t = document.getElementById('toast');
@@ -1462,6 +1464,50 @@ toast('Geolocation not supported');
 return;
 }
 
+/* If live tracking is running and employee clicks TO Your Location,
+use latest live GPS location instead of asking GPS again */
+if(type === 'to' && liveTracking && latestLiveCoords){
+
+var lat = latestLiveCoords.lat;
+var lon = latestLiveCoords.lon;
+
+fetch(
+'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+lat +
+'&lon=' +
+lon,
+{
+headers:{
+'Accept-Language':'en',
+'User-Agent':'EmployeeTravelTracker'
+}
+}
+)
+.then(function(r){
+return r.json();
+})
+.then(function(d){
+
+var addr =
+d.display_name ||
+(lat.toFixed(5)+','+lon.toFixed(5));
+
+acSelect('to-list', addr, lat, lon);
+toast('Current live location added as TO');
+
+if(liveTracking && fromCoords && toCoords){
+toast('Destination added. Tracking will stop automatically when reached.');
+}
+
+})
+.catch(function(e){
+console.error(e);
+toast('Unable to get address');
+});
+
+return;
+}
+
 toast('Getting your current location...');
 
 navigator.geolocation.getCurrentPosition(
@@ -1516,7 +1562,7 @@ toast('Unable to get address');
 
 function(error){
 console.error(error);
-toast('Location permission denied');
+toast('Location permission denied or timeout');
 },
 
 {
@@ -1558,6 +1604,11 @@ function(position){
 
 var lat = position.coords.latitude;
 var lon = position.coords.longitude;
+
+latestLiveCoords = {
+lat: lat,
+lon: lon
+};
 
 var currentLatLng = [lat, lon];
 
