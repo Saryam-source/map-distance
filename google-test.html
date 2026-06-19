@@ -353,7 +353,7 @@ flex:none;
 
 <div>
 <div class="field-label">From</div>
-<button class="btn-pin" onclick="useCurrentLocation('from')">Your Location</button>
+<button class="btn-pin" onclick="useCurrentLocation('from')">📍 Your Location</button>
 <div class="ac-wrap">
 <input type="text" id="from-loc" class="form-input" placeholder="Enter starting location..." autocomplete="off"/>
 </div>
@@ -361,7 +361,7 @@ flex:none;
 
 <div>
 <div class="field-label">To</div>
-<button class="btn-pin" onclick="useCurrentLocation('to')">Your Location</button>
+<button class="btn-pin" onclick="useCurrentLocation('to')">📍 Your Location</button>
 <div class="ac-wrap">
 <input type="text" id="to-loc" class="form-input" placeholder="Enter destination..." autocomplete="off"/>
 </div>
@@ -370,21 +370,21 @@ flex:none;
 <div>
 <div class="field-label">Manual Pin Location</div>
 <div class="pin-row">
-<button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">Pin From</button>
-<button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">Pin To</button>
+<button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">🟢 Pin From</button>
+<button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">🔴Pin To</button>
 </div>
 </div>
 
 <div>
 <div class="field-label">Vehicle Type</div>
 <div class="vehicle-selector">
-<button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">Bike Rs.4/km</button>
-<button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">Car Rs.8/km</button>
+<button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">🏍Bike Rs.4/km</button>
+<button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">🚗Car Rs.8/km</button>
 </div>
 </div>
 
-<button class="btn-submit" onclick="startLiveTracking()">Start Live Tracking</button>
-<button type="button" class="btn-calc" onclick="calculateRoute()">Calculate Route</button>
+<button class="btn-submit" onclick="startLiveTracking()">🛰Start Live Tracking</button>
+<button type="button" class="btn-calc" onclick="calculateRoute()">🗺Calculate Route</button>
 
 <div class="result-card" id="result-card">
 <div>
@@ -399,7 +399,7 @@ Duration
 
 <div id="r-cost"></div>
 
-<button class="btn-submit" id="save-btn" onclick="submitToZoho()">Save to Zoho</button>
+<button class="btn-submit" id="save-btn" onclick="submitToZoho()">💾Save to Zoho</button>
 </div>
 
 </div>
