@@ -540,13 +540,17 @@ document.getElementById("from-loc").value = address;
 if(fromMarker){
 fromMarker.setMap(null);
 }
-
 fromMarker = new google.maps.Marker({
 position:position,
 map:map,
 title:"FROM",
-label:"F",
-icon:"http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+label:{
+text:"F",
+color:"white",
+fontWeight:"bold",
+fontSize:"14px"
+},
+icon:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"
 });
 toast("FROM selected successfully");
 
@@ -558,14 +562,19 @@ document.getElementById("to-loc").value = address;
 if(toMarker){
 toMarker.setMap(null);
 }
-
 toMarker = new google.maps.Marker({
 position:position,
 map:map,
 title:"TO",
-label:"T",
-icon:"http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+label:{
+text:"T",
+color:"white",
+fontWeight:"bold",
+fontSize:"14px"
+},
+icon:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"
 });
+
 
 toast("TO selected successfully");
 
