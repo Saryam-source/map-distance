@@ -574,7 +574,9 @@ toast("Destination added. Tracking will stop automatically when reached.");
 
 }
 
-directionsRenderer.setDirections({routes:[]});
+if(directionsRenderer){
+    directionsRenderer.set('directions', null);
+}
 
 if(fromCoords && toCoords){
 
