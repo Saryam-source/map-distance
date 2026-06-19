@@ -538,20 +538,26 @@ fromCoords = position;
 document.getElementById("from-loc").value = address;
 
 if(fromMarker){
-fromMarker.setMap(null);
+    fromMarker.setMap(null);
 }
+
 fromMarker = new google.maps.Marker({
-position:position,
-map:map,
-title:"FROM",
-label:{
-text:"F",
-color:"white",
-fontWeight:"bold",
-fontSize:"14px"
-},
-icon:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+    position: position,
+    map: map,
+    title: "FROM",
+    icon: {
+        url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+    }
 });
+
+var fromInfo = new google.maps.InfoWindow({
+    content: "<b>FROM</b><br>" + address
+});
+
+fromMarker.addListener("click", function(){
+    fromInfo.open(map, fromMarker);
+});
+
 toast("FROM selected successfully");
 
 }else{
@@ -560,19 +566,24 @@ toCoords = position;
 document.getElementById("to-loc").value = address;
 
 if(toMarker){
-toMarker.setMap(null);
+    toMarker.setMap(null);
 }
+
 toMarker = new google.maps.Marker({
-position:position,
-map:map,
-title:"TO",
-label:{
-text:"T",
-color:"white",
-fontWeight:"bold",
-fontSize:"14px"
-},
-icon:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+    position: position,
+    map: map,
+    title: "TO",
+    icon: {
+        url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+    }
+});
+
+var toInfo = new google.maps.InfoWindow({
+    content: "<b>TO</b><br>" + address
+});
+
+toMarker.addListener("click", function(){
+    toInfo.open(map, toMarker);
 });
 
 
