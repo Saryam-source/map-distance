@@ -109,11 +109,35 @@ box-shadow:0 0 0 4px rgba(216,207,181,.18),0 8px 20px rgba(0,0,0,.04);
 
 .ac-wrap{position:relative;}
 
+.search-wrap{
+    position:relative;
+}
+
+.search-icon{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:2;
+    color:#7d786f;
+    font-size:18px;
+}
+
+#from-loc,
+#to-loc{
+    padding-left:44px;
+    background:#ffffff;
+    border-radius:18px;
+    min-height:56px;
+    font-size:15px;
+}
+
 .pin-row,
 .vehicle-selector{
 display:flex;
 gap:12px;
 }
+
 
 .btn-pin,
 .vehicle-btn,
@@ -354,16 +378,18 @@ flex:none;
 <div>
 <div class="field-label">From</div>
 <button class="btn-pin" onclick="useCurrentLocation('from')">📍 Your Location</button>
-<div class="ac-wrap">
-<input type="text" id="from-loc" class="form-input" placeholder="Enter starting location..." autocomplete="off"/>
+<div class="ac-wrap search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="from-loc" class="form-input" placeholder="Search starting location..." autocomplete="off" spellcheck="false"/>
 </div>
 </div>
 
 <div>
 <div class="field-label">To</div>
 <button class="btn-pin" onclick="useCurrentLocation('to')">📍 Your Location</button>
-<div class="ac-wrap">
-<input type="text" id="to-loc" class="form-input" placeholder="Enter destination..." autocomplete="off"/>
+<div class="ac-wrap search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="to-loc" class="form-input" placeholder="Search destination..." autocomplete="off" spellcheck="false"/>
 </div>
 </div>
 
