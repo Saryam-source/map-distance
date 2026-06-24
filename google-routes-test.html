@@ -1,3 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Google Routes Test</title>
+<style>
+html,body{height:100%;margin:0;font-family:Arial;}
+#map{height:100%;}
+.box{
+position:absolute;top:20px;left:20px;z-index:10;
+background:white;padding:15px;border-radius:10px;width:300px;
+box-shadow:0 4px 20px rgba(0,0,0,.25);
+}
+input,button{width:100%;padding:10px;margin:6px 0;}
+button{background:#22c55e;color:white;border:0;font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="box">
+<input id="from" placeholder="From location">
+<input id="to" placeholder="To location">
+<button onclick="calculateRoute()">Calculate Route</button>
+<div id="result">Result will show here</div>
+</div>
+
+<div id="map"></div>
+
+<script>
+let map, geocoder;
+
+function initMap(){
+    map = new google.maps.Map(document.getElementById("map"), {
+        center:{lat:13.0827,lng:80.2707},
+        zoom:12
+    });
+
+    geocoder = new google.maps.Geocoder();
+
+    new google.maps.places.Autocomplete(document.getElementById("from"));
+    new google.maps.places.Autocomplete(document.getElementById("to"));
+}
+
+function calculateRoute(){
+    document.getElementById("result").innerHTML =
+    "Routes API test page is ready. Next we will add computeRoutes code.";
+}
+</script>
+
 <script async defer
 src="https://maps.googleapis.com/maps/api/js?key=YOUR_REAL_KEY&loading=async&libraries=places,geometry,routes,marker&callback=initMap&v=beta">
 </script>
+
+</body>
+</html>
