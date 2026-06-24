@@ -80,14 +80,20 @@ zoom:12
 const fromAuto = document.getElementById("fromPlace");
 const toAuto = document.getElementById("toPlace");
 
-fromAuto.addEventListener("gmp-placeselect", async function(event){
-fromPlace = event.place;
-await fromPlace.fetchFields({fields:["displayName","formattedAddress","location"]});
+fromAuto.addEventListener("gmp-select", async function(event){
+fromPlace = event.placePrediction.toPlace();
+await fromPlace.fetchFields({
+fields:["displayName","formattedAddress","location"]
+});
+console.log("FROM selected:", fromPlace);
 });
 
-toAuto.addEventListener("gmp-placeselect", async function(event){
-toPlace = event.place;
-await toPlace.fetchFields({fields:["displayName","formattedAddress","location"]});
+toAuto.addEventListener("gmp-select", async function(event){
+toPlace = event.placePrediction.toPlace();
+await toPlace.fetchFields({
+fields:["displayName","formattedAddress","location"]
+});
+console.log("TO selected:", toPlace);
 });
 
 }
