@@ -2,172 +2,217 @@
 <html>
 <head>
 <title>Google Routes Test</title>
+
 <style>
-html,body{height:100%;margin:0;font-family:Arial;}
-#map{height:100%;}
+html,body{
+height:100%;
+margin:0;
+font-family:Arial;
+}
+
+#map{
+height:100%;
+}
+
 .box{
-position:absolute;top:20px;left:20px;z-index:10;
-background:white;padding:15px;border-radius:10px;width:320px;
+position:absolute;
+top:20px;
+left:20px;
+z-index:10;
+background:white;
+padding:15px;
+border-radius:10px;
+width:320px;
 box-shadow:0 4px 20px rgba(0,0,0,.25);
 }
+
 input,button{
-width:100%;padding:10px;margin:6px 0;box-sizing:border-box;
+width:100%;
+padding:10px;
+margin:6px 0;
+box-sizing:border-box;
 }
+
 button{
-background:#22c55e;color:white;border:0;font-weight:bold;cursor:pointer;
+background:#22c55e;
+color:white;
+border:0;
+font-weight:bold;
+cursor:pointer;
 }
-#result{font-size:15px;margin-top:10px;font-weight:bold;}
+
+#result{
+font-size:15px;
+margin-top:10px;
+font-weight:bold;
+}
 </style>
+
 </head>
 
 <body>
 
 <div class="box">
+
 <input id="from" placeholder="From location">
+
 <input id="to" placeholder="To location">
-<button onclick="calculateRoute()">Calculate Route</button>
-<div id="result">Result will show here</div>
+
+<button onclick="calculateRoute()">
+Calculate Route
+</button>
+
+<div id="result">
+Result will show here
+</div>
+
 </div>
 
 <div id="map"></div>
 
 <script>
-let map, geocoder;
-let routeLine = null;
+
+let map;
+let geocoder;
+
 let fromMarker = null;
 let toMarker = null;
 
-function initMap(){
-    map = new google.maps.Map(document.getElementById("map"), {
-        center:{lat:13.0827,lng:80.2707},
-        zoom:12
-    });
+function initMap()
+{
+	map = new google.maps.Map(
+	document.getElementById("map"),
+	{
+		center:{lat:13.0827,lng:80.2707},
+		zoom:12
+	});
 
-    geocoder = new google.maps.Geocoder();
+	geocoder = new google.maps.Geocoder();
 }
 
-function geocodeAddress(address){
-    return new Promise(function(resolve,reject){
-        geocoder.geocode(
-            { address: address + ", Tamil Nadu, India" },
-            function(results,status){
-                if(status === "OK" && results[0]){
-                    const loc = results[0].geometry.location;
-                    resolve({
-                        lat: loc.lat(),
-                        lng: loc.lng(),
-                        address: results[0].formatted_address
-                    });
-                }else{
-                    reject("Location not found: " + address);
-                }
-            }
-        );
-    });
+function geocodeAddress(address)
+{
+	return new Promise(function(resolve,reject)
+	{
+		geocoder.geocode(
+		{
+			address:address + ", Tamil Nadu, India"
+		},
+		function(results,status)
+		{
+			if(status === "OK" && results[0])
+			{
+				resolve({
+					lat:results[0].geometry.location.lat(),
+					lng:results[0].geometry.location.lng(),
+					address:results[0].formatted_address
+				});
+			}
+			else
+			{
+				reject("Location not found : " + address);
+			}
+		});
+	});
 }
 
-async function calculateRoute(){
-    const fromText = document.getElementById("from").value.trim();
-    const toText = document.getElementById("to").value.trim();
-    const resultBox = document.getElementById("result");
+async function calculateRoute()
+{
+	try
+	{
+		let fromText =
+		document.getElementById("from").value.trim();
 
-    if(!fromText || !toText){
-        resultBox.innerHTML = "Please enter From and To location.";
-        return;
-    }
+		let toText =
+		document.getElementById("to").value.trim();
 
-    resultBox.innerHTML = "Calculating route...";
+		if(!fromText || !toText)
+		{
+			document.getElementById("result").innerHTML =
+			"Enter From and To location";
+			return;
+		}
 
-    try{
-        const from = await geocodeAddress(fromText);
-        const to = await geocodeAddress(toText);
+		document.getElementById("result").innerHTML =
+		"Calculating...";
 
-        if(fromMarker){ fromMarker.setMap(null); }
-        if(toMarker){ toMarker.setMap(null); }
-        if(routeLine){ routeLine.setMap(null); }
+		let from =
+		await geocodeAddress(fromText);
 
-        fromMarker = new google.maps.Marker({
-            position:{lat:from.lat,lng:from.lng},
-            map:map,
-            title:"FROM",
-            icon:{url:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"}
-        });
+		let to =
+		await geocodeAddress(toText);
 
-        toMarker = new google.maps.Marker({
-            position:{lat:to.lat,lng:to.lng},
-            map:map,
-            title:"TO",
-            icon:{url:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"}
-        });
+		if(fromMarker)
+		{
+			fromMarker.setMap(null);
+		}
 
-        const request = {
-            origin:{
-                location:{
-                    latLng:{
-                        latitude: from.lat,
-                        longitude: from.lng
-                    }
-                }
-            },
-            destination:{
-                location:{
-                    latLng:{
-                        latitude: to.lat,
-                        longitude: to.lng
-                    }
-                }
-            },
-            travelMode:"DRIVE",
-            routingPreference:"TRAFFIC_UNAWARE",
-            computeAlternativeRoutes:false,
-            fields:["distanceMeters","duration","polyline.encodedPolyline"]
-        };
+		if(toMarker)
+		{
+			toMarker.setMap(null);
+		}
 
-        const response = await google.maps.routes.Route.computeRoutes(request);
+		fromMarker = new google.maps.Marker({
+			position:{
+				lat:from.lat,
+				lng:from.lng
+			},
+			map:map,
+			title:"FROM",
+			icon:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+		});
 
-        if(!response.routes || response.routes.length === 0){
-            resultBox.innerHTML = "No route found.";
-            return;
-        }
+		toMarker = new google.maps.Marker({
+			position:{
+				lat:to.lat,
+				lng:to.lng
+			},
+			map:map,
+			title:"TO",
+			icon:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+		});
 
-        const route = response.routes[0];
+		let bounds =
+		new google.maps.LatLngBounds();
 
-        const path = google.maps.geometry.encoding.decodePath(
-            route.polyline.encodedPolyline
-        );
+		bounds.extend({
+			lat:from.lat,
+			lng:from.lng
+		});
 
-        routeLine = new google.maps.Polyline({
-            path:path,
-            map:map,
-            strokeColor:"#2563eb",
-            strokeWeight:6,
-            strokeOpacity:0.9
-        });
+		bounds.extend({
+			lat:to.lat,
+			lng:to.lng
+		});
 
-        const bounds = new google.maps.LatLngBounds();
-        path.forEach(function(p){
-            bounds.extend(p);
-        });
-        map.fitBounds(bounds);
+		map.fitBounds(bounds);
 
-        const distanceKm = (route.distanceMeters / 1000).toFixed(2);
-        const durationMin = Math.round(
-            parseInt(route.duration.replace("s","")) / 60
-        );
+		let distance =
+		google.maps.geometry.spherical.computeDistanceBetween(
+		new google.maps.LatLng(from.lat,from.lng),
+		new google.maps.LatLng(to.lat,to.lng)
+		);
 
-        resultBox.innerHTML =
-            "Distance: " + distanceKm + " KM<br>" +
-            "Duration: " + durationMin + " MIN";
+		let distanceKm =
+		(distance / 1000).toFixed(2);
 
-    }catch(error){
-        console.error(error);
-        resultBox.innerHTML = "Error: " + error;
-    }
+		document.getElementById("result").innerHTML =
+		"Distance : " + distanceKm + " KM";
+
+	}
+	catch(error)
+	{
+		console.error(error);
+
+		document.getElementById("result").innerHTML =
+		"Error : " + error;
+	}
 }
+
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=geometry,routes,marker&callback=initMap&v=beta">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=geometry,marker&callback=initMap&v=beta">
 </script>
 
 </body>
