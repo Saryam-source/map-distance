@@ -11,20 +11,16 @@
 :root{
 --bg:#f5f3ed;
 --surface:#f5f3edee;
---surface2:#f7f5ef;
 --border:#e6e0d6;
 --text:#3c3a36;
 --muted:#7d786f;
 --accent:#d8cfb5;
---accent-dark:#cfc4a5;
 --green:#22c55e;
---red:#ef4444;
 --radius:18px;
 --shadow:0 8px 24px rgba(0,0,0,.05);
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
 
 body{
 font-family:'DM Sans',sans-serif;
@@ -33,24 +29,18 @@ color:var(--text);
 display:flex;
 height:100vh;
 overflow:hidden;
-animation:fadePage .6s ease;
 }
 
 .sidebar{
 width:390px;
 background:var(--surface);
-backdrop-filter:blur(12px);
 border-right:1px solid var(--border);
 display:flex;
 flex-direction:column;
 overflow-y:auto;
 box-shadow:var(--shadow);
 z-index:999;
-animation:slideLeft .6s ease;
 }
-
-.sidebar::-webkit-scrollbar{width:6px;}
-.sidebar::-webkit-scrollbar-thumb{background:#d8d2c7;border-radius:20px;}
 
 .brand{
 padding:24px;
@@ -61,8 +51,6 @@ background:#f7f5ef;
 .brand-title{
 font-size:24px;
 font-weight:700;
-letter-spacing:.4px;
-color:#3c3a36;
 }
 
 .brand-sub{
@@ -87,49 +75,23 @@ color:var(--muted);
 text-transform:uppercase;
 }
 
-.form-input{
+.form-input,
+gmp-place-autocomplete{
 width:100%;
-padding:14px 16px;
 border-radius:16px;
+font-size:14px;
+}
+
+.form-input{
+padding:14px 16px;
 border:1px solid var(--border);
 background:#f7f5ef;
-font-size:14px;
 outline:none;
-transition:all .25s ease;
 color:var(--text);
-box-shadow:0 2px 6px rgba(0,0,0,.03);
 }
-
-.form-input:focus{
-border-color:var(--accent-dark);
-transform:translateY(-2px);
-background:#ffffff;
-box-shadow:0 0 0 4px rgba(216,207,181,.18),0 8px 20px rgba(0,0,0,.04);
-}
-
-.ac-wrap{position:relative;}
 
 .search-wrap{
-    position:relative;
-}
-
-.search-icon{
-    position:absolute;
-    left:16px;
-    top:50%;
-    transform:translateY(-50%);
-    z-index:2;
-    color:#7d786f;
-    font-size:18px;
-}
-
-#from-loc,
-#to-loc{
-    padding-left:44px;
-    background:#ffffff;
-    border-radius:18px;
-    min-height:56px;
-    font-size:15px;
+position:relative;
 }
 
 .pin-row,
@@ -137,7 +99,6 @@ box-shadow:0 0 0 4px rgba(216,207,181,.18),0 8px 20px rgba(0,0,0,.04);
 display:flex;
 gap:12px;
 }
-
 
 .btn-pin,
 .vehicle-btn,
@@ -148,35 +109,12 @@ border:none;
 border-radius:16px;
 font-weight:700;
 cursor:pointer;
-transition:all .25s ease;
-position:relative;
-overflow:hidden;
 font-size:14px;
 }
 
-.btn-pin::before,
-.vehicle-btn::before,
-.btn-calc::before,
-.btn-submit::before{
-content:'';
-position:absolute;
-top:0;
-left:-120%;
-width:100%;
-height:100%;
-background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
-transition:.6s;
-}
-
-.btn-pin:hover::before,
-.vehicle-btn:hover::before,
-.btn-calc:hover::before,
-.btn-submit:hover::before{
-left:120%;
-}
-
 .btn-pin,
-.vehicle-btn{
+.vehicle-btn,
+.btn-submit{
 background:#f7f5ef;
 border:1px solid var(--border);
 color:var(--text);
@@ -185,27 +123,11 @@ color:var(--text);
 .vehicle-btn.active,
 .btn-pin.active{
 background:#d8cfb5;
-color:#3c3a36;
-box-shadow:0 8px 20px rgba(0,0,0,.06);
 }
 
 .btn-calc{
 background:#22c55e;
 color:#fff;
-box-shadow:0 8px 20px rgba(34,197,94,.18);
-}
-
-.btn-submit{
-background:#d8cfb5;
-color:#3c3a36;
-box-shadow:0 8px 20px rgba(0,0,0,.05);
-}
-
-.btn-pin:hover,
-.vehicle-btn:hover,
-.btn-calc:hover,
-.btn-submit:hover{
-transform:translateY(-3px) scale(1.01);
 }
 
 .result-card{
@@ -217,16 +139,15 @@ border-radius:20px;
 background:#f7f5ef;
 border:1px solid var(--border);
 box-shadow:var(--shadow);
-animation:fadeUp .45s ease;
 }
 
-.result-card.show{display:flex;}
+.result-card.show{
+display:flex;
+}
 
 .metric{
 font-size:32px;
 font-weight:700;
-letter-spacing:.5px;
-color:#3c3a36;
 }
 
 #r-cost{
@@ -238,7 +159,6 @@ color:#8b7d59;
 #map{
 flex:1;
 height:100vh;
-background:#f5f3ed;
 }
 
 .toast{
@@ -254,7 +174,6 @@ font-size:13px;
 opacity:0;
 transition:.3s;
 z-index:999999;
-box-shadow:0 10px 30px rgba(0,0,0,.12);
 }
 
 .toast.show{
@@ -262,63 +181,26 @@ opacity:1;
 bottom:34px;
 }
 
-@keyframes fadePage{
-from{opacity:0;}
-to{opacity:1;}
-}
-
-@keyframes fadeUp{
-from{opacity:0;transform:translateY(20px);}
-to{opacity:1;transform:translateY(0);}
-}
-
-@keyframes slideLeft{
-from{opacity:0;transform:translateX(-40px);}
-to{opacity:1;transform:translateX(0);}
-}
-
 @media(max-width:768px){
 body{
 flex-direction:column;
 height:auto;
-min-height:100vh;
 overflow-y:auto;
-overflow-x:hidden;
 }
 
 .sidebar{
 width:100%;
-height:auto;
-max-height:none;
-overflow:visible;
 }
-
-.pane{padding:16px;}
-.brand{padding:18px;}
-.brand-title{font-size:20px;}
-.form-input{font-size:16px;}
 
 .pin-row,
 .vehicle-selector{
 flex-direction:column;
 }
 
-.btn-pin,
-.vehicle-btn,
-.btn-calc,
-.btn-submit{
-width:100%;
-}
-
 #map{
-width:100%;
 height:65vh;
 min-height:450px;
-display:block;
-flex:none;
 }
-
-.result-card{margin-bottom:20px;}
 }
 </style>
 </head>
@@ -326,7 +208,6 @@ flex:none;
 <body>
 
 <aside class="sidebar">
-
 <div class="brand">
 <div class="brand-title">Employee Travel Tracker</div>
 <div class="brand-sub">Distance · Route · Zoho Sync</div>
@@ -337,7 +218,6 @@ flex:none;
 <div>
 <div class="field-label">Employee Name</div>
 <input type="text" id="person-name" class="form-input" placeholder="Select or type employee name" list="employee-list"/>
-
 <datalist id="employee-list">
 <option value="Ajay">
 <option value="Shiny Roja">
@@ -378,19 +258,13 @@ flex:none;
 <div>
 <div class="field-label">From</div>
 <button class="btn-pin" onclick="useCurrentLocation('from')">📍 Your Location</button>
-<div class="ac-wrap search-wrap">
-    <span class="search-icon">⌕</span>
-    <input type="text" id="from-loc" class="form-input" placeholder="Search starting location..." autocomplete="off" spellcheck="false"/>
-</div>
+<gmp-place-autocomplete id="from-loc" placeholder="Search starting location"></gmp-place-autocomplete>
 </div>
 
 <div>
 <div class="field-label">To</div>
 <button class="btn-pin" onclick="useCurrentLocation('to')">📍 Your Location</button>
-<div class="ac-wrap search-wrap">
-    <span class="search-icon">⌕</span>
-    <input type="text" id="to-loc" class="form-input" placeholder="Search destination..." autocomplete="off" spellcheck="false"/>
-</div>
+<gmp-place-autocomplete id="to-loc" placeholder="Search destination"></gmp-place-autocomplete>
 </div>
 
 <div>
@@ -442,8 +316,6 @@ document.getElementById('travel-date').value =
 new Date().toISOString().split('T')[0];
 
 var map;
-var directionsService;
-var directionsRenderer;
 var geocoder;
 
 var selectedVehicle = 'bike';
@@ -454,6 +326,10 @@ var currentMarker = null;
 
 var fromCoords = null;
 var toCoords = null;
+
+var fromAddress = "";
+var toAddress = "";
+
 var tripData = null;
 
 var pinMode = null;
@@ -474,22 +350,9 @@ streetViewControl:false,
 fullscreenControl:true
 });
 
-directionsService = new google.maps.DirectionsService();
-
-directionsRenderer = new google.maps.DirectionsRenderer({
-map:map,
-suppressMarkers:true,
-polylineOptions:{
-strokeColor:"#2563eb",
-strokeWeight:7,
-strokeOpacity:0.9
-}
-});
-
 geocoder = new google.maps.Geocoder();
 
-setupAutocomplete("from-loc","from");
-setupAutocomplete("to-loc","to");
+setupNewAutocomplete();
 
 map.addListener("click",function(e){
 
@@ -526,29 +389,46 @@ map.setOptions({draggableCursor:null});
 
 }
 
-function setupAutocomplete(inputId,type){
+function setupNewAutocomplete(){
 
-var input = document.getElementById(inputId);
+var fromAuto = document.getElementById("from-loc");
+var toAuto = document.getElementById("to-loc");
 
-var autocomplete = new google.maps.places.Autocomplete(input,{
-componentRestrictions:{country:"in"},
-fields:["formatted_address","geometry","name"]
+fromAuto.addEventListener("gmp-select", async function(event){
+
+var place = event.placePrediction.toPlace();
+
+await place.fetchFields({
+fields:["displayName","formattedAddress","location"]
 });
 
-autocomplete.addListener("place_changed",function(){
+setLocation(
+"from",
+place.formattedAddress || place.displayName,
+place.location.lat(),
+place.location.lng()
+);
 
-var place = autocomplete.getPlace();
+console.log("FROM selected:", place);
 
-if(!place.geometry || !place.geometry.location){
-toast("Please select valid location from list");
-return;
-}
+});
 
-var lat = place.geometry.location.lat();
-var lng = place.geometry.location.lng();
-var address = place.formatted_address || place.name;
+toAuto.addEventListener("gmp-select", async function(event){
 
-setLocation(type,address,lat,lng);
+var place = event.placePrediction.toPlace();
+
+await place.fetchFields({
+fields:["displayName","formattedAddress","location"]
+});
+
+setLocation(
+"to",
+place.formattedAddress || place.displayName,
+place.location.lat(),
+place.location.lng()
+);
+
+console.log("TO selected:", place);
 
 });
 
@@ -561,27 +441,27 @@ var position = {lat:lat,lng:lng};
 if(type === "from"){
 
 fromCoords = position;
-document.getElementById("from-loc").value = address;
+fromAddress = address;
 
 if(fromMarker){
-    fromMarker.setMap(null);
+fromMarker.setMap(null);
 }
 
 fromMarker = new google.maps.Marker({
-    position: position,
-    map: map,
-    title: "FROM",
-    icon: {
-        url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-    }
+position:position,
+map:map,
+title:"FROM",
+icon:{
+url:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+}
 });
 
 var fromInfo = new google.maps.InfoWindow({
-    content: "<b>FROM</b><br>" + address
+content:"<b>FROM</b><br>" + address
 });
 
-fromMarker.addListener("click", function(){
-    fromInfo.open(map, fromMarker);
+fromMarker.addListener("click",function(){
+fromInfo.open(map,fromMarker);
 });
 
 toast("FROM selected successfully");
@@ -589,29 +469,28 @@ toast("FROM selected successfully");
 }else{
 
 toCoords = position;
-document.getElementById("to-loc").value = address;
+toAddress = address;
 
 if(toMarker){
-    toMarker.setMap(null);
+toMarker.setMap(null);
 }
 
 toMarker = new google.maps.Marker({
-    position: position,
-    map: map,
-    title: "TO",
-    icon: {
-        url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
-    }
+position:position,
+map:map,
+title:"TO",
+icon:{
+url:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+}
 });
 
 var toInfo = new google.maps.InfoWindow({
-    content: "<b>TO</b><br>" + address
+content:"<b>TO</b><br>" + address
 });
 
-toMarker.addListener("click", function(){
-    toInfo.open(map, toMarker);
+toMarker.addListener("click",function(){
+toInfo.open(map,toMarker);
 });
-
 
 toast("TO selected successfully");
 
@@ -619,10 +498,6 @@ if(liveTracking && fromCoords && toCoords){
 toast("Destination added. Tracking will stop automatically when reached.");
 }
 
-}
-
-if(directionsRenderer){
-    directionsRenderer.set('directions', null);
 }
 
 if(fromCoords && toCoords){
@@ -660,11 +535,8 @@ function selectVehicle(type){
 
 selectedVehicle = type;
 
-document.getElementById('btn-bike')
-.classList.toggle('active',type === 'bike');
-
-document.getElementById('btn-car')
-.classList.toggle('active',type === 'car');
+document.getElementById('btn-bike').classList.toggle('active',type === 'bike');
+document.getElementById('btn-car').classList.toggle('active',type === 'car');
 
 }
 
@@ -677,11 +549,8 @@ return;
 
 pinMode = type;
 
-document.getElementById('btn-pin-from')
-.classList.toggle('active',type === 'from');
-
-document.getElementById('btn-pin-to')
-.classList.toggle('active',type === 'to');
+document.getElementById('btn-pin-from').classList.toggle('active',type === 'from');
+document.getElementById('btn-pin-to').classList.toggle('active',type === 'to');
 
 map.setOptions({draggableCursor:"crosshair"});
 
@@ -697,10 +566,8 @@ return;
 }
 
 if(type === "to" && liveTracking && latestLiveCoords){
-
 reverseGeocodeAndSet(type,latestLiveCoords.lat,latestLiveCoords.lng);
 return;
-
 }
 
 toast("Getting your current location...");
@@ -752,12 +619,6 @@ address = results[0].formatted_address;
 
 setLocation(type,address,lat,lng);
 
-if(type === "from"){
-toast("Current location added as FROM");
-}else{
-toast("Current location added as TO");
-}
-
 }
 );
 
@@ -771,8 +632,6 @@ try{
 
 var name = document.getElementById('person-name').value;
 var rawDate = document.getElementById('travel-date').value;
-var from = document.getElementById('from-loc').value;
-var to = document.getElementById('to-loc').value;
 
 if(!rawDate){
 toast("Please select date");
@@ -780,41 +639,31 @@ reject();
 return;
 }
 
-if(!name || !from || !to){
-alert("Please fill all fields");
+if(!name){
+alert("Please enter employee name");
 reject();
 return;
 }
 
 if(!fromCoords || !toCoords){
-toast("Please select valid locations");
+toast("Please select valid From and To locations");
 reject();
 return;
 }
 
-directionsService.route(
-{
-origin:fromCoords,
-destination:toCoords,
-travelMode:google.maps.TravelMode.DRIVING
-},
-function(response,status){
+var distance =
+google.maps.geometry.spherical.computeDistanceBetween(
+new google.maps.LatLng(fromCoords.lat,fromCoords.lng),
+new google.maps.LatLng(toCoords.lat,toCoords.lng)
+);
 
-if(status !== "OK"){
+var distanceKm = distance / 1000;
 
-console.error(status);
-toast("Failed to calculate route: " + status);
-reject();
-return;
+var durationMin = Math.round((distanceKm / 35) * 60);
 
+if(durationMin <= 0){
+durationMin = 1;
 }
-
-directionsRenderer.setDirections(response);
-
-var leg = response.routes[0].legs[0];
-
-var distanceKm = leg.distance.value / 1000;
-var durationMin = Math.round(leg.duration.value / 60);
 
 var rate = selectedVehicle === "car" ? 8 : 4;
 var cost = (distanceKm * rate).toFixed(2);
@@ -834,8 +683,8 @@ parts[0];
 tripData = {
 Name:name,
 Travel_Date:date,
-start:from,
-end:to,
+start:fromAddress,
+end:toAddress,
 distance:parseFloat(distanceKm.toFixed(2)),
 duration:String(durationMin),
 mode:selectedVehicle,
@@ -859,20 +708,17 @@ document.getElementById('r-cost').innerHTML =
 document.getElementById('result-card').classList.add('show');
 
 document.getElementById('save-btn').disabled = false;
-document.getElementById('save-btn').innerHTML = "Save to Zoho";
+document.getElementById('save-btn').innerHTML = "💾 Save to Zoho";
 document.getElementById('save-btn').style.background = "";
 
-toast("Route calculated");
+toast("Distance calculated");
 
 resolve();
-
-}
-);
 
 }catch(e){
 
 console.error(e);
-toast("Failed to calculate route");
+toast("Failed to calculate distance");
 reject();
 
 }
@@ -919,7 +765,7 @@ toast("Saved to Zoho");
 
 console.error(error);
 btn.disabled = false;
-btn.innerHTML = "Save to Zoho";
+btn.innerHTML = "💾 Save to Zoho";
 toast("Failed to save");
 
 });
@@ -973,17 +819,17 @@ currentMarker.setPosition(currentPosition);
 }else{
 
 currentMarker = new google.maps.Marker({
-    position: currentPosition,
-    map: map,
-    title: "Live Location",
-    label: {
-        text: "L",
-        color: "#ffffff",
-        fontWeight: "bold"
-    },
-    icon: {
-        url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-    }
+position:currentPosition,
+map:map,
+title:"Live Location",
+label:{
+text:"L",
+color:"#ffffff",
+fontWeight:"bold"
+},
+icon:{
+url:"https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+}
 });
 
 }
@@ -1052,7 +898,7 @@ timeout:30000
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=places,geometry,routes,marker&callback=initMap&v=beta">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=places,geometry,marker&callback=initMap&v=beta">
 </script>
 
 </body>
