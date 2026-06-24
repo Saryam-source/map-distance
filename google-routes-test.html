@@ -22,18 +22,19 @@ z-index:10;
 background:white;
 padding:15px;
 border-radius:10px;
-width:320px;
+width:330px;
 box-shadow:0 4px 20px rgba(0,0,0,.25);
 }
 
-input,button{
+gmp-place-autocomplete,
+button{
 width:100%;
-padding:10px;
-margin:6px 0;
+margin:7px 0;
 box-sizing:border-box;
 }
 
 button{
+padding:12px;
 background:#22c55e;
 color:white;
 border:0;
@@ -47,172 +48,100 @@ margin-top:10px;
 font-weight:bold;
 }
 </style>
-
 </head>
 
 <body>
 
 <div class="box">
+<gmp-place-autocomplete id="fromPlace" placeholder="From location"></gmp-place-autocomplete>
+<gmp-place-autocomplete id="toPlace" placeholder="To location"></gmp-place-autocomplete>
 
-<input id="from" placeholder="From location">
+<button onclick="calculateRoute()">Calculate Route</button>
 
-<input id="to" placeholder="To location">
-
-<button onclick="calculateRoute()">
-Calculate Route
-</button>
-
-<div id="result">
-Result will show here
-</div>
-
+<div id="result">Result will show here</div>
 </div>
 
 <div id="map"></div>
 
 <script>
-
 let map;
-let geocoder;
-
+let fromPlace = null;
+let toPlace = null;
 let fromMarker = null;
 let toMarker = null;
 
-function initMap()
-{
-	map = new google.maps.Map(
-	document.getElementById("map"),
-	{
-		center:{lat:13.0827,lng:80.2707},
-		zoom:12
-	});
+function initMap(){
 
-	geocoder = new google.maps.Geocoder();
+map = new google.maps.Map(document.getElementById("map"),{
+center:{lat:13.0827,lng:80.2707},
+zoom:12
+});
+
+const fromAuto = document.getElementById("fromPlace");
+const toAuto = document.getElementById("toPlace");
+
+fromAuto.addEventListener("gmp-placeselect", async function(event){
+fromPlace = event.place;
+await fromPlace.fetchFields({fields:["displayName","formattedAddress","location"]});
+});
+
+toAuto.addEventListener("gmp-placeselect", async function(event){
+toPlace = event.place;
+await toPlace.fetchFields({fields:["displayName","formattedAddress","location"]});
+});
+
 }
 
-function geocodeAddress(address)
-{
-	return new Promise(function(resolve,reject)
-	{
-		geocoder.geocode(
-		{
-			address:address + ", Tamil Nadu, India"
-		},
-		function(results,status)
-		{
-			if(status === "OK" && results[0])
-			{
-				resolve({
-					lat:results[0].geometry.location.lat(),
-					lng:results[0].geometry.location.lng(),
-					address:results[0].formatted_address
-				});
-			}
-			else
-			{
-				reject("Location not found : " + address);
-			}
-		});
-	});
+function calculateRoute(){
+
+if(!fromPlace || !toPlace){
+document.getElementById("result").innerHTML =
+"Please select From and To from dropdown.";
+return;
 }
 
-async function calculateRoute()
-{
-	try
-	{
-		let fromText =
-		document.getElementById("from").value.trim();
+const fromLoc = fromPlace.location;
+const toLoc = toPlace.location;
 
-		let toText =
-		document.getElementById("to").value.trim();
-
-		if(!fromText || !toText)
-		{
-			document.getElementById("result").innerHTML =
-			"Enter From and To location";
-			return;
-		}
-
-		document.getElementById("result").innerHTML =
-		"Calculating...";
-
-		let from =
-		await geocodeAddress(fromText);
-
-		let to =
-		await geocodeAddress(toText);
-
-		if(fromMarker)
-		{
-			fromMarker.setMap(null);
-		}
-
-		if(toMarker)
-		{
-			toMarker.setMap(null);
-		}
-
-		fromMarker = new google.maps.Marker({
-			position:{
-				lat:from.lat,
-				lng:from.lng
-			},
-			map:map,
-			title:"FROM",
-			icon:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-		});
-
-		toMarker = new google.maps.Marker({
-			position:{
-				lat:to.lat,
-				lng:to.lng
-			},
-			map:map,
-			title:"TO",
-			icon:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"
-		});
-
-		let bounds =
-		new google.maps.LatLngBounds();
-
-		bounds.extend({
-			lat:from.lat,
-			lng:from.lng
-		});
-
-		bounds.extend({
-			lat:to.lat,
-			lng:to.lng
-		});
-
-		map.fitBounds(bounds);
-
-		let distance =
-		google.maps.geometry.spherical.computeDistanceBetween(
-		new google.maps.LatLng(from.lat,from.lng),
-		new google.maps.LatLng(to.lat,to.lng)
-		);
-
-		let distanceKm =
-		(distance / 1000).toFixed(2);
-
-		document.getElementById("result").innerHTML =
-		"Distance : " + distanceKm + " KM";
-
-	}
-	catch(error)
-	{
-		console.error(error);
-
-		document.getElementById("result").innerHTML =
-		"Error : " + error;
-	}
+if(fromMarker){
+fromMarker.setMap(null);
 }
 
+if(toMarker){
+toMarker.setMap(null);
+}
+
+fromMarker = new google.maps.Marker({
+position:fromLoc,
+map:map,
+title:"FROM",
+icon:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+});
+
+toMarker = new google.maps.Marker({
+position:toLoc,
+map:map,
+title:"TO",
+icon:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+});
+
+const bounds = new google.maps.LatLngBounds();
+bounds.extend(fromLoc);
+bounds.extend(toLoc);
+map.fitBounds(bounds);
+
+const distance =
+google.maps.geometry.spherical.computeDistanceBetween(fromLoc,toLoc);
+
+const distanceKm = (distance / 1000).toFixed(2);
+
+document.getElementById("result").innerHTML =
+"Distance : " + distanceKm + " KM";
+}
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=geometry,marker&callback=initMap&v=beta">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=places,geometry,marker&callback=initMap&v=beta">
 </script>
 
 </body>
