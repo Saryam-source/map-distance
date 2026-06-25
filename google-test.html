@@ -412,7 +412,7 @@ async function getGoogleRoute(){
 var request = {
 origin:new google.maps.LatLng(fromCoords.lat,fromCoords.lng),
 destination:new google.maps.LatLng(toCoords.lat,toCoords.lng),
-travelMode:"DRIVE",
+travelMode:google.maps.TravelMode.DRIVING,
 routingPreference:"TRAFFIC_UNAWARE",
 computeAlternativeRoutes:false,
 fields:["path","distanceMeters","durationMillis"]
