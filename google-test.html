@@ -1,139 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
+<meta charset="UTF-8" />
 <title>Employee Travel Tracker</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
 <style>
 :root{
---bg:#f5f3ed;--surface:#f5f3edee;--border:#e6e0d6;--text:#3c3a36;
---muted:#7d786f;--accent:#d8cfb5;--green:#22c55e;--red:#ef4444;
---shadow:0 8px 24px rgba(0,0,0,.05);
+  --bg:#f5f3ed;
+  --surface:#f5f3edee;
+  --surface2:#f7f5ef;
+  --border:#e6e0d6;
+  --text:#3c3a36;
+  --muted:#7d786f;
+  --accent:#d8cfb5;
+  --green:#22c55e;
+  --red:#ef4444;
+  --shadow:0 8px 24px rgba(0,0,0,.05);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:#f5f3ed;color:var(--text);display:flex;height:100vh;overflow:hidden;}
-.sidebar{width:390px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;box-shadow:var(--shadow);z-index:999;}
-.brand{padding:24px;border-bottom:1px solid var(--border);background:#f7f5ef;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  height:100vh;
+  overflow:hidden;
+}
+.sidebar{
+  width:390px;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  box-shadow:var(--shadow);
+  z-index:999;
+}
+.sidebar::-webkit-scrollbar{width:6px;}
+.sidebar::-webkit-scrollbar-thumb{background:#d8d2c7;border-radius:20px;}
+.brand{
+  padding:24px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface2);
+}
 .brand-title{font-size:24px;font-weight:700;}
 .brand-sub{font-size:13px;margin-top:6px;color:var(--muted);}
 .pane{padding:22px;display:flex;flex-direction:column;gap:18px;}
-.field-label{font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:8px;color:var(--muted);text-transform:uppercase;}
-.form-input,gmp-place-autocomplete{width:100%;border-radius:16px;font-size:14px;}
-.form-input{padding:14px 16px;border:1px solid var(--border);background:#f7f5ef;outline:none;color:var(--text);}
-.btn-pin,.vehicle-btn,.btn-calc,.btn-submit{padding:14px;border:none;border-radius:16px;font-weight:700;cursor:pointer;font-size:14px;}
-.btn-pin,.vehicle-btn,.btn-submit{background:#f7f5ef;border:1px solid var(--border);color:var(--text);}
-.vehicle-btn.active,.btn-pin.active{background:#d8cfb5;}
-.btn-calc{background:#22c55e;color:#fff;}
+.field-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:1px;
+  margin-bottom:8px;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+.form-input{
+  width:100%;
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  font-size:14px;
+  outline:none;
+  color:var(--text);
+}
+.form-input:focus{
+  border-color:#cfc4a5;
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(216,207,181,.18);
+}
+.search-row{display:flex;gap:8px;}
+.search-row .form-input{flex:1;}
 .pin-row,.vehicle-selector{display:flex;gap:12px;}
+.btn-pin,.vehicle-btn,.btn-calc,.btn-submit{
+  padding:14px;
+  border:none;
+  border-radius:16px;
+  font-weight:700;
+  cursor:pointer;
+  font-size:14px;
+  transition:.25s;
+}
+.btn-pin,.vehicle-btn,.btn-submit{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  color:var(--text);
+}
+.vehicle-btn.active,.btn-pin.active{background:var(--accent);}
+.btn-calc{background:var(--green);color:#fff;}
+.btn-stop{background:#ef4444!important;color:#fff!important;border:none!important;}
+.btn-pin:hover,.vehicle-btn:hover,.btn-calc:hover,.btn-submit:hover{transform:translateY(-2px);}
 .selected-text{font-size:12px;color:#6b6257;margin-top:6px;line-height:1.4;}
-.result-card{display:none;flex-direction:column;gap:16px;padding:20px;border-radius:20px;background:#f7f5ef;border:1px solid var(--border);box-shadow:var(--shadow);}
+.result-card{
+  display:none;
+  flex-direction:column;
+  gap:16px;
+  padding:20px;
+  border-radius:20px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+}
 .result-card.show{display:flex;}
 .metric{font-size:32px;font-weight:700;}
 #r-cost{font-size:15px;font-weight:600;color:#8b7d59;}
-#map{flex:1;height:100vh;background:#f5f3ed;}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3c3a36;color:#fff;padding:14px 22px;border-radius:30px;font-size:13px;opacity:0;transition:.3s;z-index:999999;}
+#map{flex:1;height:100vh;background:var(--bg);}
+.toast{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#3c3a36;
+  color:#fff;
+  padding:14px 22px;
+  border-radius:30px;
+  font-size:13px;
+  opacity:0;
+  transition:.3s;
+  z-index:999999;
+}
 .toast.show{opacity:1;bottom:34px;}
 @media(max-width:768px){
-body{flex-direction:column;height:auto;overflow-y:auto;}
-.sidebar{width:100%;}
-.pin-row,.vehicle-selector{flex-direction:column;}
-.btn-pin,.vehicle-btn,.btn-calc,.btn-submit{width:100%;}
-#map{height:65vh;min-height:450px;}
+  body{flex-direction:column;height:auto;min-height:100vh;overflow-y:auto;}
+  .sidebar{width:100%;height:auto;overflow:visible;}
+  .pin-row,.vehicle-selector,.search-row{flex-direction:column;}
+  .btn-pin,.vehicle-btn,.btn-calc,.btn-submit{width:100%;}
+  #map{width:100%;height:65vh;min-height:450px;flex:none;}
 }
 </style>
 </head>
 
 <body>
-
 <aside class="sidebar">
-<div class="brand">
-<div class="brand-title">Employee Travel Tracker</div>
-<div class="brand-sub">Distance · Route · Zoho Sync</div>
-</div>
+  <div class="brand">
+    <div class="brand-title">Employee Travel Tracker</div>
+    <div class="brand-sub">Distance · Route · Zoho Sync</div>
+  </div>
 
-<div class="pane">
+  <div class="pane">
+    <div>
+      <div class="field-label">Employee Name</div>
+      <input type="text" id="person-name" class="form-input" placeholder="Select or type employee name" list="employee-list" />
+      <datalist id="employee-list">
+        <option value="Ajay"><option value="Shiny Roja"><option value="Srinidhi"><option value="Yamuna">
+        <option value="Puviarasu"><option value="Ajitha"><option value="Aatish"><option value="Selvaganabathy">
+        <option value="Muniyandi"><option value="Antony Daniel"><option value="Baraneeswari"><option value="Murugan">
+        <option value="Loganathan"><option value="Simson"><option value="Vijay"><option value="Deepan Raj">
+        <option value="Arunmani"><option value="Gopalakrishnan"><option value="Aswini"><option value="Manikandan">
+        <option value="Subadeesh"><option value="Lakshmi Narayanan"><option value="Meenakshi"><option value="Hemachandiran">
+        <option value="Lakshmi"><option value="Manimaran"><option value="Divya"><option value="Renuka">
+      </datalist>
+    </div>
 
-<div>
-<div class="field-label">Employee Name</div>
-<input type="text" id="person-name" class="form-input" placeholder="Select or type employee name" list="employee-list"/>
-<datalist id="employee-list">
-<option value="Ajay"><option value="Shiny Roja"><option value="Srinidhi"><option value="Yamuna">
-<option value="Puviarasu"><option value="Ajitha"><option value="Aatish"><option value="Selvaganabathy">
-<option value="Muniyandi"><option value="Antony Daniel"><option value="Baraneeswari"><option value="Murugan">
-<option value="Loganathan"><option value="Simson"><option value="Vijay"><option value="Deepan Raj">
-<option value="Arunmani"><option value="Gopalakrishnan"><option value="Aswini"><option value="Manikandan">
-<option value="Subadeesh"><option value="Lakshmi Narayanan"><option value="Meenakshi"><option value="Hemachandiran">
-<option value="Lakshmi"><option value="Manimaran"><option value="Divya"><option value="Renuka">
-</datalist>
-</div>
+    <div>
+      <div class="field-label">Travel Date</div>
+      <input type="date" id="travel-date" class="form-input" />
+    </div>
 
-<div>
-<div class="field-label">Travel Date</div>
-<input type="date" id="travel-date" class="form-input"/>
-</div>
+    <div>
+      <div class="field-label">From</div>
+      <button class="btn-pin" onclick="useCurrentLocation('from')">📍 Your Location</button>
+      <input type="text" id="from-loc" class="form-input" placeholder="Search starting location" autocomplete="off" />
+      <div class="selected-text" id="from-selected"></div>
+    </div>
 
-<div>
-<div class="field-label">From</div>
-<button class="btn-pin" onclick="useCurrentLocation('from')">📍 Your Location</button>
-<gmp-place-autocomplete id="from-loc" placeholder="Search starting location"></gmp-place-autocomplete>
-<div class="selected-text" id="from-selected"></div>
-</div>
+    <div>
+      <div class="field-label">To</div>
+      <button class="btn-pin" onclick="useCurrentLocation('to')">📍 Your Location</button>
+      <input type="text" id="to-loc" class="form-input" placeholder="Search destination" autocomplete="off" />
+      <div class="selected-text" id="to-selected"></div>
+    </div>
 
-<div>
-<div class="field-label">To</div>
-<button class="btn-pin" onclick="useCurrentLocation('to')">📍 Your Location</button>
-<gmp-place-autocomplete id="to-loc" placeholder="Search destination"></gmp-place-autocomplete>
-<div class="selected-text" id="to-selected"></div>
-</div>
+    <div>
+      <div class="field-label">Manual Pin Location</div>
+      <div class="pin-row">
+        <button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">🟢 Pin From</button>
+        <button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">🔴 Pin To</button>
+      </div>
+    </div>
 
-<div>
-<div class="field-label">Manual Pin Location</div>
-<div class="pin-row">
-<button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">🟢 Pin From</button>
-<button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">🔴 Pin To</button>
-</div>
-</div>
+    <div>
+      <div class="field-label">Vehicle Type</div>
+      <div class="vehicle-selector">
+        <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">🏍 Bike Rs.4/km</button>
+        <button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">🚗 Car Rs.8/km</button>
+      </div>
+    </div>
 
-<div>
-<div class="field-label">Vehicle Type</div>
-<div class="vehicle-selector">
-<button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">🏍 Bike Rs.4/km</button>
-<button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">🚗 Car Rs.8/km</button>
-</div>
-</div>
+    <button class="btn-submit" id="tracking-btn" onclick="startLiveTracking()">🛰 Start Live Tracking</button>
+    <button type="button" class="btn-calc" onclick="calculateRoute()">🗺 Calculate Route</button>
 
-<button class="btn-submit" onclick="startLiveTracking()">🛰 Start Live Tracking</button>
-<button type="button" class="btn-calc" onclick="calculateRoute()">🗺 Calculate Route</button>
-
-<div class="result-card" id="result-card">
-<div>Distance<div class="metric" id="r-dist">0 KM</div></div>
-<div>Duration<div class="metric" id="r-dur">0 MIN</div></div>
-<div id="r-cost"></div>
-<button class="btn-submit" id="save-btn" onclick="submitToZoho()">💾 Save to Zoho</button>
-</div>
-
-</div>
+    <div class="result-card" id="result-card">
+      <div>Distance<div class="metric" id="r-dist">0 KM</div></div>
+      <div>Duration<div class="metric" id="r-dur">0 MIN</div></div>
+      <div id="r-cost"></div>
+      <button class="btn-submit" id="save-btn" onclick="submitToZoho(false)">💾 Save to Zoho</button>
+    </div>
+  </div>
 </aside>
 
 <div id="map"></div>
 <div class="toast" id="toast"></div>
 
 <script>
-var ZOHO_WEBHOOK_URL =
-"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
+/* ===================== CONFIG ===================== */
+var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
 
-document.getElementById("travel-date").value =
-new Date().toISOString().split("T")[0];
+/* ===================== STATE ===================== */
+document.getElementById("travel-date").value = new Date().toISOString().split("T")[0];
 
-var map, geocoder, infoWindow;
+var map, geocoder, directionsService, directionsRenderer, infoWindow;
 var selectedVehicle = "bike";
 
 var fromMarker = null;
 var toMarker = null;
 var currentMarker = null;
-var routeLine = null;
 
 var fromCoords = null;
 var toCoords = null;
@@ -151,629 +234,436 @@ var destinationReached = false;
 var trackingStartTime = null;
 var trackingEndTime = null;
 var latestLiveCoords = null;
+var autoSaveLock = false;
 
+/* ===================== INIT MAP ===================== */
 function initMap(){
-map = new google.maps.Map(document.getElementById("map"),{
-center:{lat:13.0827,lng:80.2707},
-zoom:12,
-mapTypeControl:false,
-streetViewControl:false,
-fullscreenControl:true,
-mapId:"DEMO_MAP_ID"
-});
+  map = new google.maps.Map(document.getElementById("map"),{
+    center:{lat:13.0827,lng:80.2707},
+    zoom:12,
+    mapTypeControl:false,
+    streetViewControl:false,
+    fullscreenControl:true
+  });
 
-geocoder = new google.maps.Geocoder();
-infoWindow = new google.maps.InfoWindow();
+  geocoder = new google.maps.Geocoder();
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({
+    map:map,
+    suppressMarkers:true,
+    polylineOptions:{
+      strokeColor:"#2563eb",
+      strokeWeight:7,
+      strokeOpacity:0.9
+    }
+  });
+  infoWindow = new google.maps.InfoWindow();
 
-setupNewAutocomplete();
+  setupAutocomplete("from-loc","from");
+  setupAutocomplete("to-loc","to");
 
-map.addListener("click",function(e){
-if(!pinMode){return;}
+  map.addListener("click",function(e){
+    if(!pinMode){return;}
 
-var lat = e.latLng.lat();
-var lng = e.latLng.lng();
+    var lat = e.latLng.lat();
+    var lng = e.latLng.lng();
 
-reverseGeocode(lat,lng,function(address){
-setLocation(pinMode,address,lat,lng);
-
-pinMode = null;
-document.getElementById("btn-pin-from").classList.remove("active");
-document.getElementById("btn-pin-to").classList.remove("active");
-map.setOptions({draggableCursor:null});
-});
-});
+    reverseGeocode(lat,lng,function(address){
+      setLocation(pinMode,address,lat,lng);
+      pinMode = null;
+      document.getElementById("btn-pin-from").classList.remove("active");
+      document.getElementById("btn-pin-to").classList.remove("active");
+      map.setOptions({draggableCursor:null});
+    });
+  });
 }
 
-function setupNewAutocomplete(){
-var fromAuto = document.getElementById("from-loc");
-var toAuto = document.getElementById("to-loc");
+/* ===================== AUTOCOMPLETE ===================== */
+function setupAutocomplete(inputId,type){
+  var input = document.getElementById(inputId);
+  var autocomplete = new google.maps.places.Autocomplete(input,{
+    componentRestrictions:{country:"in"},
+    fields:["formatted_address","geometry","name"]
+  });
 
-fromAuto.addEventListener("gmp-select",async function(event){
-var place = event.placePrediction.toPlace();
-await place.fetchFields({fields:["displayName","formattedAddress","location"]});
+  autocomplete.addListener("place_changed",function(){
+    var place = autocomplete.getPlace();
 
-setLocation(
-"from",
-place.formattedAddress || place.displayName,
-place.location.lat(),
-place.location.lng()
-);
-});
+    if(!place.geometry || !place.geometry.location){
+      toast("Please select valid location from dropdown");
+      return;
+    }
 
-toAuto.addEventListener("gmp-select",async function(event){
-var place = event.placePrediction.toPlace();
-await place.fetchFields({fields:["displayName","formattedAddress","location"]});
+    var lat = place.geometry.location.lat();
+    var lng = place.geometry.location.lng();
+    var address = place.formatted_address || place.name;
 
-setLocation(
-"to",
-place.formattedAddress || place.displayName,
-place.location.lat(),
-place.location.lng()
-);
-});
+    setLocation(type,address,lat,lng);
+  });
+}
+
+/* ===================== MARKERS ===================== */
+function clearRoute(){
+  if(directionsRenderer){
+    directionsRenderer.set("directions",null);
+  }
 }
 
 function setInputText(type,address){
-var box = document.getElementById(type === "from" ? "from-loc" : "to-loc");
-
-try{
-box.value = address;
-box.setAttribute("value",address);
-}catch(e){}
-
-document.getElementById(type === "from" ? "from-selected" : "to-selected").innerHTML = address;
-}
-
-function makePin(color,text){
-return new google.maps.marker.PinElement({
-background:color,
-borderColor:"#222",
-glyphText:text,
-glyphColor:"#fff"
-});
-}
-
-function clearRoute(){
-if(routeLine){
-routeLine.setMap(null);
-routeLine = null;
-}
+  var input = document.getElementById(type === "from" ? "from-loc" : "to-loc");
+  input.value = address;
+  document.getElementById(type === "from" ? "from-selected" : "to-selected").innerHTML = address;
 }
 
 function setLocation(type,address,lat,lng){
-var position = {lat:lat,lng:lng};
+  var position = {lat:lat,lng:lng};
 
-clearRoute();
-tripData = null;
-alreadySaved = false;
+  clearRoute();
+  tripData = null;
+  alreadySaved = false;
+  autoSaveLock = false;
 
-if(type === "from"){
-fromCoords = position;
-fromAddress = address;
-setInputText("from",address);
+  if(type === "from"){
+    fromCoords = position;
+    fromAddress = address;
+    setInputText("from",address);
 
-if(fromMarker){
-fromMarker.map = null;
+    if(fromMarker){fromMarker.setMap(null);}
+
+    fromMarker = new google.maps.Marker({
+      position:position,
+      map:map,
+      title:"FROM",
+      icon:"https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+    });
+
+    fromMarker.addListener("click",function(){
+      infoWindow.setContent("<b>FROM</b><br>" + fromAddress);
+      infoWindow.open(map,fromMarker);
+    });
+
+    toast("FROM selected successfully");
+  }else{
+    toCoords = position;
+    toAddress = address;
+    setInputText("to",address);
+
+    if(toMarker){toMarker.setMap(null);}
+
+    toMarker = new google.maps.Marker({
+      position:position,
+      map:map,
+      title:"TO",
+      icon:"https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+    });
+
+    toMarker.addListener("click",function(){
+      infoWindow.setContent("<b>TO</b><br>" + toAddress);
+      infoWindow.open(map,toMarker);
+    });
+
+    toast("TO selected successfully");
+
+    if(liveTracking && fromCoords && toCoords){
+      toast("Destination added. Tracking will stop automatically when reached.");
+    }
+  }
+
+  if(fromCoords && toCoords){
+    var bounds = new google.maps.LatLngBounds();
+    bounds.extend(fromCoords);
+    bounds.extend(toCoords);
+    map.fitBounds(bounds);
+  }else{
+    map.setCenter(position);
+    map.setZoom(15);
+  }
 }
 
-var pin = makePin("#22c55e","F");
-
-fromMarker = new google.maps.marker.AdvancedMarkerElement({
-map:map,
-position:position,
-title:"FROM",
-content:pin.element
-});
-
-fromMarker.addListener("gmp-click",function(){
-infoWindow.setContent("<b>FROM</b><br>" + fromAddress);
-infoWindow.open({anchor:fromMarker,map:map});
-});
-
-toast("FROM selected successfully");
-
-}else{
-
-toCoords = position;
-toAddress = address;
-setInputText("to",address);
-
-if(toMarker){
-toMarker.map = null;
-}
-
-var pin2 = makePin("#ef4444","T");
-
-toMarker = new google.maps.marker.AdvancedMarkerElement({
-map:map,
-position:position,
-title:"TO",
-content:pin2.element
-});
-
-toMarker.addListener("gmp-click",function(){
-infoWindow.setContent("<b>TO</b><br>" + toAddress);
-infoWindow.open({anchor:toMarker,map:map});
-});
-
-toast("TO selected successfully");
-
-if(liveTracking && fromCoords && toCoords){
-toast("Destination added. Tracking will stop automatically when reached.");
-}
-}
-
-if(fromCoords && toCoords){
-var bounds = new google.maps.LatLngBounds();
-bounds.extend(fromCoords);
-bounds.extend(toCoords);
-map.fitBounds(bounds);
-}else{
-map.setCenter(position);
-map.setZoom(15);
-}
-}
-
+/* ===================== UI HELPERS ===================== */
 function toast(msg){
-var t = document.getElementById("toast");
-t.textContent = msg;
-t.classList.add("show");
-
-clearTimeout(t._t);
-
-t._t = setTimeout(function(){
-t.classList.remove("show");
-},2500);
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._t);
+  t._t = setTimeout(function(){t.classList.remove("show");},2500);
 }
 
 function selectVehicle(type){
-selectedVehicle = type;
-
-document.getElementById("btn-bike").classList.toggle("active",type === "bike");
-document.getElementById("btn-car").classList.toggle("active",type === "car");
-
-alreadySaved = false;
+  selectedVehicle = type;
+  document.getElementById("btn-bike").classList.toggle("active",type === "bike");
+  document.getElementById("btn-car").classList.toggle("active",type === "car");
+  alreadySaved = false;
 }
 
 function startPin(type){
-if(!map){
-toast("Map not loaded yet");
-return;
+  if(!map){toast("Map not loaded yet");return;}
+  pinMode = type;
+  document.getElementById("btn-pin-from").classList.toggle("active",type === "from");
+  document.getElementById("btn-pin-to").classList.toggle("active",type === "to");
+  map.setOptions({draggableCursor:"crosshair"});
+  toast("Click on map to pin " + type);
 }
 
-pinMode = type;
-
-document.getElementById("btn-pin-from").classList.toggle("active",type === "from");
-document.getElementById("btn-pin-to").classList.toggle("active",type === "to");
-
-map.setOptions({draggableCursor:"crosshair"});
-
-toast("Click on map to pin " + type);
-}
-
+/* ===================== GEOLOCATION ===================== */
 function useCurrentLocation(type){
-if(!navigator.geolocation){
-toast("Geolocation not supported");
-return;
-}
+  if(!navigator.geolocation){toast("Geolocation not supported");return;}
 
-if(type === "to" && liveTracking && latestLiveCoords){
-reverseGeocodeAndSet(type,latestLiveCoords.lat,latestLiveCoords.lng);
-return;
-}
+  if(type === "to" && liveTracking && latestLiveCoords){
+    reverseGeocodeAndSet(type,latestLiveCoords.lat,latestLiveCoords.lng);
+    return;
+  }
 
-toast("Getting your current location...");
+  toast("Getting your current location...");
 
-navigator.geolocation.getCurrentPosition(
-function(position){
-reverseGeocodeAndSet(type,position.coords.latitude,position.coords.longitude);
-},
-function(error){
-console.error(error);
-toast("Location permission denied or timeout");
-},
-{
-enableHighAccuracy:true,
-maximumAge:10000,
-timeout:30000
-}
-);
+  navigator.geolocation.getCurrentPosition(
+    function(position){
+      reverseGeocodeAndSet(type,position.coords.latitude,position.coords.longitude);
+    },
+    function(error){
+      console.error(error);
+      toast("Location permission denied or timeout");
+    },
+    {enableHighAccuracy:true,maximumAge:10000,timeout:30000}
+  );
 }
 
 function reverseGeocode(lat,lng,callback){
-geocoder.geocode(
-{location:{lat:lat,lng:lng}},
-function(results,status){
-var address = lat.toFixed(5) + "," + lng.toFixed(5);
-
-if(status === "OK" && results[0]){
-address = results[0].formatted_address;
-}
-
-callback(address);
-}
-);
+  geocoder.geocode({location:{lat:lat,lng:lng}},function(results,status){
+    var address = lat.toFixed(5) + "," + lng.toFixed(5);
+    if(status === "OK" && results[0]){
+      address = results[0].formatted_address;
+    }
+    callback(address);
+  });
 }
 
 function reverseGeocodeAndSet(type,lat,lng){
-reverseGeocode(lat,lng,function(address){
-setLocation(type,address,lat,lng);
-
-if(type === "from"){
-toast("Current location added as FROM");
-}else{
-toast("Current location added as TO");
-}
-});
+  reverseGeocode(lat,lng,function(address){
+    setLocation(type,address,lat,lng);
+    toast(type === "from" ? "Current location added as FROM" : "Current location added as TO");
+  });
 }
 
-async function getGoogleRoute(){
-
-var request = {
-origin:new google.maps.LatLng(fromCoords.lat,fromCoords.lng),
-destination:new google.maps.LatLng(toCoords.lat,toCoords.lng),
-travelMode:google.maps.TravelMode.DRIVING,
-routingPreference:"TRAFFIC_UNAWARE",
-computeAlternativeRoutes:false,
-fields:["path","distanceMeters","durationMillis"]
-};
-
-var response =
-await google.maps.routes.Route.computeRoutes(request);
-
-if(!response.routes || response.routes.length === 0){
-throw new Error("No route found");
-}
-
-return response.routes[0];
-}
-
+/* ===================== ROUTE CALCULATION ===================== */
 function formatDate(rawDate){
-var parts = rawDate.split("-");
-var months = [
-"Jan","Feb","Mar","Apr","May","Jun",
-"Jul","Aug","Sep","Oct","Nov","Dec"
-];
-
-return parts[2] + "-" +
-months[parseInt(parts[1]) - 1] + "-" +
-parts[0];
+  var parts = rawDate.split("-");
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return parts[2] + "-" + months[parseInt(parts[1]) - 1] + "-" + parts[0];
 }
 
-async function calculateRoute(){
-try{
+function calculateRoute(){
+  return new Promise(function(resolve,reject){
+    var name = document.getElementById("person-name").value.trim();
+    var rawDate = document.getElementById("travel-date").value;
 
-var name =
-document.getElementById("person-name").value.trim();
+    if(!rawDate){toast("Please select date");reject();return;}
+    if(!name){alert("Please enter employee name");reject();return;}
+    if(!fromCoords || !toCoords){toast("Please select valid From and To locations");reject();return;}
 
-var rawDate =
-document.getElementById("travel-date").value;
+    toast("Calculating road route...");
 
-if(!rawDate){
-toast("Please select date");
-return Promise.reject();
+    directionsService.route({
+      origin:fromCoords,
+      destination:toCoords,
+      travelMode:google.maps.TravelMode.DRIVING
+    },function(response,status){
+      if(status !== "OK"){
+        console.error("Directions failed:",status);
+        toast("Failed to calculate route: " + status);
+        reject(status);
+        return;
+      }
+
+      directionsRenderer.setDirections(response);
+
+      var leg = response.routes[0].legs[0];
+      var distanceKm = leg.distance.value / 1000;
+      var durationMin = Math.round(leg.duration.value / 60);
+      if(durationMin <= 0){durationMin = 1;}
+
+      var rate = selectedVehicle === "car" ? 8 : 4;
+      var cost = (distanceKm * rate).toFixed(2);
+
+      tripData = {
+        Name:name,
+        Travel_Date:formatDate(rawDate),
+        start:fromAddress,
+        end:toAddress,
+        distance:parseFloat(distanceKm.toFixed(2)),
+        duration:String(durationMin),
+        mode:selectedVehicle,
+        cost:parseFloat(cost),
+        travel_time:tripData && tripData.travel_time ? tripData.travel_time : "",
+        timestamp:new Date().toISOString()
+      };
+
+      alreadySaved = false;
+
+      document.getElementById("r-dist").textContent = distanceKm.toFixed(2) + " KM";
+      document.getElementById("r-dur").textContent = durationMin + " MIN";
+      document.getElementById("r-cost").innerHTML = "Estimated Cost: Rs." + cost;
+      document.getElementById("result-card").classList.add("show");
+
+      var btn = document.getElementById("save-btn");
+      btn.disabled = false;
+      btn.innerHTML = "💾 Save to Zoho";
+      btn.style.background = "";
+
+      toast("Route calculated");
+      resolve();
+    });
+  });
 }
 
-if(!name){
-alert("Please enter employee name");
-return Promise.reject();
-}
-
-if(!fromCoords || !toCoords){
-toast("Please select valid From and To locations");
-return Promise.reject();
-}
-
-toast("Calculating road route...");
-
-clearRoute();
-
-var route =
-await getGoogleRoute();
-
-var polylines =
-route.createPolylines();
-
-if(!polylines || !polylines.length){
-throw new Error("Route line not found");
-}
-
-routeLine = polylines[0];
-
-routeLine.setMap(map);
-
-routeLine.setOptions({
-strokeColor:"#2563eb",
-strokeWeight:7,
-strokeOpacity:0.9
-});
-
-var bounds =
-new google.maps.LatLngBounds();
-
-routeLine.getPath().forEach(function(p){
-bounds.extend(p);
-});
-
-map.fitBounds(bounds);
-
-var distanceKm =
-route.distanceMeters / 1000;
-
-var durationMin =
-Math.round(route.durationMillis / 60000);
-
-if(durationMin <= 0){
-durationMin = 1;
-}
-
-var rate =
-selectedVehicle === "car" ? 8 : 4;
-
-var cost =
-(distanceKm * rate).toFixed(2);
-
-tripData = {
-Name:name,
-Travel_Date:formatDate(rawDate),
-start:fromAddress,
-end:toAddress,
-distance:parseFloat(distanceKm.toFixed(2)),
-duration:String(durationMin),
-mode:selectedVehicle,
-cost:parseFloat(cost),
-travel_time:
-tripData && tripData.travel_time
-? tripData.travel_time
-: "",
-timestamp:new Date().toISOString()
-};
-
-alreadySaved = false;
-
-document.getElementById("r-dist").textContent =
-distanceKm.toFixed(2) + " KM";
-
-document.getElementById("r-dur").textContent =
-durationMin + " MIN";
-
-document.getElementById("r-cost").innerHTML =
-"Estimated Cost: Rs." + cost;
-
-document.getElementById("result-card").classList.add("show");
-
-var btn =
-document.getElementById("save-btn");
-
-btn.disabled = false;
-btn.innerHTML = "💾 Save to Zoho";
-btn.style.background = "";
-
-toast("Route calculated");
-
-return Promise.resolve();
-
-}catch(e){
-
-console.error(e);
-toast("Failed to calculate route");
-return Promise.reject(e);
-
-}
-}
-
+/* ===================== ZOHO SAVE + DUPLICATE PROTECTION ===================== */
 function makeTripKey(){
-if(!tripData){
-return "";
+  if(!tripData){return "";}
+  return [
+    tripData.Name,
+    tripData.Travel_Date,
+    tripData.start,
+    tripData.end,
+    tripData.distance,
+    tripData.mode,
+    tripData.travel_time
+  ].join("|");
 }
 
-return [
-tripData.Name,
-tripData.Travel_Date,
-tripData.start,
-tripData.end,
-tripData.distance,
-tripData.mode
-].join("|");
+function submitToZoho(isAutoSave){
+  if(!tripData){toast("Calculate route first");return;}
+
+  var key = makeTripKey();
+
+  if(savingNow){toast("Saving already in progress");return;}
+
+  if(alreadySaved || sessionStorage.getItem("last_saved_trip") === key){
+    toast("This trip is already saved");
+    return;
+  }
+
+  savingNow = true;
+
+  var btn = document.getElementById("save-btn");
+  btn.disabled = true;
+  btn.innerHTML = isAutoSave ? "Auto saving..." : "Saving...";
+
+  var params = new URLSearchParams();
+  Object.keys(tripData).forEach(function(k){
+    params.append(k,String(tripData[k]));
+  });
+
+  fetch(ZOHO_WEBHOOK_URL + "&" + params.toString(),{
+    method:"GET",
+    mode:"no-cors"
+  })
+  .then(function(){
+    savingNow = false;
+    alreadySaved = true;
+    sessionStorage.setItem("last_saved_trip",key);
+    btn.innerHTML = isAutoSave ? "Auto Saved ✓" : "Saved ✓";
+    btn.style.background = "#22c55e";
+    toast(isAutoSave ? "Auto saved to Zoho" : "Saved to Zoho");
+  })
+  .catch(function(error){
+    savingNow = false;
+    console.error(error);
+    btn.disabled = false;
+    btn.innerHTML = "💾 Save to Zoho";
+    toast("Failed to save");
+  });
 }
 
-function submitToZoho(){
-
-if(!tripData){
-toast("Calculate route first");
-return;
-}
-
-var key =
-makeTripKey();
-
-if(savingNow){
-toast("Saving already in progress");
-return;
-}
-
-if(alreadySaved || sessionStorage.getItem("last_saved_trip") === key){
-toast("This trip is already saved");
-return;
-}
-
-savingNow = true;
-
-var btn =
-document.getElementById("save-btn");
-
-btn.disabled = true;
-btn.innerHTML = "Saving...";
-
-var params =
-new URLSearchParams();
-
-Object.keys(tripData).forEach(function(k){
-params.append(k,String(tripData[k]));
-});
-
-fetch(
-ZOHO_WEBHOOK_URL + "&" + params.toString(),
-{
-method:"GET",
-mode:"no-cors"
-}
-)
-.then(function(){
-
-savingNow = false;
-alreadySaved = true;
-
-sessionStorage.setItem("last_saved_trip",key);
-
-btn.innerHTML = "Saved ✓";
-btn.style.background = "#22c55e";
-
-toast("Saved to Zoho");
-
-})
-.catch(function(error){
-
-savingNow = false;
-
-console.error(error);
-
-btn.disabled = false;
-btn.innerHTML = "💾 Save to Zoho";
-
-toast("Failed to save");
-
-});
-}
-
+/* ===================== LIVE TRACKING AUTO STOP + AUTO SAVE ===================== */
 function startLiveTracking(){
+  if(liveTracking){toast("Live tracking already started");return;}
+  if(!navigator.geolocation){toast("Geolocation not supported");return;}
+  if(!fromCoords){toast("Please select FROM location first");return;}
 
-if(liveTracking){
-toast("Live tracking already started");
-return;
-}
+  liveTracking = true;
+  destinationReached = false;
+  autoSaveLock = false;
+  trackingStartTime = new Date();
 
-if(!navigator.geolocation){
-toast("Geolocation not supported");
-return;
-}
+  var trackBtn = document.getElementById("tracking-btn");
+  trackBtn.innerHTML = "🛰 Tracking Started";
+  trackBtn.classList.add("btn-stop");
 
-if(!fromCoords){
-toast("Please select FROM location first");
-return;
-}
+  toast("Live tracking started");
 
-liveTracking = true;
-destinationReached = false;
-trackingStartTime = new Date();
+  watchId = navigator.geolocation.watchPosition(
+    function(position){
+      var lat = position.coords.latitude;
+      var lng = position.coords.longitude;
 
-toast("Live tracking started");
+      latestLiveCoords = {lat:lat,lng:lng};
+      var currentPosition = {lat:lat,lng:lng};
 
-watchId =
-navigator.geolocation.watchPosition(
-function(position){
+      if(currentMarker){
+        currentMarker.setPosition(currentPosition);
+      }else{
+        currentMarker = new google.maps.Marker({
+          position:currentPosition,
+          map:map,
+          title:"Live Location",
+          label:{text:"L",color:"#ffffff",fontWeight:"bold"},
+          icon:"https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+        });
+      }
 
-var lat =
-position.coords.latitude;
+      map.setCenter(currentPosition);
+      map.setZoom(15);
 
-var lng =
-position.coords.longitude;
+      if(toCoords){
+        var remaining = google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(lat,lng),
+          new google.maps.LatLng(toCoords.lat,toCoords.lng)
+        );
 
-latestLiveCoords = {
-lat:lat,
-lng:lng
-};
+        if(remaining <= 100 && !destinationReached && !autoSaveLock){
+          destinationReached = true;
+          autoSaveLock = true;
+          trackingEndTime = new Date();
 
-var currentPosition = {
-lat:lat,
-lng:lng
-};
+          toast("Destination reached. Auto saving...");
 
-if(currentMarker){
+          navigator.geolocation.clearWatch(watchId);
+          liveTracking = false;
 
-currentMarker.position =
-currentPosition;
+          trackBtn.innerHTML = "🛰 Start Live Tracking";
+          trackBtn.classList.remove("btn-stop");
 
-}else{
+          var start = trackingStartTime.toLocaleTimeString();
+          var end = trackingEndTime.toLocaleTimeString();
+          var totalMinutes = Math.round((trackingEndTime - trackingStartTime) / 60000);
+          var finalTravelTime = start + " - " + end + " (" + totalMinutes + " mins)";
 
-var pin =
-makePin("#2563eb","L");
-
-currentMarker =
-new google.maps.marker.AdvancedMarkerElement({
-map:map,
-position:currentPosition,
-title:"Live Location",
-content:pin.element
-});
-
-}
-
-map.setCenter(currentPosition);
-map.setZoom(15);
-
-if(toCoords){
-
-var remaining =
-google.maps.geometry.spherical.computeDistanceBetween(
-new google.maps.LatLng(lat,lng),
-new google.maps.LatLng(toCoords.lat,toCoords.lng)
-);
-
-if(remaining < 100 && !destinationReached){
-
-destinationReached = true;
-trackingEndTime = new Date();
-
-toast("Destination reached");
-
-navigator.geolocation.clearWatch(watchId);
-
-liveTracking = false;
-
-var start =
-trackingStartTime.toLocaleTimeString();
-
-var end =
-trackingEndTime.toLocaleTimeString();
-
-var totalMinutes =
-Math.round((trackingEndTime - trackingStartTime) / 60000);
-
-var finalTravelTime =
-start + " - " + end + " (" + totalMinutes + " mins)";
-
-calculateRoute().then(function(){
-
-if(tripData){
-tripData.travel_time = finalTravelTime;
-submitToZoho();
-}
-
-});
-
-}
-
-}
-
-},
-function(error){
-
-console.error(error);
-toast("Location access denied");
-
-},
-{
-enableHighAccuracy:true,
-maximumAge:0,
-timeout:30000
-}
-);
+          calculateRoute().then(function(){
+            if(tripData){
+              tripData.travel_time = finalTravelTime;
+              submitToZoho(true);
+            }
+          }).catch(function(error){
+            console.error(error);
+            toast("Auto save failed because route calculation failed");
+          });
+        }
+      }
+    },
+    function(error){
+      console.error(error);
+      toast("Location access denied");
+      liveTracking = false;
+      document.getElementById("tracking-btn").innerHTML = "🛰 Start Live Tracking";
+      document.getElementById("tracking-btn").classList.remove("btn-stop");
+    },
+    {enableHighAccuracy:true,maximumAge:0,timeout:30000}
+  );
 }
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=places,geometry,routes,marker&callback=initMap&v=beta">
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo&loading=async&libraries=places,geometry&callback=initMap&v=beta">
 </script>
 
 </body>
