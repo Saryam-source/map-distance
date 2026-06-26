@@ -869,6 +869,10 @@ Save to Zoho
 
 var ZOHO_WEBHOOK_URL =
 "https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
+
+var urlParams = new URLSearchParams(window.location.search);
+var editId = urlParams.get("edit_id") || "";
+
 document.getElementById('travel-date').value =
 new Date().toISOString().split('T')[0];
 
@@ -1417,6 +1421,10 @@ btn.disabled = true;
 btn.innerHTML = 'Saving...';
 
 var params = new URLSearchParams();
+
+if(editId){
+    params.append("edit_id", editId);
+}
 
 Object.keys(tripData).forEach(function(k){
 params.append(k, String(tripData[k]));
