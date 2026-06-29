@@ -1402,59 +1402,52 @@ toast('Failed to calculate route');
 }
 
 }
-
 function submitToZoho() {
 
-if(!tripData){
-toast('Calculate route first');
-return;
-}
+    if(!tripData){
+        toast('Calculate route first');
+        return;
+    }
 
-var btn = document.getElementById('save-btn');
+    var btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.innerHTML = 'Saving...';
 
-btn.disabled = true;
+    var urlParams = new URLSearchParams(window.location.search);
+    var editId = urlParams.get("edit_id") || "";
 
-btn.innerHTML = 'Saving...';
+    if(editId){
+        window.parent.postMessage(tripData, "*");
+        btn.innerHTML = 'Updated ✓';
+        btn.style.background = '#22c55e';
+        toast('Trip update sent');
+        return;
+    }
 
-var params = new URLSearchParams();
+    var params = new URLSearchParams();
 
-Object.keys(tripData).forEach(function(k){
-params.append(k, String(tripData[k]));
-});
+    Object.keys(tripData).forEach(function(k){
+        params.append(k, String(tripData[k]));
+    });
 
-console.log(tripData);
-
-
-fetch(
-ZOHO_WEBHOOK_URL + '&' + params.toString(),
-{
-method:'GET',
-mode:'no-cors'
-}
-)
-
-.then(function(){
-
-btn.innerHTML = 'Saved ✓';
-
-btn.style.background = '#22c55e';
-
-toast('Saved to Zoho');
-
-})
-
-.catch(function(error){
-
-console.error(error);
-
-btn.disabled = false;
-
-btn.innerHTML = 'Save to Zoho';
-
-toast('Failed to save');
-
-});
-
+    fetch(
+        ZOHO_WEBHOOK_URL + '&' + params.toString(),
+        {
+            method:'GET',
+            mode:'no-cors'
+        }
+    )
+    .then(function(){
+        btn.innerHTML = 'Saved ✓';
+        btn.style.background = '#22c55e';
+        toast('Saved to Zoho');
+    })
+    .catch(function(error){
+        console.error(error);
+        btn.disabled = false;
+        btn.innerHTML = 'Save to Zoho';
+        toast('Failed to save');
+    });
 }
 
 function useCurrentLocation(type){
