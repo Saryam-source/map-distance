@@ -4,209 +4,247 @@
 <meta charset="UTF-8" />
 <title>Employee Travel Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
 <style>
 :root{
-  --bg:#f5f3ed;
-  --surface:#f5f3edee;
-  --surface2:#f7f5ef;
-  --border:#e6e0d6;
-  --text:#3c3a36;
-  --muted:#7d786f;
-  --accent:#d8cfb5;
-  --green:#22c55e;
+  --bg:#eef5f1;
+  --panel:#ffffff;
+  --panel-soft:#f8fafc;
+  --header:#064e3b;
+  --header2:#022c22;
+  --primary:#16a34a;
+  --primary-dark:#047857;
+  --blue:#2563eb;
   --red:#ef4444;
-  --shadow:0 8px 24px rgba(0,0,0,.05);
+  --amber:#f59e0b;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --shadow:0 18px 45px rgba(15,23,42,.10);
+  --radius:22px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
 body{
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
+  font-family:'DM Sans',Arial,sans-serif;
+  background:linear-gradient(135deg,#eefaf2 0%,#f8fafc 45%,#e6f5ef 100%);
   color:var(--text);
-  display:flex;
-  height:100vh;
   overflow:hidden;
 }
+.app-shell{height:100vh;padding:10px;display:flex;flex-direction:column;gap:10px;}
+.topbar{
+  height:82px;
+  background:linear-gradient(135deg,var(--header),var(--header2));
+  border-radius:14px;
+  box-shadow:0 14px 35px rgba(6,78,59,.28);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 26px;color:#fff;flex:none;
+}
+.brand-wrap{display:flex;align-items:center;gap:14px;}
+.logo-mark{
+  width:46px;height:46px;border-radius:14px;
+  background:rgba(255,255,255,.12);
+  display:grid;place-items:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20);
+}
+.logo-mark svg{width:30px;height:30px;}
+.brand-title{font-size:25px;font-weight:800;letter-spacing:.4px;line-height:1;}
+.brand-sub{font-size:14px;opacity:.86;margin-top:6px;}
+.top-meta{display:flex;align-items:center;gap:18px;font-size:14px;font-weight:700;}
+.online-dot{width:10px;height:10px;background:#86efac;border-radius:50%;box-shadow:0 0 0 6px rgba(134,239,172,.15);display:inline-block;margin-right:8px;}
+.main-grid{flex:1;min-height:0;display:grid;grid-template-columns:520px 1fr;gap:10px;}
 .sidebar{
-  width:390px;
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  overflow-y:auto;
+  background:rgba(255,255,255,.94);
+  border:1px solid rgba(226,232,240,.9);
+  border-radius:var(--radius);
   box-shadow:var(--shadow);
-  z-index:999;
+  overflow-y:auto;
+  z-index:10;
 }
-.sidebar::-webkit-scrollbar{width:6px;}
-.sidebar::-webkit-scrollbar-thumb{background:#d8d2c7;border-radius:20px;}
-.brand{
-  padding:24px;
-  border-bottom:1px solid var(--border);
-  background:var(--surface2);
+.sidebar::-webkit-scrollbar{width:7px;}
+.sidebar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px;}
+.pane{padding:24px;display:flex;flex-direction:column;gap:18px;}
+.section-card{
+  background:#fff;border:1px solid var(--border);border-radius:18px;
+  padding:18px;box-shadow:0 10px 30px rgba(15,23,42,.05);
 }
-.brand-title{font-size:24px;font-weight:700;}
-.brand-sub{font-size:13px;margin-top:6px;color:var(--muted);}
-.pane{padding:22px;display:flex;flex-direction:column;gap:18px;}
-.field-label{
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:1px;
-  margin-bottom:8px;
-  color:var(--muted);
-  text-transform:uppercase;
-}
+.section-title{font-size:12px;letter-spacing:1.2px;font-weight:800;color:#065f46;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.field-label{font-size:11px;font-weight:800;letter-spacing:1px;color:#667085;text-transform:uppercase;margin:0 0 8px;}
+.input-block{margin-bottom:14px;}
 .form-input,
 gmp-place-autocomplete{
-  width:100%;
-  padding:14px 16px;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:var(--surface2);
-  font-size:14px;
-  outline:none;
-  color:var(--text);
+  width:100%;min-height:56px;padding:15px 16px;border-radius:16px;
+  border:1px solid var(--border);background:#fff;font-size:15px;outline:none;color:var(--text);
+  box-shadow:0 4px 14px rgba(15,23,42,.04);transition:.25s;
 }
-gmp-place-autocomplete{
-  display:block;
-  min-height:52px;
-}
-.form-input:focus{
-  border-color:#cfc4a5;
-  background:#fff;
-  box-shadow:0 0 0 4px rgba(216,207,181,.18);
-}
-.search-row{display:flex;gap:8px;}
-.search-row .form-input{flex:1;}
-.pin-row,.vehicle-selector{display:flex;gap:12px;}
+gmp-place-autocomplete{display:block;}
+.form-input:focus{border-color:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.13);}
+.search-shell{position:relative;}
+.search-shell:before{content:'⌕';position:absolute;left:17px;top:50%;transform:translateY(-50%);font-size:24px;color:#6b7280;z-index:3;pointer-events:none;}
+.search-shell gmp-place-autocomplete{padding-left:48px;}
+.selected-text{font-size:12px;color:#64748b;line-height:1.5;margin-top:8px;}
+.action-row,.pin-row,.vehicle-selector{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .btn-pin,.vehicle-btn,.btn-calc,.btn-submit{
-  padding:14px;
-  border:none;
-  border-radius:16px;
-  font-weight:700;
-  cursor:pointer;
-  font-size:14px;
-  transition:.25s;
+  min-height:56px;padding:14px 16px;border-radius:16px;border:1px solid var(--border);
+  font-weight:800;cursor:pointer;font-size:14px;transition:.25s;background:#fff;color:var(--text);
+  box-shadow:0 8px 22px rgba(15,23,42,.05);display:flex;align-items:center;justify-content:center;gap:10px;
 }
-.btn-pin,.vehicle-btn,.btn-submit{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  color:var(--text);
-}
-.vehicle-btn.active,.btn-pin.active{background:var(--accent);}
-.btn-calc{background:var(--green);color:#fff;}
-.btn-stop{background:#ef4444!important;color:#fff!important;border:none!important;}
-.btn-pin:hover,.vehicle-btn:hover,.btn-calc:hover,.btn-submit:hover{transform:translateY(-2px);}
-.selected-text{font-size:12px;color:#6b6257;margin-top:6px;line-height:1.4;}
-.result-card{
-  display:none;
-  flex-direction:column;
-  gap:16px;
-  padding:20px;
-  border-radius:20px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
-}
-.result-card.show{display:flex;}
-.metric{font-size:32px;font-weight:700;}
-#r-cost{font-size:15px;font-weight:600;color:#8b7d59;}
-#map{flex:1;height:100vh;background:var(--bg);}
-.toast{
-  position:fixed;
-  bottom:24px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#3c3a36;
-  color:#fff;
-  padding:14px 22px;
-  border-radius:30px;
-  font-size:13px;
-  opacity:0;
-  transition:.3s;
-  z-index:999999;
-}
-.toast.show{opacity:1;bottom:34px;}
-@media(max-width:768px){
-  body{flex-direction:column;height:auto;min-height:100vh;overflow-y:auto;}
-  .sidebar{width:100%;height:auto;overflow:visible;}
-  .pin-row,.vehicle-selector,.search-row{flex-direction:column;}
-  .btn-pin,.vehicle-btn,.btn-calc,.btn-submit{width:100%;}
-  #map{width:100%;height:65vh;min-height:450px;flex:none;}
-}
+.btn-pin:hover,.vehicle-btn:hover,.btn-calc:hover,.btn-submit:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.09);}
+.btn-pin.active,.vehicle-btn.active{border-color:#22c55e;background:linear-gradient(135deg,#ecfdf5,#fff);box-shadow:0 0 0 4px rgba(34,197,94,.10);}
+.vehicle-btn{flex-direction:column;gap:4px;min-height:84px;position:relative;}
+.vehicle-btn small{font-size:12px;color:#6b7280;font-weight:700;}
+.vehicle-btn.active:after{content:'✓';position:absolute;right:12px;top:12px;width:24px;height:24px;background:#22c55e;color:#fff;border-radius:50%;display:grid;place-items:center;font-size:14px;}
+.btn-calc{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;box-shadow:0 16px 30px rgba(34,197,94,.25);}
+.btn-submit{background:linear-gradient(135deg,#064e3b,#065f46);color:#fff;border:none;box-shadow:0 16px 30px rgba(6,78,59,.22);}
+.btn-secondary{background:#fff;color:#064e3b;border:1px solid #bbf7d0;}
+.btn-stop{background:linear-gradient(135deg,#ef4444,#dc2626)!important;color:#fff!important;border:none!important;}
+.map-panel{position:relative;min-width:0;min-height:0;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid rgba(226,232,240,.9);background:#fff;}
+#map{position:absolute;inset:0;background:#eaf7f3;}
+.map-overlay{position:absolute;top:18px;left:18px;z-index:5;background:rgba(255,255,255,.94);border:1px solid rgba(226,232,240,.9);border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.10);overflow:hidden;display:flex;}
+.map-tab{padding:12px 22px;font-size:16px;font-weight:800;color:#334155;}
+.map-tab.active{background:#fff;color:#111827;}
+.stats-bar{position:absolute;left:14px;right:14px;bottom:14px;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.stat-card{background:rgba(255,255,255,.96);border:1px solid rgba(226,232,240,.9);border-radius:16px;padding:16px 18px;box-shadow:0 12px 32px rgba(15,23,42,.10);display:flex;align-items:center;gap:14px;min-height:86px;}
+.stat-icon{width:46px;height:46px;border-radius:14px;background:#ecfdf5;color:#047857;display:grid;place-items:center;font-size:24px;font-weight:800;}
+.stat-label{font-size:11px;font-weight:800;letter-spacing:.8px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;}
+.stat-value{font-size:24px;font-weight:800;color:#064e3b;line-height:1;}
+.status-value{font-size:22px;}
+.status-ready{color:#16a34a;}
+.status-working{color:#2563eb;}
+.status-saved{color:#16a34a;}
+.status-error{color:#dc2626;}
+.result-card{display:contents;}
+.utility-card{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mini-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:14px;}
+.mini-title{font-size:13px;font-weight:800;color:#065f46;margin-bottom:5px;}
+.mini-text{font-size:12px;color:#64748b;line-height:1.4;}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:14px 22px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999999;box-shadow:0 18px 40px rgba(15,23,42,.25);}
+.toast.show{opacity:1;bottom:36px;}
+.footer-note{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:linear-gradient(135deg,#064e3b,#022c22);color:#d1fae5;border-radius:10px;font-size:12px;flex:none;}
+@media(max-width:1100px){.main-grid{grid-template-columns:430px 1fr;}.stats-bar{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){body{overflow:auto;}.app-shell{height:auto;min-height:100vh;}.topbar{height:auto;padding:18px;align-items:flex-start;gap:14px;flex-direction:column;}.top-meta{width:100%;justify-content:space-between;}.main-grid{grid-template-columns:1fr;}.sidebar{max-height:none;}.map-panel{height:650px;}.stats-bar{position:relative;left:auto;right:auto;bottom:auto;padding:12px;grid-template-columns:1fr;}.action-row,.pin-row,.vehicle-selector,.utility-card{grid-template-columns:1fr;}.footer-note{flex-direction:column;height:auto;padding:14px;gap:6px;text-align:center;}}
 </style>
 </head>
 
 <body>
-<aside class="sidebar">
-  <div class="brand">
-    <div class="brand-title">Employee Travel Tracker</div>
-    <div class="brand-sub">Distance · Route · Zoho Sync</div>
-  </div>
-
-  <div class="pane">
-    <div>
-      <div class="field-label">Employee Name</div>
-      <input type="text" id="person-name" class="form-input" placeholder="Select or type employee name" list="employee-list" />
-      <datalist id="employee-list">
-        <option value="Ajay"><option value="Shiny Roja"><option value="Srinidhi"><option value="Yamuna">
-        <option value="Puviarasu"><option value="Ajitha"><option value="Aatish"><option value="Selvaganabathy">
-        <option value="Muniyandi"><option value="Antony Daniel"><option value="Baraneeswari"><option value="Murugan">
-        <option value="Loganathan"><option value="Simson"><option value="Vijay"><option value="Deepan Raj">
-        <option value="Arunmani"><option value="Gopalakrishnan"><option value="Aswini"><option value="Manikandan">
-        <option value="Subadeesh"><option value="Lakshmi Narayanan"><option value="Meenakshi"><option value="Hemachandiran">
-        <option value="Lakshmi"><option value="Manimaran"><option value="Divya"><option value="Renuka">
-      </datalist>
-    </div>
-
-    <div>
-      <div class="field-label">Travel Date</div>
-      <input type="date" id="travel-date" class="form-input" />
-    </div>
-
-    <div>
-      <div class="field-label">From</div>
-      <button class="btn-pin" onclick="useCurrentLocation('from')">📍 Your Location</button>
-      <gmp-place-autocomplete id="from-loc" placeholder="Search starting location"></gmp-place-autocomplete>
-      <div class="selected-text" id="from-selected"></div>
-    </div>
-
-    <div>
-      <div class="field-label">To</div>
-      <button class="btn-pin" onclick="useCurrentLocation('to')">📍 Your Location</button>
-      <gmp-place-autocomplete id="to-loc" placeholder="Search destination"></gmp-place-autocomplete>
-      <div class="selected-text" id="to-selected"></div>
-    </div>
-
-    <div>
-      <div class="field-label">Manual Pin Location</div>
-      <div class="pin-row">
-        <button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">🟢 Pin From</button>
-        <button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">🔴 Pin To</button>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 10c-4 0-7 3-7 7 0 7 7 13 7 13s7-6 7-13c0-4-3-7-7-7Z" stroke="#86efac" stroke-width="4"/>
+          <path d="M36 18c-4 0-7 3-7 7 0 7 7 13 7 13s7-6 7-13c0-4-3-7-7-7Z" stroke="#22c55e" stroke-width="4"/>
+          <path d="M15 29c7 7 13 1 18 7" stroke="#bbf7d0" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="12" cy="17" r="2" fill="#86efac"/><circle cx="36" cy="25" r="2" fill="#22c55e"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">DISTANCE CALCULATOR</div>
+        <div class="brand-sub">Employee Travel Tracker</div>
       </div>
     </div>
+    <div class="top-meta">
+      <div><span class="online-dot"></span>System Online</div>
+      <div id="app-clock">--</div>
+    </div>
+  </header>
 
-    <div>
-      <div class="field-label">Vehicle Type</div>
-      <div class="vehicle-selector">
-        <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')">🏍 Bike Rs.4/km</button>
-        <button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')">🚗 Car Rs.8/km</button>
+  <main class="main-grid">
+    <aside class="sidebar">
+      <div class="pane">
+        <section class="section-card">
+          <div class="section-title">Employee Details</div>
+          <div class="input-block">
+            <div class="field-label">Employee Name</div>
+            <input type="text" id="person-name" class="form-input" placeholder="Select or type employee name" list="employee-list" />
+            <datalist id="employee-list">
+              <option value="Ajay"><option value="Shiny Roja"><option value="Srinidhi"><option value="Yamuna">
+              <option value="Puviarasu"><option value="Ajitha"><option value="Aatish"><option value="Selvaganabathy">
+              <option value="Muniyandi"><option value="Antony Daniel"><option value="Baraneeswari"><option value="Murugan">
+              <option value="Loganathan"><option value="Simson"><option value="Vijay"><option value="Deepan Raj">
+              <option value="Arunmani"><option value="Gopalakrishnan"><option value="Aswini"><option value="Manikandan">
+              <option value="Subadeesh"><option value="Lakshmi Narayanan"><option value="Meenakshi"><option value="Hemachandiran">
+              <option value="Lakshmi"><option value="Manimaran"><option value="Divya"><option value="Renuka">
+            </datalist>
+          </div>
+          <div class="input-block" style="margin-bottom:0;">
+            <div class="field-label">Travel Date</div>
+            <input type="date" id="travel-date" class="form-input" />
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-title">Route Points</div>
+          <div class="input-block">
+            <div class="field-label">From</div>
+            <div class="action-row" style="grid-template-columns:1fr; margin-bottom:10px;">
+              <button class="btn-pin btn-secondary" onclick="useCurrentLocation('from')">📍 My Location</button>
+            </div>
+            <div class="search-shell">
+              <gmp-place-autocomplete id="from-loc" placeholder="Search starting location"></gmp-place-autocomplete>
+            </div>
+            <div class="selected-text" id="from-selected"></div>
+          </div>
+          <div class="input-block" style="margin-bottom:0;">
+            <div class="field-label">To</div>
+            <div class="action-row" style="grid-template-columns:1fr; margin-bottom:10px;">
+              <button class="btn-pin btn-secondary" onclick="useCurrentLocation('to')">📍 My Location</button>
+            </div>
+            <div class="search-shell">
+              <gmp-place-autocomplete id="to-loc" placeholder="Search destination"></gmp-place-autocomplete>
+            </div>
+            <div class="selected-text" id="to-selected"></div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-title">Manual Pin Location</div>
+          <div class="pin-row">
+            <button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">🟢 Pin From</button>
+            <button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">🔴 Pin To</button>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-title">Vehicle Type</div>
+          <div class="vehicle-selector">
+            <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')"><span>🏍</span><strong>Bike</strong><small>Rs.4/km</small></button>
+            <button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')"><span>🚗</span><strong>Car</strong><small>Rs.8/km</small></button>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="action-row" style="grid-template-columns:1fr;">
+            <button class="btn-submit" id="tracking-btn" onclick="startLiveTracking()">▶ Start Live Tracking</button>
+          </div>
+          <div class="action-row" style="margin-top:12px;">
+            <button type="button" class="btn-calc" onclick="calculateRoute()">↝ Calculate Route</button>
+            <button class="btn-submit" id="save-btn" onclick="submitToZoho(false)">▣ Save to Zoho</button>
+          </div>
+        </section>
+
+        <section class="utility-card">
+          <div class="mini-card"><div class="mini-title">Auto Stop Enabled</div><div class="mini-text">Tracking stops automatically within 100 m of destination.</div></div>
+          <div class="mini-card"><div class="mini-title">Duplicate Protection</div><div class="mini-text">Same trip cannot be saved repeatedly in one session.</div></div>
+        </section>
       </div>
-    </div>
+    </aside>
 
-    <button class="btn-submit" id="tracking-btn" onclick="startLiveTracking()">🛰 Start Live Tracking</button>
-    <button type="button" class="btn-calc" onclick="calculateRoute()">🗺 Calculate Route</button>
+    <section class="map-panel">
+      <div id="map"></div>
+      <div class="map-overlay"><div class="map-tab active">Map</div><div class="map-tab">Route</div></div>
+      <div class="stats-bar result-card" id="result-card">
+        <div class="stat-card"><div class="stat-icon">▰</div><div><div class="stat-label">Distance</div><div class="stat-value" id="r-dist">0 KM</div></div></div>
+        <div class="stat-card"><div class="stat-icon">◷</div><div><div class="stat-label">Duration</div><div class="stat-value" id="r-dur">0 MIN</div></div></div>
+        <div class="stat-card"><div class="stat-icon">₹</div><div><div class="stat-label">Estimated Cost</div><div class="stat-value" id="r-cost">Rs.0.00</div></div></div>
+        <div class="stat-card"><div class="stat-icon">↝</div><div><div class="stat-label">Trip Status</div><div class="stat-value status-value status-ready" id="trip-status">Not Started</div></div></div>
+      </div>
+    </section>
+  </main>
 
-    <div class="result-card" id="result-card">
-      <div>Distance<div class="metric" id="r-dist">0 KM</div></div>
-      <div>Duration<div class="metric" id="r-dur">0 MIN</div></div>
-      <div id="r-cost"></div>
-      <button class="btn-submit" id="save-btn" onclick="submitToZoho(false)">💾 Save to Zoho</button>
-    </div>
-  </div>
-</aside>
-
-<div id="map"></div>
+  <footer class="footer-note"><div>🔒 Your data is secure and used only for travel tracking</div><div>© 2026 Employee Travel Tracker</div></footer>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -215,6 +253,24 @@ var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?za
 
 /* ===================== STATE ===================== */
 document.getElementById("travel-date").value = new Date().toISOString().split("T")[0];
+
+function updateClock(){
+  var el = document.getElementById("app-clock");
+  if(!el){return;}
+  var now = new Date();
+  var date = now.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+  var time = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  el.textContent = date + " | " + time;
+}
+setInterval(updateClock,1000);
+updateClock();
+function setTripStatus(text, mode){
+  var s = document.getElementById("trip-status");
+  if(s){
+    s.textContent = text;
+    s.className = "stat-value status-value " + (mode || "");
+  }
+}
 
 var map, geocoder, infoWindow;
 var selectedVehicle = "bike";
@@ -506,6 +562,7 @@ function calculateRoute(){
     if(!fromCoords || !toCoords){toast("Please select valid From and To locations");reject();return;}
 
     toast("Calculating road route...");
+    setTripStatus("Calculating", "status-working");
 
     clearRoute();
 
@@ -560,11 +617,13 @@ function calculateRoute(){
       btn.style.background = "";
 
       toast("Route calculated");
+      setTripStatus("Ready", "status-ready");
       resolve();
     })
     .catch(function(error){
       console.error("OSRM route failed:",error);
       toast("Failed to calculate route");
+      setTripStatus("Failed", "status-error");
       reject(error);
     });
   });
@@ -636,8 +695,10 @@ function submitToZoho(isAutoSave){
 
       if(isAutoSave){
         toast("Destination reached. Trip saved.");
+        setTripStatus("Saved", "status-saved");
       }else{
         toast("Saved to Zoho");
+        setTripStatus("Saved", "status-saved");
       }
 
       resolve("Saved");
@@ -674,6 +735,7 @@ function startLiveTracking(){
   trackBtn.classList.add("btn-stop");
 
   toast("Live tracking started");
+  setTripStatus("Tracking", "status-working");
 
   watchId = navigator.geolocation.watchPosition(
     function(position){
@@ -710,6 +772,7 @@ function startLiveTracking(){
           trackingEndTime = new Date();
 
           toast("Destination reached. Auto saving...");
+          setTripStatus("Auto Saving", "status-working");
 
           navigator.geolocation.clearWatch(watchId);
           liveTracking = false;
@@ -737,6 +800,7 @@ function startLiveTracking(){
     function(error){
       console.error(error);
       toast("Location access denied");
+      setTripStatus("GPS Denied", "status-error");
       liveTracking = false;
       document.getElementById("tracking-btn").innerHTML = "🛰 Start Live Tracking";
       document.getElementById("tracking-btn").classList.remove("btn-stop");
