@@ -8,243 +8,527 @@
 
 <style>
 :root{
-  --bg:#eef5f1;
+  --bg:#f3f8f6;
   --panel:#ffffff;
-  --panel-soft:#f8fafc;
-  --header:#064e3b;
-  --header2:#022c22;
-  --primary:#16a34a;
-  --primary-dark:#047857;
+  --panel-soft:#f8fbfa;
+  --green:#065f46;
+  --green-dark:#043f30;
+  --green-light:#16a34a;
+  --green-soft:#ecfdf5;
   --blue:#2563eb;
   --red:#ef4444;
-  --amber:#f59e0b;
-  --text:#1f2937;
-  --muted:#6b7280;
-  --border:#e5e7eb;
-  --shadow:0 18px 45px rgba(15,23,42,.10);
-  --radius:22px;
+  --text:#17212b;
+  --muted:#64748b;
+  --border:#dfe8e4;
+  --shadow:0 14px 36px rgba(15,23,42,.10);
+  --shadow-soft:0 8px 22px rgba(15,23,42,.07);
+  --radius:14px;
 }
+
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;}
 body{
   font-family:'DM Sans',Arial,sans-serif;
-  background:linear-gradient(135deg,#eefaf2 0%,#f8fafc 45%,#e6f5ef 100%);
+  background:linear-gradient(180deg,#edf7f3 0%,#f8fafc 100%);
   color:var(--text);
   overflow:hidden;
 }
-.app-shell{height:100vh;padding:10px;display:flex;flex-direction:column;gap:10px;}
-.topbar{
-  height:82px;
-  background:linear-gradient(135deg,var(--header),var(--header2));
-  border-radius:14px;
-  box-shadow:0 14px 35px rgba(6,78,59,.28);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 26px;color:#fff;flex:none;
+
+.app-shell{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding:10px;
+  gap:10px;
 }
-.brand-wrap{display:flex;align-items:center;gap:14px;}
-.logo-mark{
-  width:46px;height:46px;border-radius:14px;
-  background:rgba(255,255,255,.12);
-  display:grid;place-items:center;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20);
-}
-.logo-mark svg{width:30px;height:30px;}
-.brand-title{font-size:25px;font-weight:800;letter-spacing:.4px;line-height:1;}
-.brand-sub{font-size:14px;opacity:.86;margin-top:6px;}
-.top-meta{display:flex;align-items:center;gap:18px;font-size:14px;font-weight:700;}
-.online-dot{width:10px;height:10px;background:#86efac;border-radius:50%;box-shadow:0 0 0 6px rgba(134,239,172,.15);display:inline-block;margin-right:8px;}
-.main-grid{flex:1;min-height:0;display:grid;grid-template-columns:520px 1fr;gap:10px;}
-.sidebar{
-  background:rgba(255,255,255,.94);
-  border:1px solid rgba(226,232,240,.9);
-  border-radius:var(--radius);
+
+.app-header{
+  min-height:82px;
+  background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%);
+  color:#fff;
+  border-radius:16px;
+  padding:18px 26px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
   box-shadow:var(--shadow);
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.logo-box{
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:inset 0 0 24px rgba(255,255,255,.08);
+}
+
+.logo-box svg{width:36px;height:36px;}
+.header-title{
+  font-size:28px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+.header-sub{
+  margin-top:8px;
+  font-size:15px;
+  font-weight:500;
+  opacity:.88;
+}
+.header-date{
+  font-size:16px;
+  font-weight:700;
+  white-space:nowrap;
+  letter-spacing:.2px;
+}
+
+.main-grid{
+  flex:1;
+  min-height:0;
+  display:grid;
+  grid-template-columns:430px 1fr;
+  gap:10px;
+}
+
+.control-panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow-soft);
   overflow-y:auto;
-  z-index:10;
+  padding:18px;
 }
-.sidebar::-webkit-scrollbar{width:7px;}
-.sidebar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px;}
-.pane{padding:24px;display:flex;flex-direction:column;gap:18px;}
-.section-card{
-  background:#fff;border:1px solid var(--border);border-radius:18px;
-  padding:18px;box-shadow:0 10px 30px rgba(15,23,42,.05);
+
+.control-panel::-webkit-scrollbar{width:7px;}
+.control-panel::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;}
+
+.form-section{margin-bottom:16px;}
+.field-label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  color:var(--green);
+  margin-bottom:8px;
 }
-.section-title{font-size:12px;letter-spacing:1.2px;font-weight:800;color:#065f46;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-.field-label{font-size:11px;font-weight:800;letter-spacing:1px;color:#667085;text-transform:uppercase;margin:0 0 8px;}
-.input-block{margin-bottom:14px;}
-.form-input,
+
+.input-card,
 gmp-place-autocomplete{
-  width:100%;min-height:56px;padding:15px 16px;border-radius:16px;
-  border:1px solid var(--border);background:#fff;font-size:15px;outline:none;color:var(--text);
-  box-shadow:0 4px 14px rgba(15,23,42,.04);transition:.25s;
+  width:100%;
+  min-height:52px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  box-shadow:0 5px 16px rgba(15,23,42,.05);
+  font-size:14px;
 }
-gmp-place-autocomplete{display:block;}
-.form-input:focus{border-color:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.13);}
-.search-shell{position:relative;}
-.search-shell:before{content:'⌕';position:absolute;left:17px;top:50%;transform:translateY(-50%);font-size:24px;color:#6b7280;z-index:3;pointer-events:none;}
-.search-shell gmp-place-autocomplete{padding-left:48px;}
-.selected-text{font-size:12px;color:#64748b;line-height:1.5;margin-top:8px;}
-.action-row,.pin-row,.vehicle-selector{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.btn-pin,.vehicle-btn,.btn-calc,.btn-submit{
-  min-height:56px;padding:14px 16px;border-radius:16px;border:1px solid var(--border);
-  font-weight:800;cursor:pointer;font-size:14px;transition:.25s;background:#fff;color:var(--text);
-  box-shadow:0 8px 22px rgba(15,23,42,.05);display:flex;align-items:center;justify-content:center;gap:10px;
+
+.input-card{
+  padding:0 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
-.btn-pin:hover,.vehicle-btn:hover,.btn-calc:hover,.btn-submit:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.09);}
-.btn-pin.active,.vehicle-btn.active{border-color:#22c55e;background:linear-gradient(135deg,#ecfdf5,#fff);box-shadow:0 0 0 4px rgba(34,197,94,.10);}
-.vehicle-btn{flex-direction:column;gap:4px;min-height:84px;position:relative;}
-.vehicle-btn small{font-size:12px;color:#6b7280;font-weight:700;}
-.vehicle-btn.active:after{content:'✓';position:absolute;right:12px;top:12px;width:24px;height:24px;background:#22c55e;color:#fff;border-radius:50%;display:grid;place-items:center;font-size:14px;}
-.btn-calc{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;box-shadow:0 16px 30px rgba(34,197,94,.25);}
-.btn-submit{background:linear-gradient(135deg,#064e3b,#065f46);color:#fff;border:none;box-shadow:0 16px 30px rgba(6,78,59,.22);}
-.btn-secondary{background:#fff;color:#064e3b;border:1px solid #bbf7d0;}
-.btn-stop{background:linear-gradient(135deg,#ef4444,#dc2626)!important;color:#fff!important;border:none!important;}
-.map-panel{position:relative;min-width:0;min-height:0;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid rgba(226,232,240,.9);background:#fff;}
-#map{position:absolute;inset:0;background:#eaf7f3;}
-.map-overlay{position:absolute;top:18px;left:18px;z-index:5;background:rgba(255,255,255,.94);border:1px solid rgba(226,232,240,.9);border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.10);overflow:hidden;display:flex;}
-.map-tab{padding:12px 22px;font-size:16px;font-weight:800;color:#334155;}
-.map-tab.active{background:#fff;color:#111827;}
-.stats-bar{position:absolute;left:14px;right:14px;bottom:14px;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-.stat-card{background:rgba(255,255,255,.96);border:1px solid rgba(226,232,240,.9);border-radius:16px;padding:16px 18px;box-shadow:0 12px 32px rgba(15,23,42,.10);display:flex;align-items:center;gap:14px;min-height:86px;}
-.stat-icon{width:46px;height:46px;border-radius:14px;background:#ecfdf5;color:#047857;display:grid;place-items:center;font-size:24px;font-weight:800;}
-.stat-label{font-size:11px;font-weight:800;letter-spacing:.8px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;}
-.stat-value{font-size:24px;font-weight:800;color:#064e3b;line-height:1;}
-.status-value{font-size:22px;}
-.status-ready{color:#16a34a;}
-.status-working{color:#2563eb;}
-.status-saved{color:#16a34a;}
-.status-error{color:#dc2626;}
-.result-card{display:contents;}
-.utility-card{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.mini-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:14px;}
-.mini-title{font-size:13px;font-weight:800;color:#065f46;margin-bottom:5px;}
-.mini-text{font-size:12px;color:#64748b;line-height:1.4;}
-.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:14px 22px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999999;box-shadow:0 18px 40px rgba(15,23,42,.25);}
-.toast.show{opacity:1;bottom:36px;}
-.footer-note{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:linear-gradient(135deg,#064e3b,#022c22);color:#d1fae5;border-radius:10px;font-size:12px;flex:none;}
-@media(max-width:1100px){.main-grid{grid-template-columns:430px 1fr;}.stats-bar{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:768px){body{overflow:auto;}.app-shell{height:auto;min-height:100vh;}.topbar{height:auto;padding:18px;align-items:flex-start;gap:14px;flex-direction:column;}.top-meta{width:100%;justify-content:space-between;}.main-grid{grid-template-columns:1fr;}.sidebar{max-height:none;}.map-panel{height:650px;}.stats-bar{position:relative;left:auto;right:auto;bottom:auto;padding:12px;grid-template-columns:1fr;}.action-row,.pin-row,.vehicle-selector,.utility-card{grid-template-columns:1fr;}.footer-note{flex-direction:column;height:auto;padding:14px;gap:6px;text-align:center;}}
+
+.form-input{
+  width:100%;
+  height:52px;
+  border:0;
+  outline:0;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:600;
+  color:var(--text);
+  background:transparent;
+}
+
+.form-input::placeholder{font-weight:500;color:#94a3b8;}
+
+.location-row{
+  display:grid;
+  grid-template-columns:1fr 94px;
+  gap:10px;
+  align-items:start;
+}
+
+.location-wrap{min-width:0;}
+.selected-text{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.4;
+  min-height:16px;
+}
+
+.icon-dot{
+  width:24px;
+  height:24px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+}
+
+.btn{
+  border:0;
+  outline:0;
+  font-family:inherit;
+  font-weight:800;
+  cursor:pointer;
+  transition:.22s ease;
+  user-select:none;
+}
+.btn:hover{transform:translateY(-2px);}
+.btn:disabled{opacity:.75;cursor:not-allowed;transform:none;}
+
+.btn-location{
+  height:52px;
+  border-radius:12px;
+  border:1px solid #bde6cc;
+  background:#f2fff7;
+  color:var(--green);
+  font-size:12px;
+  box-shadow:0 5px 16px rgba(22,163,74,.08);
+}
+
+.pin-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.btn-pin{
+  height:50px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  font-size:15px;
+  box-shadow:0 5px 16px rgba(15,23,42,.05);
+}
+.btn-pin.active{border-color:var(--green-light);background:var(--green-soft);color:var(--green);}
+.btn-pin.to.active{border-color:var(--red);background:#fff1f2;color:#b91c1c;}
+
+.vehicle-selector{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.vehicle-card{
+  min-height:78px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  padding:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  box-shadow:0 5px 16px rgba(15,23,42,.05);
+}
+.vehicle-card.active{
+  border-color:var(--green-light);
+  background:linear-gradient(135deg,#f0fff6,#ffffff);
+  box-shadow:0 10px 24px rgba(22,163,74,.12);
+}
+.vehicle-info{display:flex;align-items:center;gap:10px;}
+.vehicle-icon{
+  width:38px;height:38px;border-radius:12px;background:#eef7f2;display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.vehicle-name{font-size:15px;font-weight:800;}
+.vehicle-rate{font-size:12px;color:var(--muted);font-weight:700;margin-top:2px;}
+.check-dot{
+  width:22px;height:22px;border-radius:50%;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;background:#fff;
+}
+.vehicle-card.active .check-dot{background:var(--green-light);border-color:var(--green-light);}
+
+.action-stack{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+.btn-track{
+  height:54px;
+  border-radius:12px;
+  color:#fff;
+  font-size:15px;
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+  box-shadow:0 12px 24px rgba(6,95,70,.22);
+}
+.btn-stop{background:linear-gradient(135deg,#ef4444,#b91c1c)!important;}
+.action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-calc{
+  height:52px;
+  border-radius:12px;
+  color:#fff;
+  font-size:15px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  box-shadow:0 10px 24px rgba(34,197,94,.20);
+}
+.btn-save{
+  height:52px;
+  border-radius:12px;
+  color:var(--text);
+  font-size:15px;
+  background:#fff;
+  border:1px solid var(--border);
+  box-shadow:0 5px 16px rgba(15,23,42,.05);
+}
+
+.map-panel{
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.map-card{
+  flex:1;
+  min-height:0;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:var(--shadow-soft);
+  position:relative;
+}
+#map{width:100%;height:100%;min-height:360px;}
+
+.summary-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.summary-card{
+  min-height:102px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#fff;
+  box-shadow:var(--shadow-soft);
+  padding:18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.summary-icon{
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  font-weight:900;
+  color:var(--green-light);
+  background:#ecfdf5;
+  flex:0 0 auto;
+}
+.summary-icon.blue{color:var(--blue);background:#eff6ff;}
+.summary-label{
+  font-size:12px;
+  font-weight:800;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+.summary-value{
+  margin-top:5px;
+  font-size:24px;
+  font-weight:900;
+  color:var(--green);
+  line-height:1;
+}
+.summary-sub{margin-top:6px;font-size:12px;font-weight:700;color:var(--muted);}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:24px;
+  transform:translateX(-50%);
+  background:#052e22;
+  color:#fff;
+  padding:13px 18px;
+  border-radius:999px;
+  box-shadow:0 14px 30px rgba(0,0,0,.2);
+  font-size:13px;
+  font-weight:700;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  z-index:999999;
+}
+.toast.show{opacity:1;bottom:34px;}
+
+@media(max-width:1100px){
+  .main-grid{grid-template-columns:380px 1fr;}
+  .summary-row{grid-template-columns:repeat(2,1fr);}
+}
+
+@media(max-width:820px){
+  body{overflow:auto;}
+  .app-shell{height:auto;min-height:100vh;}
+  .app-header{align-items:flex-start;gap:12px;flex-direction:column;}
+  .header-title{font-size:23px;}
+  .main-grid{grid-template-columns:1fr;}
+  .control-panel{overflow:visible;}
+  .map-card{height:60vh;min-height:420px;}
+  .summary-row{grid-template-columns:1fr;}
+  .location-row,.action-row,.pin-row,.vehicle-selector{grid-template-columns:1fr;}
+}
 </style>
 </head>
 
 <body>
 <div class="app-shell">
-  <header class="topbar">
-    <div class="brand-wrap">
-      <div class="logo-mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 10c-4 0-7 3-7 7 0 7 7 13 7 13s7-6 7-13c0-4-3-7-7-7Z" stroke="#86efac" stroke-width="4"/>
-          <path d="M36 18c-4 0-7 3-7 7 0 7 7 13 7 13s7-6 7-13c0-4-3-7-7-7Z" stroke="#22c55e" stroke-width="4"/>
-          <path d="M15 29c7 7 13 1 18 7" stroke="#bbf7d0" stroke-width="4" stroke-linecap="round"/>
-          <circle cx="12" cy="17" r="2" fill="#86efac"/><circle cx="36" cy="25" r="2" fill="#22c55e"/>
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-box" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 10C10.9 10 6 14.9 6 21c0 8.6 11 19 11 19s11-10.4 11-19c0-6.1-4.9-11-11-11Z" fill="#7ee787"/>
+          <circle cx="17" cy="21" r="4" fill="#064e3b"/>
+          <path d="M47 24c-6.1 0-11 4.9-11 11 0 8.6 11 19 11 19s11-10.4 11-19c0-6.1-4.9-11-11-11Z" fill="#7ee787"/>
+          <circle cx="47" cy="35" r="4" fill="#064e3b"/>
+          <path d="M20 39c5 6 15 7 22 2" stroke="#7ee787" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 8"/>
         </svg>
       </div>
       <div>
-        <div class="brand-title">DISTANCE CALCULATOR</div>
-        <div class="brand-sub">Employee Travel Tracker</div>
+        <div class="header-title">DISTANCE CALCULATOR</div>
+        <div class="header-sub">Employee Travel Tracker</div>
       </div>
     </div>
-    <div class="top-meta">
-      <div><span class="online-dot"></span>System Online</div>
-      <div id="app-clock">--</div>
-    </div>
+    <div class="header-date" id="currentDateTime">--</div>
   </header>
 
   <main class="main-grid">
-    <aside class="sidebar">
-      <div class="pane">
-        <section class="section-card">
-          <div class="section-title">Employee Details</div>
-          <div class="input-block">
-            <div class="field-label">Employee Name</div>
-            <input type="text" id="person-name" class="form-input" placeholder="Select or type employee name" list="employee-list" />
-            <datalist id="employee-list">
-              <option value="Ajay"><option value="Shiny Roja"><option value="Srinidhi"><option value="Yamuna">
-              <option value="Puviarasu"><option value="Ajitha"><option value="Aatish"><option value="Selvaganabathy">
-              <option value="Muniyandi"><option value="Antony Daniel"><option value="Baraneeswari"><option value="Murugan">
-              <option value="Loganathan"><option value="Simson"><option value="Vijay"><option value="Deepan Raj">
-              <option value="Arunmani"><option value="Gopalakrishnan"><option value="Aswini"><option value="Manikandan">
-              <option value="Subadeesh"><option value="Lakshmi Narayanan"><option value="Meenakshi"><option value="Hemachandiran">
-              <option value="Lakshmi"><option value="Manimaran"><option value="Divya"><option value="Renuka">
-            </datalist>
-          </div>
-          <div class="input-block" style="margin-bottom:0;">
-            <div class="field-label">Travel Date</div>
-            <input type="date" id="travel-date" class="form-input" />
-          </div>
-        </section>
+    <aside class="control-panel">
+      <div class="form-section">
+        <div class="field-label">Employee Name</div>
+        <div class="input-card">
+          <span class="icon-dot">👤</span>
+          <input type="text" id="person-name" class="form-input" placeholder="Select or type employee name" list="employee-list" />
+        </div>
+        <datalist id="employee-list">
+          <option value="Ajay"><option value="Shiny Roja"><option value="Srinidhi"><option value="Yamuna">
+          <option value="Puviarasu"><option value="Ajitha"><option value="Aatish"><option value="Selvaganabathy">
+          <option value="Muniyandi"><option value="Antony Daniel"><option value="Baraneeswari"><option value="Murugan">
+          <option value="Loganathan"><option value="Simson"><option value="Vijay"><option value="Deepan Raj">
+          <option value="Arunmani"><option value="Gopalakrishnan"><option value="Aswini"><option value="Manikandan">
+          <option value="Subadeesh"><option value="Lakshmi Narayanan"><option value="Meenakshi"><option value="Hemachandiran">
+          <option value="Lakshmi"><option value="Manimaran"><option value="Divya"><option value="Renuka">
+        </datalist>
+      </div>
 
-        <section class="section-card">
-          <div class="section-title">Route Points</div>
-          <div class="input-block">
-            <div class="field-label">From</div>
-            <div class="action-row" style="grid-template-columns:1fr; margin-bottom:10px;">
-              <button class="btn-pin btn-secondary" onclick="useCurrentLocation('from')">📍 My Location</button>
-            </div>
-            <div class="search-shell">
-              <gmp-place-autocomplete id="from-loc" placeholder="Search starting location"></gmp-place-autocomplete>
-            </div>
+      <div class="form-section">
+        <div class="field-label">Travel Date</div>
+        <div class="input-card">
+          <span class="icon-dot">📅</span>
+          <input type="date" id="travel-date" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="field-label">From</div>
+        <div class="location-row">
+          <div class="location-wrap">
+            <gmp-place-autocomplete id="from-loc" placeholder="Search starting location"></gmp-place-autocomplete>
             <div class="selected-text" id="from-selected"></div>
           </div>
-          <div class="input-block" style="margin-bottom:0;">
-            <div class="field-label">To</div>
-            <div class="action-row" style="grid-template-columns:1fr; margin-bottom:10px;">
-              <button class="btn-pin btn-secondary" onclick="useCurrentLocation('to')">📍 My Location</button>
-            </div>
-            <div class="search-shell">
-              <gmp-place-autocomplete id="to-loc" placeholder="Search destination"></gmp-place-autocomplete>
-            </div>
+          <button class="btn btn-location" onclick="useCurrentLocation('from')">⌖ My Location</button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="field-label">To</div>
+        <div class="location-row">
+          <div class="location-wrap">
+            <gmp-place-autocomplete id="to-loc" placeholder="Search destination"></gmp-place-autocomplete>
             <div class="selected-text" id="to-selected"></div>
           </div>
-        </section>
+          <button class="btn btn-location" onclick="useCurrentLocation('to')">⌖ My Location</button>
+        </div>
+      </div>
 
-        <section class="section-card">
-          <div class="section-title">Manual Pin Location</div>
-          <div class="pin-row">
-            <button class="btn-pin" id="btn-pin-from" onclick="startPin('from')">🟢 Pin From</button>
-            <button class="btn-pin" id="btn-pin-to" onclick="startPin('to')">🔴 Pin To</button>
-          </div>
-        </section>
+      <div class="form-section">
+        <div class="field-label">Manual Pin Location</div>
+        <div class="pin-row">
+          <button class="btn btn-pin" id="btn-pin-from" onclick="startPin('from')">📍 Pin From</button>
+          <button class="btn btn-pin to" id="btn-pin-to" onclick="startPin('to')">📍 Pin To</button>
+        </div>
+      </div>
 
-        <section class="section-card">
-          <div class="section-title">Vehicle Type</div>
-          <div class="vehicle-selector">
-            <button class="vehicle-btn active" id="btn-bike" onclick="selectVehicle('bike')"><span>🏍</span><strong>Bike</strong><small>Rs.4/km</small></button>
-            <button class="vehicle-btn" id="btn-car" onclick="selectVehicle('car')"><span>🚗</span><strong>Car</strong><small>Rs.8/km</small></button>
-          </div>
-        </section>
+      <div class="form-section">
+        <div class="field-label">Vehicle Type</div>
+        <div class="vehicle-selector">
+          <button class="btn vehicle-card active" id="btn-bike" onclick="selectVehicle('bike')">
+            <span class="vehicle-info"><span class="vehicle-icon">🏍</span><span><span class="vehicle-name">Bike</span><span class="vehicle-rate">₹ 4 / km</span></span></span>
+            <span class="check-dot">✓</span>
+          </button>
+          <button class="btn vehicle-card" id="btn-car" onclick="selectVehicle('car')">
+            <span class="vehicle-info"><span class="vehicle-icon">🚗</span><span><span class="vehicle-name">Car</span><span class="vehicle-rate">₹ 8 / km</span></span></span>
+            <span class="check-dot">✓</span>
+          </button>
+        </div>
+      </div>
 
-        <section class="section-card">
-          <div class="action-row" style="grid-template-columns:1fr;">
-            <button class="btn-submit" id="tracking-btn" onclick="startLiveTracking()">▶ Start Live Tracking</button>
-          </div>
-          <div class="action-row" style="margin-top:12px;">
-            <button type="button" class="btn-calc" onclick="calculateRoute()">↝ Calculate Route</button>
-            <button class="btn-submit" id="save-btn" onclick="submitToZoho(false)">▣ Save to Zoho</button>
-          </div>
-        </section>
-
-        <section class="utility-card">
-          <div class="mini-card"><div class="mini-title">Auto Stop Enabled</div><div class="mini-text">Tracking stops automatically within 100 m of destination.</div></div>
-          <div class="mini-card"><div class="mini-title">Duplicate Protection</div><div class="mini-text">Same trip cannot be saved repeatedly in one session.</div></div>
-        </section>
+      <div class="action-stack">
+        <button class="btn btn-track" id="tracking-btn" onclick="startLiveTracking()">▶ Start Live Tracking</button>
+        <div class="action-row">
+          <button class="btn btn-calc" id="calc-btn" onclick="calculateRoute()">⌁ Calculate Route</button>
+          <button class="btn btn-save" id="save-btn" onclick="submitToZoho(false)">▣ Save to Zoho</button>
+        </div>
       </div>
     </aside>
 
     <section class="map-panel">
-      <div id="map"></div>
-      <div class="map-overlay"><div class="map-tab active">Map</div><div class="map-tab">Route</div></div>
-      <div class="stats-bar result-card" id="result-card">
-        <div class="stat-card"><div class="stat-icon">▰</div><div><div class="stat-label">Distance</div><div class="stat-value" id="r-dist">0 KM</div></div></div>
-        <div class="stat-card"><div class="stat-icon">◷</div><div><div class="stat-label">Duration</div><div class="stat-value" id="r-dur">0 MIN</div></div></div>
-        <div class="stat-card"><div class="stat-icon">₹</div><div><div class="stat-label">Estimated Cost</div><div class="stat-value" id="r-cost">Rs.0.00</div></div></div>
-        <div class="stat-card"><div class="stat-icon">↝</div><div><div class="stat-label">Trip Status</div><div class="stat-value status-value status-ready" id="trip-status">Not Started</div></div></div>
+      <div class="map-card">
+        <div id="map"></div>
+      </div>
+
+      <div class="summary-row" id="result-card">
+        <div class="summary-card">
+          <div class="summary-icon">▰</div>
+          <div>
+            <div class="summary-label">Distance</div>
+            <div class="summary-value" id="r-dist">0 KM</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon blue">◷</div>
+          <div>
+            <div class="summary-label">Duration</div>
+            <div class="summary-value" id="r-dur">0 MIN</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">₹</div>
+          <div>
+            <div class="summary-label" id="cost-label">Est. Cost (Bike)</div>
+            <div class="summary-value" id="r-cost">₹ 0.00</div>
+            <div class="summary-sub" id="rate-label">₹ 4 / km</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">⌁</div>
+          <div>
+            <div class="summary-label">Trip Status</div>
+            <div class="summary-value" id="trip-status" style="font-size:18px;line-height:1.25;">Not Started</div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
-
-  <footer class="footer-note"><div>🔒 Your data is secure and used only for travel tracking</div><div>© 2026 Employee Travel Tracker</div></footer>
 </div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -253,24 +537,6 @@ var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?za
 
 /* ===================== STATE ===================== */
 document.getElementById("travel-date").value = new Date().toISOString().split("T")[0];
-
-function updateClock(){
-  var el = document.getElementById("app-clock");
-  if(!el){return;}
-  var now = new Date();
-  var date = now.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
-  var time = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-  el.textContent = date + " | " + time;
-}
-setInterval(updateClock,1000);
-updateClock();
-function setTripStatus(text, mode){
-  var s = document.getElementById("trip-status");
-  if(s){
-    s.textContent = text;
-    s.className = "stat-value status-value " + (mode || "");
-  }
-}
 
 var map, geocoder, infoWindow;
 var selectedVehicle = "bike";
@@ -298,6 +564,15 @@ var trackingStartTime = null;
 var trackingEndTime = null;
 var latestLiveCoords = null;
 var autoSaveLock = false;
+
+function updateHeaderTime(){
+  var now = new Date();
+  var date = now.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+  var time = now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  document.getElementById("currentDateTime").innerHTML = date + " | " + time;
+}
+updateHeaderTime();
+setInterval(updateHeaderTime,60000);
 
 /* ===================== INIT MAP ===================== */
 function initMap(){
@@ -382,6 +657,7 @@ function setLocation(type,address,lat,lng){
   alreadySaved = false;
   tripSaved = false;
   autoSaveLock = false;
+  updateTripStatus("Location Selected");
 
   if(type === "from"){
     fromCoords = position;
@@ -449,12 +725,18 @@ function toast(msg){
   t._t = setTimeout(function(){t.classList.remove("show");},2500);
 }
 
+function updateTripStatus(text){
+  document.getElementById("trip-status").textContent = text;
+}
+
 function selectVehicle(type){
   selectedVehicle = type;
   document.getElementById("btn-bike").classList.toggle("active",type === "bike");
   document.getElementById("btn-car").classList.toggle("active",type === "car");
+  document.getElementById("cost-label").textContent = type === "car" ? "Est. Cost (Car)" : "Est. Cost (Bike)";
+  document.getElementById("rate-label").textContent = type === "car" ? "₹ 8 / km" : "₹ 4 / km";
   alreadySaved = false;
-tripSaved = false;
+  tripSaved = false;
 }
 
 function startPin(type){
@@ -562,7 +844,8 @@ function calculateRoute(){
     if(!fromCoords || !toCoords){toast("Please select valid From and To locations");reject();return;}
 
     toast("Calculating road route...");
-    setTripStatus("Calculating", "status-working");
+    updateTripStatus("Calculating...");
+    document.getElementById("calc-btn").disabled = true;
 
     clearRoute();
 
@@ -608,22 +891,24 @@ function calculateRoute(){
 
       document.getElementById("r-dist").textContent = distanceKm.toFixed(2) + " KM";
       document.getElementById("r-dur").textContent = durationMin + " MIN";
-      document.getElementById("r-cost").innerHTML = "Estimated Cost: Rs." + cost;
-      document.getElementById("result-card").classList.add("show");
+      document.getElementById("r-cost").innerHTML = "₹ " + cost;
+      updateTripStatus("Route Calculated");
 
       var btn = document.getElementById("save-btn");
       btn.disabled = false;
-      btn.innerHTML = "💾 Save to Zoho";
+      btn.innerHTML = "▣ Save to Zoho";
       btn.style.background = "";
+      btn.style.color = "";
 
+      document.getElementById("calc-btn").disabled = false;
       toast("Route calculated");
-      setTripStatus("Ready", "status-ready");
       resolve();
     })
     .catch(function(error){
       console.error("OSRM route failed:",error);
+      document.getElementById("calc-btn").disabled = false;
+      updateTripStatus("Route Failed");
       toast("Failed to calculate route");
-      setTripStatus("Failed", "status-error");
       reject(error);
     });
   });
@@ -667,6 +952,7 @@ function submitToZoho(isAutoSave){
     }
 
     savingNow = true;
+    updateTripStatus(isAutoSave ? "Auto Saving..." : "Saving...");
 
     var btn = document.getElementById("save-btn");
     btn.disabled = true;
@@ -692,13 +978,13 @@ function submitToZoho(isAutoSave){
       btn.disabled = true;
       btn.innerHTML = isAutoSave ? "Auto Saved ✓" : "Saved ✓";
       btn.style.background = "#22c55e";
+      btn.style.color = "#fff";
+      updateTripStatus(isAutoSave ? "Auto Saved" : "Saved");
 
       if(isAutoSave){
         toast("Destination reached. Trip saved.");
-        setTripStatus("Saved", "status-saved");
       }else{
         toast("Saved to Zoho");
-        setTripStatus("Saved", "status-saved");
       }
 
       resolve("Saved");
@@ -710,7 +996,8 @@ function submitToZoho(isAutoSave){
       console.error(error);
 
       btn.disabled = false;
-      btn.innerHTML = "💾 Save to Zoho";
+      btn.innerHTML = "▣ Save to Zoho";
+      updateTripStatus("Save Failed");
 
       toast("Failed to save");
       reject(error);
@@ -731,11 +1018,11 @@ function startLiveTracking(){
   trackingStartTime = new Date();
 
   var trackBtn = document.getElementById("tracking-btn");
-  trackBtn.innerHTML = "🛰 Tracking Started";
+  trackBtn.innerHTML = "● Tracking Started";
   trackBtn.classList.add("btn-stop");
+  updateTripStatus("Tracking Active");
 
   toast("Live tracking started");
-  setTripStatus("Tracking", "status-working");
 
   watchId = navigator.geolocation.watchPosition(
     function(position){
@@ -772,12 +1059,11 @@ function startLiveTracking(){
           trackingEndTime = new Date();
 
           toast("Destination reached. Auto saving...");
-          setTripStatus("Auto Saving", "status-working");
 
           navigator.geolocation.clearWatch(watchId);
           liveTracking = false;
 
-          trackBtn.innerHTML = "🛰 Start Live Tracking";
+          trackBtn.innerHTML = "▶ Start Live Tracking";
           trackBtn.classList.remove("btn-stop");
 
           var start = trackingStartTime.toLocaleTimeString();
@@ -792,6 +1078,7 @@ function startLiveTracking(){
             }
           }).catch(function(error){
             console.error(error);
+            updateTripStatus("Auto Save Failed");
             toast("Auto save failed because route calculation failed");
           });
         }
@@ -800,10 +1087,10 @@ function startLiveTracking(){
     function(error){
       console.error(error);
       toast("Location access denied");
-      setTripStatus("GPS Denied", "status-error");
       liveTracking = false;
-      document.getElementById("tracking-btn").innerHTML = "🛰 Start Live Tracking";
+      document.getElementById("tracking-btn").innerHTML = "▶ Start Live Tracking";
       document.getElementById("tracking-btn").classList.remove("btn-stop");
+      updateTripStatus("Tracking Failed");
     },
     {enableHighAccuracy:true,maximumAge:0,timeout:30000}
   );
