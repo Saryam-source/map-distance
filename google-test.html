@@ -56,7 +56,8 @@ body{
   color:var(--muted);
   text-transform:uppercase;
 }
-.form-input{
+.form-input,
+gmp-place-autocomplete{
   width:100%;
   padding:14px 16px;
   border-radius:16px;
@@ -65,6 +66,10 @@ body{
   font-size:14px;
   outline:none;
   color:var(--text);
+}
+gmp-place-autocomplete{
+  display:block;
+  min-height:52px;
 }
 .form-input:focus{
   border-color:#cfc4a5;
@@ -162,14 +167,14 @@ body{
     <div>
       <div class="field-label">From</div>
       <button class="btn-pin" onclick="useCurrentLocation('from')">📍 Your Location</button>
-      <input type="text" id="from-loc" class="form-input" placeholder="Search starting location" autocomplete="off" />
+      <gmp-place-autocomplete id="from-loc" placeholder="Search starting location"></gmp-place-autocomplete>
       <div class="selected-text" id="from-selected"></div>
     </div>
 
     <div>
       <div class="field-label">To</div>
       <button class="btn-pin" onclick="useCurrentLocation('to')">📍 Your Location</button>
-      <input type="text" id="to-loc" class="form-input" placeholder="Search destination" autocomplete="off" />
+      <gmp-place-autocomplete id="to-loc" placeholder="Search destination"></gmp-place-autocomplete>
       <div class="selected-text" id="to-selected"></div>
     </div>
 
@@ -271,23 +276,23 @@ function initMap(){
 
 /* ===================== AUTOCOMPLETE ===================== */
 function setupAutocomplete(inputId,type){
-  var input = document.getElementById(inputId);
-  var autocomplete = new google.maps.places.Autocomplete(input,{
-    componentRestrictions:{country:"in"},
-    fields:["formatted_address","geometry","name"]
-  });
+  var autocomplete = document.getElementById(inputId);
 
-  autocomplete.addListener("place_changed",function(){
-    var place = autocomplete.getPlace();
+  autocomplete.addEventListener("gmp-select",async function(event){
+    var place = event.placePrediction.toPlace();
 
-    if(!place.geometry || !place.geometry.location){
+    await place.fetchFields({
+      fields:["displayName","formattedAddress","location"]
+    });
+
+    if(!place.location){
       toast("Please select valid location from dropdown");
       return;
     }
 
-    var lat = place.geometry.location.lat();
-    var lng = place.geometry.location.lng();
-    var address = place.formatted_address || place.name;
+    var lat = place.location.lat();
+    var lng = place.location.lng();
+    var address = place.formattedAddress || place.displayName;
 
     setLocation(type,address,lat,lng);
   });
@@ -303,7 +308,12 @@ function clearRoute(){
 
 function setInputText(type,address){
   var input = document.getElementById(type === "from" ? "from-loc" : "to-loc");
-  input.value = address;
+
+  try{
+    input.value = address;
+    input.setAttribute("value",address);
+  }catch(e){}
+
   document.getElementById(type === "from" ? "from-selected" : "to-selected").innerHTML = address;
 }
 
