@@ -211,12 +211,13 @@ var ZOHO_WEBHOOK_URL = "https://flow.zoho.com/896521609/flow/webhook/incoming?za
 /* ===================== STATE ===================== */
 document.getElementById("travel-date").value = new Date().toISOString().split("T")[0];
 
-var map, geocoder, directionsService, directionsRenderer, infoWindow;
+var map, geocoder, infoWindow;
 var selectedVehicle = "bike";
 
 var fromMarker = null;
 var toMarker = null;
 var currentMarker = null;
+var routeLine = null;
 
 var fromCoords = null;
 var toCoords = null;
@@ -247,16 +248,6 @@ function initMap(){
   });
 
   geocoder = new google.maps.Geocoder();
-  directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({
-    map:map,
-    suppressMarkers:true,
-    polylineOptions:{
-      strokeColor:"#2563eb",
-      strokeWeight:7,
-      strokeOpacity:0.9
-    }
-  });
   infoWindow = new google.maps.InfoWindow();
 
   setupAutocomplete("from-loc","from");
@@ -304,8 +295,9 @@ function setupAutocomplete(inputId,type){
 
 /* ===================== MARKERS ===================== */
 function clearRoute(){
-  if(directionsRenderer){
-    directionsRenderer.set("directions",null);
+  if(routeLine){
+    routeLine.setMap(null);
+    routeLine = null;
   }
 }
 
@@ -452,6 +444,45 @@ function formatDate(rawDate){
   return parts[2] + "-" + months[parseInt(parts[1]) - 1] + "-" + parts[0];
 }
 
+function getOSRMRoute(){
+  return new Promise(function(resolve,reject){
+    var url =
+      "https://router.project-osrm.org/route/v1/driving/" +
+      fromCoords.lng + "," + fromCoords.lat + ";" +
+      toCoords.lng + "," + toCoords.lat +
+      "?overview=full&geometries=geojson";
+
+    fetch(url)
+    .then(function(r){
+      return r.json();
+    })
+    .then(function(data){
+      if(!data.routes || !data.routes.length){
+        reject("Route not found");
+        return;
+      }
+
+      var route = data.routes[0];
+
+      var path = route.geometry.coordinates.map(function(c){
+        return {
+          lat:c[1],
+          lng:c[0]
+        };
+      });
+
+      resolve({
+        distanceKm:route.distance / 1000,
+        durationMin:Math.round(route.duration / 60),
+        path:path
+      });
+    })
+    .catch(function(error){
+      reject(error);
+    });
+  });
+}
+
 function calculateRoute(){
   return new Promise(function(resolve,reject){
     var name = document.getElementById("person-name").value.trim();
@@ -463,23 +494,27 @@ function calculateRoute(){
 
     toast("Calculating road route...");
 
-    directionsService.route({
-      origin:fromCoords,
-      destination:toCoords,
-      travelMode:google.maps.TravelMode.DRIVING
-    },function(response,status){
-      if(status !== "OK"){
-        console.error("Directions failed:",status);
-        toast("Failed to calculate route: " + status);
-        reject(status);
-        return;
-      }
+    clearRoute();
 
-      directionsRenderer.setDirections(response);
+    getOSRMRoute()
+    .then(function(route){
 
-      var leg = response.routes[0].legs[0];
-      var distanceKm = leg.distance.value / 1000;
-      var durationMin = Math.round(leg.duration.value / 60);
+      routeLine = new google.maps.Polyline({
+        path:route.path,
+        map:map,
+        strokeColor:"#2563eb",
+        strokeWeight:7,
+        strokeOpacity:0.9
+      });
+
+      var bounds = new google.maps.LatLngBounds();
+      route.path.forEach(function(p){
+        bounds.extend(p);
+      });
+      map.fitBounds(bounds);
+
+      var distanceKm = route.distanceKm;
+      var durationMin = route.durationMin;
       if(durationMin <= 0){durationMin = 1;}
 
       var rate = selectedVehicle === "car" ? 8 : 4;
@@ -512,6 +547,11 @@ function calculateRoute(){
 
       toast("Route calculated");
       resolve();
+    })
+    .catch(function(error){
+      console.error("OSRM route failed:",error);
+      toast("Failed to calculate route");
+      reject(error);
     });
   });
 }
