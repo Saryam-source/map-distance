@@ -231,6 +231,7 @@ var toAddress = "";
 
 var tripData = null;
 var alreadySaved = false;
+var tripSaved = false;
 var savingNow = false;
 
 var pinMode = null;
@@ -323,6 +324,7 @@ function setLocation(type,address,lat,lng){
   clearRoute();
   tripData = null;
   alreadySaved = false;
+  tripSaved = false;
   autoSaveLock = false;
 
   if(type === "from"){
@@ -396,6 +398,7 @@ function selectVehicle(type){
   document.getElementById("btn-bike").classList.toggle("active",type === "bike");
   document.getElementById("btn-car").classList.toggle("active",type === "car");
   alreadySaved = false;
+tripSaved = false;
 }
 
 function startPin(type){
@@ -544,6 +547,7 @@ function calculateRoute(){
       };
 
       alreadySaved = false;
+      tripSaved = false;
 
       document.getElementById("r-dist").textContent = distanceKm.toFixed(2) + " KM";
       document.getElementById("r-dur").textContent = durationMin + " MIN";
@@ -581,46 +585,76 @@ function makeTripKey(){
 }
 
 function submitToZoho(isAutoSave){
-  if(!tripData){toast("Calculate route first");return;}
+  return new Promise(function(resolve,reject){
 
-  var key = makeTripKey();
+    if(!tripData){
+      toast("Calculate route first");
+      reject("No trip data");
+      return;
+    }
 
-  if(savingNow){toast("Saving already in progress");return;}
+    var key = makeTripKey();
 
-  if(alreadySaved || sessionStorage.getItem("last_saved_trip") === key){
-    toast("This trip is already saved");
-    return;
-  }
+    if(savingNow){
+      toast("Saving already in progress");
+      reject("Saving already in progress");
+      return;
+    }
 
-  savingNow = true;
+    if(tripSaved || alreadySaved || sessionStorage.getItem("last_saved_trip") === key){
+      toast("This trip is already saved");
+      resolve("Already saved");
+      return;
+    }
 
-  var btn = document.getElementById("save-btn");
-  btn.disabled = true;
-  btn.innerHTML = isAutoSave ? "Auto saving..." : "Saving...";
+    savingNow = true;
 
-  var params = new URLSearchParams();
-  Object.keys(tripData).forEach(function(k){
-    params.append(k,String(tripData[k]));
-  });
+    var btn = document.getElementById("save-btn");
+    btn.disabled = true;
+    btn.innerHTML = isAutoSave ? "Auto saving..." : "Saving...";
 
-  fetch(ZOHO_WEBHOOK_URL + "&" + params.toString(),{
-    method:"GET",
-    mode:"no-cors"
-  })
-  .then(function(){
-    savingNow = false;
-    alreadySaved = true;
-    sessionStorage.setItem("last_saved_trip",key);
-    btn.innerHTML = isAutoSave ? "Auto Saved ✓" : "Saved ✓";
-    btn.style.background = "#22c55e";
-    toast(isAutoSave ? "Auto saved to Zoho" : "Saved to Zoho");
-  })
-  .catch(function(error){
-    savingNow = false;
-    console.error(error);
-    btn.disabled = false;
-    btn.innerHTML = "💾 Save to Zoho";
-    toast("Failed to save");
+    var params = new URLSearchParams();
+
+    Object.keys(tripData).forEach(function(k){
+      params.append(k,String(tripData[k]));
+    });
+
+    fetch(ZOHO_WEBHOOK_URL + "&" + params.toString(),{
+      method:"GET",
+      mode:"no-cors"
+    })
+    .then(function(){
+      savingNow = false;
+      alreadySaved = true;
+      tripSaved = true;
+
+      sessionStorage.setItem("last_saved_trip",key);
+
+      btn.disabled = true;
+      btn.innerHTML = isAutoSave ? "Auto Saved ✓" : "Saved ✓";
+      btn.style.background = "#22c55e";
+
+      if(isAutoSave){
+        toast("Destination reached. Trip saved.");
+      }else{
+        toast("Saved to Zoho");
+      }
+
+      resolve("Saved");
+    })
+    .catch(function(error){
+      savingNow = false;
+      tripSaved = false;
+
+      console.error(error);
+
+      btn.disabled = false;
+      btn.innerHTML = "💾 Save to Zoho";
+
+      toast("Failed to save");
+      reject(error);
+    });
+
   });
 }
 
