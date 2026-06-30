@@ -867,6 +867,9 @@ Save to Zoho
 
 <script>
 
+var ZOHO_WEBHOOK_URL =
+"https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.6973881a93290c5a3fc04fcdcb02f4e7.1513b227e0b8158ac4771f36d96efebf&isdebug=false";
+
 var ZOHO_EDIT_WEBHOOK_URL =
 "https://flow.zoho.com/896521609/flow/webhook/incoming?zapikey=1001.a68cc053942f99cf3ffe11621f25ad83.96f4e45e2ac43b3e86430d5113b7bef6&isdebug=false";
 document.getElementById('travel-date').value =
@@ -1475,7 +1478,36 @@ function submitToZoho() {
     var urlParams = new URLSearchParams(window.location.search);
     var editId = urlParams.get("edit_id") || "";
 
-    
+    if(editId){
+        tripData.edit_id = editId;
+
+        var editParams = new URLSearchParams();
+
+        Object.keys(tripData).forEach(function(k){
+            editParams.append(k, String(tripData[k]));
+        });
+
+        fetch(
+            ZOHO_EDIT_WEBHOOK_URL + '&' + editParams.toString(),
+            {
+                method:'GET',
+                mode:'no-cors'
+            }
+        )
+        .then(function(){
+            btn.innerHTML = 'Update Sent ✓';
+            btn.style.background = '#22c55e';
+            toast('Update sent to Zoho Flow');
+        })
+        .catch(function(error){
+            console.error(error);
+            btn.disabled = false;
+            btn.innerHTML = 'Update Trip';
+            toast('Failed to send update');
+        });
+
+        return;
+    }
 
     var params = new URLSearchParams();
 
@@ -1486,28 +1518,7 @@ function submitToZoho() {
     fetch(
         ZOHO_WEBHOOK_URL + '&' + params.toString(),
         {
-           if(editId){
-    tripData.edit_id = editId;
-
-    var editParams = new URLSearchParams();
-
-    Object.keys(tripData).forEach(function(k){
-        editParams.append(k, String(tripData[k]));
-    });
-
-    fetch(
-        ZOHO_EDIT_WEBHOOK_URL + '&' + editParams.toString(),
-        {
             method:'GET',
-            mode:'no-cors'
-        }
-    );
-
-    btn.innerHTML = 'Update Sent ✓';
-    btn.style.background = '#22c55e';
-    toast('Update sent to Zoho Flow');
-    return;
-} method:'GET',
             mode:'no-cors'
         }
     )
