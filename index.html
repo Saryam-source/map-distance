@@ -1402,6 +1402,65 @@ toast('Failed to calculate route');
 }
 
 }
+
+window.addEventListener("message", function(event) {
+
+    if(!event.data || event.data.type !== "LOAD_EDIT_DATA") {
+        return;
+    }
+
+    var data = event.data.payload || {};
+
+    document.getElementById("person-name").value = data.name || "";
+    document.getElementById("from-loc").value = data.start || "";
+    document.getElementById("to-loc").value = data.end || "";
+
+    if(data.travel_date) {
+        document.getElementById("travel-date").value = formatDateForInput(data.travel_date);
+    }
+
+    if(data.mode) {
+        selectVehicle(data.mode.toLowerCase());
+    }
+
+    tripData = {
+        Name: data.name || "",
+        Travel_Date: data.travel_date || "",
+        start: data.start || "",
+        end: data.end || "",
+        distance: data.distance || 0,
+        duration: "",
+        mode: data.mode || selectedVehicle,
+        cost: data.cost || 0,
+        travel_time: data.travel_time || "",
+        timestamp: new Date().toISOString()
+    };
+
+    document.getElementById("save-btn").innerHTML = "Update Trip";
+    toast("Old trip details loaded");
+
+});
+
+function formatDateForInput(dateText) {
+    if(!dateText) return "";
+
+    if(dateText.indexOf("-") > -1) {
+        var parts = dateText.split("-");
+        if(parts[0].length === 4) {
+            return dateText;
+        }
+
+        var months = {
+            "Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06",
+            "Jul":"07","Aug":"08","Sep":"09","Oct":"10","Nov":"11","Dec":"12"
+        };
+
+        return parts[2] + "-" + months[parts[1]] + "-" + parts[0];
+    }
+
+    return "";
+}
+
 function submitToZoho() {
 
     if(!tripData){
