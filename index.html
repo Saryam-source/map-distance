@@ -1476,10 +1476,12 @@ function submitToZoho() {
     var editId = urlParams.get("edit_id") || "";
 
     if(editId){
-    window.parent.postMessage({
-        type: "UPDATE_TRIP",
-        payload: tripData
-    }, "*");
+    tripData.edit_id = editId;
+
+window.parent.postMessage({
+    type: "UPDATE_TRIP",
+    payload: tripData
+}, "*");
 
     btn.innerHTML = 'Updating...';
     toast('Sending update to Zoho');
