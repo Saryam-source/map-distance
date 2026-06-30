@@ -1476,12 +1476,15 @@ function submitToZoho() {
     var editId = urlParams.get("edit_id") || "";
 
     if(editId){
-        window.parent.postMessage(tripData, "*");
-        btn.innerHTML = 'Updated ✓';
-        btn.style.background = '#22c55e';
-        toast('Trip update sent');
-        return;
-    }
+    window.parent.postMessage({
+        type: "UPDATE_TRIP",
+        payload: tripData
+    }, "*");
+
+    btn.innerHTML = 'Updating...';
+    toast('Sending update to Zoho');
+    return;
+}
 
     var params = new URLSearchParams();
 
