@@ -875,6 +875,43 @@ var ZOHO_EDIT_WEBHOOK_URL =
 document.getElementById('travel-date').value =
 new Date().toISOString().split('T')[0];
 
+// ===== LOAD OLD DATA FROM URL FOR EDIT =====
+var oldParams = new URLSearchParams(window.location.search);
+
+if(oldParams.get("old_name") || oldParams.get("old_start") || oldParams.get("old_end")) {
+
+  document.getElementById("person-name").value = oldParams.get("old_name") || "";
+  document.getElementById("from-loc").value = oldParams.get("old_start") || "";
+  document.getElementById("to-loc").value = oldParams.get("old_end") || "";
+
+  if(oldParams.get("old_date")) {
+    document.getElementById("travel-date").value =
+      formatDateForInput(oldParams.get("old_date"));
+  }
+
+  if(oldParams.get("old_mode")) {
+    selectVehicle(oldParams.get("old_mode").toLowerCase());
+  }
+
+  document.getElementById("save-btn").innerHTML = "Update Trip";
+
+  tripData = {
+    Name: oldParams.get("old_name") || "",
+    Travel_Date: oldParams.get("old_date") || "",
+    start: oldParams.get("old_start") || "",
+    end: oldParams.get("old_end") || "",
+    distance: 0,
+    duration: "",
+    mode: oldParams.get("old_mode") || selectedVehicle,
+    cost: 0,
+    travel_time: "",
+    timestamp: new Date().toISOString()
+  };
+
+  toast("Old trip details loaded");
+}
+// ===== END LOAD OLD DATA FROM URL =====
+
 var map = L.map('map')
 .setView([13.0827,80.2707],12);
 
