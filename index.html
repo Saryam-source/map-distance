@@ -355,6 +355,74 @@ gmp-place-autocomplete{
 }
 .summary-sub{margin-top:4px;font-size:11px;font-weight:700;color:var(--muted);}
 
+.return-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(15,23,42,.42);
+  backdrop-filter:blur(6px);
+  z-index:999998;
+  padding:18px;
+}
+.return-modal.show{display:flex;}
+.return-box{
+  width:min(430px,100%);
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:0 24px 60px rgba(15,23,42,.25);
+  padding:22px;
+  animation:fadeUp .25s ease;
+}
+.return-title{
+  font-size:20px;
+  font-weight:900;
+  color:var(--green);
+  margin-bottom:8px;
+}
+.return-text{
+  font-size:14px;
+  font-weight:600;
+  line-height:1.5;
+  color:var(--muted);
+  margin-bottom:16px;
+}
+.return-preview{
+  background:#f8fbfa;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  font-size:13px;
+  color:var(--text);
+  margin-bottom:16px;
+}
+.return-preview strong{color:var(--green);}
+.return-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.btn-return-yes,.btn-return-no{
+  height:48px;
+  border-radius:12px;
+  border:0;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:900;
+  cursor:pointer;
+}
+.btn-return-yes{
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+  color:#fff;
+}
+.btn-return-no{
+  background:#fff;
+  color:var(--text);
+  border:1px solid var(--border);
+}
+
 .toast{
   position:fixed;
   left:50%;
@@ -564,6 +632,18 @@ gmp-place-autocomplete{
   </main>
 </div>
 
+<div class="return-modal" id="return-modal">
+  <div class="return-box">
+    <div class="return-title">Trip saved successfully</div>
+    <div class="return-text">Do you want to create a return trip using the same details?</div>
+    <div class="return-preview" id="return-preview">Return trip details will show here.</div>
+    <div class="return-actions">
+      <button class="btn-return-yes" onclick="createReturnTrip()">Yes, create return trip</button>
+      <button class="btn-return-no" onclick="closeReturnPrompt()">No</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -578,6 +658,8 @@ var LOGIN_ID = urlParams.get("login_id") || "";
 var EDIT_MODE = EDIT_ID !== "";
 var pendingEditData = null;
 var mapReady = false;
+var lastSavedTripData = null;
+var isReturnTripMode = false;
 
 /* ===================== STATE ===================== */
 document.getElementById("travel-date").value = new Date().toISOString().split("T")[0];
@@ -872,6 +954,10 @@ function initMap(){
   map = new google.maps.Map(document.getElementById("map"),{
     center:{lat:13.0827,lng:80.2707},
     zoom:12,
+    gestureHandling:"greedy",
+    scrollwheel:true,
+    clickableIcons:false,
+    keyboardShortcuts:false,
     mapTypeControl:false,
     streetViewControl:false,
     fullscreenControl:true
@@ -1025,6 +1111,122 @@ function toast(msg){
   t.classList.add("show");
   clearTimeout(t._t);
   t._t = setTimeout(function(){t.classList.remove("show");},2500);
+}
+
+function closeReturnPrompt(){
+  var modal = document.getElementById("return-modal");
+  if(modal){modal.classList.remove("show");}
+}
+
+function showReturnTripPrompt(){
+  if(EDIT_MODE || !lastSavedTripData){return;}
+
+  var modal = document.getElementById("return-modal");
+  var preview = document.getElementById("return-preview");
+
+  if(!modal || !preview){return;}
+
+  preview.innerHTML =
+    "<strong>From:</strong> " + lastSavedTripData.end +
+    "<br><strong>To:</strong> " + lastSavedTripData.start +
+    "<br><strong>Vehicle:</strong> " + lastSavedTripData.mode;
+
+  modal.classList.add("show");
+}
+
+function resetSummaryForNewTrip(){
+  document.getElementById("r-dist").textContent = "0 KM";
+  document.getElementById("r-dur").textContent = "0 MIN";
+  document.getElementById("r-cost").innerHTML = "₹ 0.00";
+  updateTripStatus("Return Trip Ready");
+}
+
+function resetAfterReturnTripSaved(){
+  isReturnTripMode = false;
+  lastSavedTripData = null;
+
+  clearRoute();
+
+  if(fromMarker){fromMarker.setMap(null);fromMarker = null;}
+  if(toMarker){toMarker.setMap(null);toMarker = null;}
+
+  fromCoords = null;
+  toCoords = null;
+  fromAddress = "";
+  toAddress = "";
+  tripData = null;
+  alreadySaved = false;
+  tripSaved = false;
+  savingNow = false;
+  autoSaveLock = false;
+
+  document.getElementById("from-selected").innerHTML = "";
+  document.getElementById("to-selected").innerHTML = "";
+
+  try{
+    document.getElementById("from-loc").value = "";
+    document.getElementById("to-loc").value = "";
+    document.getElementById("from-loc").setAttribute("value","");
+    document.getElementById("to-loc").setAttribute("value","");
+  }catch(e){}
+
+  document.getElementById("travel-date").value = new Date().toISOString().split("T")[0];
+  resetSummaryForNewTrip();
+  updateTripStatus("Ready for New Trip");
+
+  var btn = document.getElementById("save-btn");
+  btn.disabled = false;
+  btn.innerHTML = "▣ Save to Zoho";
+  btn.style.background = "";
+  btn.style.color = "";
+
+  sessionStorage.removeItem("last_saved_trip");
+}
+
+function createReturnTrip(){
+  if(!lastSavedTripData){
+    closeReturnPrompt();
+    toast("No saved trip found");
+    return;
+  }
+
+  closeReturnPrompt();
+  isReturnTripMode = true;
+
+  var oldFromCoords = lastSavedTripData.fromCoords;
+  var oldToCoords = lastSavedTripData.toCoords;
+
+  if(!oldFromCoords || !oldToCoords){
+    toast("Return trip location data missing");
+    return;
+  }
+
+  document.getElementById("person-name").value = lastSavedTripData.Name || "";
+
+  var dateInput = formatDateForInput(lastSavedTripData.Travel_Date);
+  if(dateInput){
+    document.getElementById("travel-date").value = dateInput;
+  }
+
+  selectVehicle((lastSavedTripData.mode || selectedVehicle || "bike").toLowerCase());
+
+  clearRoute();
+
+  setLocation("from",lastSavedTripData.end,oldToCoords.lat,oldToCoords.lng);
+  setLocation("to",lastSavedTripData.start,oldFromCoords.lat,oldFromCoords.lng);
+
+  tripData = null;
+  alreadySaved = false;
+  tripSaved = false;
+  savingNow = false;
+  autoSaveLock = false;
+
+  sessionStorage.removeItem("last_saved_trip");
+
+  resetSummaryForNewTrip();
+  resetSaveState();
+
+  toast("Return trip created. Calculate route to save.");
 }
 
 function updateTripStatus(text){
@@ -1229,6 +1431,73 @@ function makeTripKey(){
   ].join("|");
 }
 
+
+function cleanDecimal(value){
+  if(value === null || value === undefined || value === ""){
+    return "0.00";
+  }
+
+  var cleaned = String(value)
+    .replace(/[₹,]/g,"")
+    .replace(/KM/gi,"")
+    .replace(/MIN/gi,"")
+    .trim();
+
+  var number = parseFloat(cleaned);
+
+  if(isNaN(number)){
+    return "0.00";
+  }
+
+  return number.toFixed(2);
+}
+
+function cleanInteger(value){
+  if(value === null || value === undefined || value === ""){
+    return "0";
+  }
+
+  var cleaned = String(value)
+    .replace(/MIN/gi,"")
+    .trim();
+
+  var number = parseInt(cleaned,10);
+
+  if(isNaN(number)){
+    return "0";
+  }
+
+  return String(number);
+}
+
+function cleanText(value){
+  if(value === null || value === undefined){
+    return "";
+  }
+
+  return String(value)
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function buildSafeTripPayload(source){
+  source = source || {};
+
+  return {
+    Name: cleanText(source.Name),
+    Travel_Date: cleanText(source.Travel_Date),
+    start: cleanText(source.start),
+    end: cleanText(source.end),
+    distance: cleanDecimal(source.distance),
+    duration: cleanInteger(source.duration),
+    mode: cleanText(source.mode || selectedVehicle).toLowerCase(),
+    cost: cleanDecimal(source.cost),
+    travel_time: cleanText(source.travel_time),
+    timestamp: cleanText(source.timestamp || new Date().toISOString()),
+    request_id: "REQ_" + Date.now()
+  };
+}
+
 function submitToZoho(isAutoSave){
   return new Promise(function(resolve,reject){
 
@@ -1259,10 +1528,11 @@ function submitToZoho(isAutoSave){
     btn.disabled = true;
     btn.innerHTML = EDIT_MODE ? "Updating..." : (isAutoSave ? "Auto saving..." : "Saving...");
 
+    var safeTripData = buildSafeTripPayload(tripData);
     var params = new URLSearchParams();
 
-    Object.keys(tripData).forEach(function(k){
-      params.append(k,String(tripData[k]));
+    Object.keys(safeTripData).forEach(function(k){
+      params.append(k,String(safeTripData[k]));
     });
 
     if(EDIT_MODE){
@@ -1271,6 +1541,13 @@ function submitToZoho(isAutoSave){
     }
 
     var saveUrl = EDIT_MODE ? ZOHO_EDIT_WEBHOOK_URL : ZOHO_WEBHOOK_URL;
+
+    if(!EDIT_MODE){
+      lastSavedTripData = Object.assign({},safeTripData,{
+        fromCoords: fromCoords ? {lat:fromCoords.lat,lng:fromCoords.lng} : null,
+        toCoords: toCoords ? {lat:toCoords.lat,lng:toCoords.lng} : null
+      });
+    }
 
     fetch(saveUrl + "&" + params.toString(),{
       method:"GET",
@@ -1292,10 +1569,15 @@ function submitToZoho(isAutoSave){
 
       if(EDIT_MODE){
         toast("Trip updated successfully");
+      }else if(isReturnTripMode){
+        toast("Return trip saved successfully");
+        setTimeout(resetAfterReturnTripSaved,900);
       }else if(isAutoSave){
         toast("Destination reached. Trip saved.");
+        setTimeout(showReturnTripPrompt,900);
       }else{
         toast("Saved to Zoho");
+        setTimeout(showReturnTripPrompt,900);
       }
 
       resolve(EDIT_MODE ? "Updated" : "Saved");
