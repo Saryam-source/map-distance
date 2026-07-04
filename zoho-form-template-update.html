@@ -1,45 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Zoho Forms PDF Template Update Tracker</title>
+<title>Zoho Forms Tracker</title>
 <style>
-body{font-family:Arial,sans-serif;padding:20px;color:#000;}
-h1{text-align:center;color:#0b376d;font-size:24px;}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-th{background:#0b376d;color:#fff;padding:8px;border:1px solid #000;}
-td{border:1px solid #000;padding:6px;vertical-align:middle;}
+body{
+  font-family: Arial, sans-serif;
+  padding:20px;
+}
+h1{
+  text-align:center;
+  color:#0b376d;
+  font-size:24px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:12px;
+}
+th{
+  background:#0b376d;
+  color:white;
+  border:1px solid #000;
+  padding:8px;
+  text-align:center;
+}
+td{
+  border:1px solid #000;
+  padding:6px;
+  vertical-align:middle;
+}
 .center{text-align:center;}
-input[type="checkbox"]{width:18px;height:18px;cursor:pointer;}
-input[type="date"], input[type="text"]{width:95%;padding:4px;border:1px solid #aaa;}
-button{padding:10px 18px;background:#0b376d;color:#fff;border:0;border-radius:4px;cursor:pointer;margin-bottom:15px;}
-@media print{button{display:none;}}
+input[type="checkbox"]{width:18px;height:18px;}
+input[type="text"],input[type="date"]{
+  width:90%;
+  padding:4px;
+}
+button{
+  background:#0b376d;
+  color:white;
+  padding:10px 18px;
+  border:0;
+  border-radius:4px;
+  margin-bottom:15px;
+}
+@media print{
+  button{display:none;}
+  @page{size:landscape;margin:10mm;}
+}
 </style>
 </head>
-
 <body>
 
-<button onclick="downloadWord()">Download Word</button>
+<button onclick="window.print()">Print / Save as PDF</button>
 
-<div id="content">
 <h1>ZOHO FORMS PDF TEMPLATE UPDATE TRACKER</h1>
 
 <table>
 <thead>
 <tr>
-<th>S.No</th>
-<th>Form Name</th>
-<th>Checked<br>Date</th>
-<th>Updated</th>
-<th>Completed<br>Date</th>
-<th>Issue</th>
+<th style="width:5%;">S.No</th>
+<th style="width:28%;">Form Name</th>
+<th style="width:13%;">Checked<br>Date</th>
+<th style="width:18%;">Updated</th>
+<th style="width:13%;">Completed<br>Date</th>
+<th style="width:23%;">Issue</th>
 </tr>
 </thead>
-<tbody id="body"></tbody>
+<tbody id="tableBody"></tbody>
 </table>
-</div>
 
 <script>
-const forms = [
+const forms=[
 "Material/Tools Returned from Site",
 "Travel Expense Forms",
 "Travel Advance Request Form (TARF)",
@@ -61,12 +93,12 @@ const forms = [
 "Jenoptik Service Report"
 ];
 
-let html = "";
-forms.forEach((name, i) => {
-html += `
+let html="";
+forms.forEach((form,i)=>{
+html+=`
 <tr>
 <td class="center">${i+1}</td>
-<td>${name}</td>
+<td>${form}</td>
 <td class="center">
 <input type="checkbox"><br><br>
 <input type="date">
@@ -79,36 +111,7 @@ html += `
 <td><input type="text" placeholder="Enter issue"></td>
 </tr>`;
 });
-document.getElementById("body").innerHTML = html;
-
-function downloadWord(){
-  let clone = document.getElementById("content").cloneNode(true);
-
-  clone.querySelectorAll("input").forEach(input => {
-    let span = document.createElement("span");
-
-    if(input.type === "checkbox"){
-      span.innerHTML = input.checked ? "☑" : "☐";
-      span.style.fontSize = "18px";
-    } else {
-      span.innerHTML = input.value || "__________";
-    }
-
-    input.parentNode.replaceChild(span, input);
-  });
-
-  let word = `
-  <html>
-  <head><meta charset="utf-8"></head>
-  <body>${clone.innerHTML}</body>
-  </html>`;
-
-  let blob = new Blob(["\ufeff", word], {type:"application/msword"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "Zoho_Forms_PDF_Template_Update_Tracker.doc";
-  a.click();
-}
+document.getElementById("tableBody").innerHTML=html;
 </script>
 
 </body>
