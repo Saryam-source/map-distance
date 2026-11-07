@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SARYAM Travel History Map</title>
+<style>
+html,body,#map{height:100%;width:100%;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#edf7f0}
+#map{min-height:235px}
+.map-message{height:100%;min-height:235px;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:#456b57;font-size:14px;line-height:1.5;background:#edf7f0}
+.gm-style .gm-style-iw-c{border-radius:10px;padding:12px!important}
+.info{min-width:190px;max-width:270px;color:#234b37;font-size:13px;line-height:1.5}
+.info h3{margin:0 0 7px;color:#006b40;font-size:15px}
+.info .route{margin:5px 0;overflow-wrap:anywhere}
+.info .meta{color:#5d7466}
+.info strong{color:#006b40}
+.map-key{position:absolute;left:10px;bottom:10px;z-index:2;background:#fff;padding:7px 10px;border-radius:7px;box-shadow:0 1px 5px #0002;font:12px Arial;color:#456b57}
+</style>
+</head>
+<body>
+<div id="map"><div class="map-message">Loading saved travel locations…</div></div>
+<script>
+/* This file is hosted separately on GitHub Pages.
+   It receives the last-six-month trip list from the script-free Zoho dashboard iframe URL. */
+const MAPS_API_KEY = "AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo";
+
+function showMessage(message){
+  const el=document.getElementById("map");
+  if(el) el.innerHTML='<div class="map-message">'+escapeHtml(message)+'</div>';
+}
+function escapeHtml(value){
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function readTrips(){
+  try{
+    const raw=new URLSearchParams(window.location.search).get("trips");
+    if(!raw) return [];
+    const parsed=JSON.parse(raw);
+    return Array.isArray(parsed)?parsed:[];
+  }catch(err){
+    showMessage("Travel data could not be read. Check the dashboard data format.");
+    return [];
+  }
+}
+function infoHtml(trip,kind){
+  return '<div class="info">'+
+    '<h3>'+escapeHtml(trip.employee || "Employee trip")+'</h3>'+
+    '<div class="meta">'+escapeHtml(trip.date || "")+' · '+(kind==="start"?"Starting point":"Destination")+'</div>'+
+    '<div class="route"><strong>From:</strong> '+escapeHtml(trip.start || "-")+'</div>'+
+    '<div class="route"><strong>To:</strong> '+escapeHtml(trip.end || "-")+'</div>'+
+    '<div class="meta"><strong>Distance:</strong> '+escapeHtml(trip.distance || "0")+' km<br>'+
+    '<strong>Vehicle:</strong> '+escapeHtml(trip.mode || "-")+'<br>'+
+    '<strong>Cost:</strong> ₹'+escapeHtml(trip.cost || "0")+'</div>'+
+    '</div>';
+}
+function initMap(){
+  const trips=readTrips();
+  if(!trips.length){
+    showMessage("No saved travel records were found for the last six months.");
+    return;
+  }
+
+  const map=new google.maps.Map(document.getElementById("map"),{
+    center:{lat:13.0827,lng:80.2707},
+    zoom:10,
+    mapTypeControl:false,
+    streetViewControl:false,
+    fullscreenControl:true,
+    clickableIcons:false,
+    gestureHandling:"greedy",
+    styles:[
+      {featureType:"poi",elementType:"labels",stylers:[{visibility:"off"}]},
+      {featureType:"transit",elementType:"labels",stylers:[{visibility:"off"}]}
+    ]
+  });
+
+  const geocoder=new google.maps.Geocoder();
+  const bounds=new google.maps.LatLngBounds();
+  const infoWindow=new google.maps.InfoWindow();
+  const addressCache=new Map();
+  const routeColors=["#007342","#00A85A","#168C72","#398B58","#0B6B53","#4A9B72"];
+  let plottedTrips=0;
+  let completedTrips=0;
+
+  /* Cache repeated addresses so the same location is geocoded only once per map load. */
+  function locate(address){
+    const key=String(address || "").trim().toLowerCase();
+    if(!key) return Promise.resolve(null);
+    if(addressCache.has(key)) return addressCache.get(key);
+
+    const request=new Promise(resolve=>{
+      geocoder.geocode({address:address},(results,status)=>{
+        if(status==="OK" && results && results[0]){
+          resolve(results[0].geometry.location);
+        }else{
+          resolve(null);
+        }
+      });
+    });
+    addressCache.set(key,request);
+    return request;
+  }
+
+  function addMarker(position,trip,kind){
+    const isStart=kind==="start";
+    const marker=new google.maps.Marker({
+      map:map,
+      position:position,
+      title:(isStart?"Start":"Destination")+" · "+(trip.employee || "Employee trip"),
+      icon:{
+        path:google.maps.SymbolPath.CIRCLE,
+        scale:9,
+        fillColor:isStart?"#007342":"#E65B50",
+        fillOpacity:1,
+        strokeColor:"#ffffff",
+        strokeWeight:2
+      },
+      zIndex:isStart?2:3
+    });
+    const openDetails=()=>{
+      infoWindow.setContent(infoHtml(trip,kind));
+      infoWindow.open({map:map,anchor:marker});
+    };
+    marker.addListener("mouseover",openDetails);
+    marker.addListener("click",openDetails);
+    bounds.extend(position);
+    return marker;
+  }
+
+  /* Process trips with a small pause between records to avoid flooding geocoding requests. */
+  async function plotTrip(trip,index){
+    if(!trip.start || !trip.end) return;
+    const startLoc=await locate(trip.start);
+    const endLoc=await locate(trip.end);
+
+    if(startLoc && endLoc){
+      addMarker(startLoc,trip,"start");
+      addMarker(endLoc,trip,"end");
+      new google.maps.Polyline({
+        path:[startLoc,endLoc],
+        geodesic:true,
+        strokeColor:routeColors[index%routeColors.length],
+        strokeOpacity:.72,
+        strokeWeight:3,
+        map:map
+      });
+      plottedTrips++;
+    }
+  }
+
+  async function plotAll(){
+    for(let i=0;i<trips.length;i++){
+      await plotTrip(trips[i],i);
+      completedTrips++;
+      if(i<trips.length-1){
+        await new Promise(resolve=>setTimeout(resolve,120));
+      }
+    }
+    if(plottedTrips>0){
+      map.fitBounds(bounds,35);
+      if(plottedTrips===1) map.setZoom(12);
+    }else{
+      showMessage("The saved start and destination addresses could not be located.");
+    }
+  }
+  plotAll();
+}
+
+(function loadMaps(){
+  const script=document.createElement("script");
+  script.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(MAPS_API_KEY)+"&loading=async&callback=initMap&v=beta";
+  script.async=true;
+  script.defer=true;
+  script.onerror=()=>showMessage("Google Maps could not be loaded. Check the existing Maps API key restrictions and network connection.");
+  document.head.appendChild(script);
+})();
+</script>
+</body>
+</html>
