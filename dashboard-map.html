@@ -8,42 +8,88 @@
 html,body,#map{height:100%;width:100%;margin:0;padding:0}
 body{font-family:Arial,Helvetica,sans-serif;background:#edf7f0}
 #map{min-height:235px}
-.map-message{height:100%;min-height:235px;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:#456b57;font-size:14px;line-height:1.5;background:#edf7f0}
+.map-message{height:100%;min-height:235px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;color:#456b57;font-size:14px;line-height:1.5;background:#edf7f0;box-sizing:border-box}
+.map-message small{margin-top:8px;color:#7a9486;font-size:11px;word-break:break-all;max-width:90%}
 .gm-style .gm-style-iw-c{border-radius:10px;padding:12px!important}
 .info{min-width:190px;max-width:270px;color:#234b37;font-size:13px;line-height:1.5}
 .info h3{margin:0 0 7px;color:#006b40;font-size:15px}
 .info .route{margin:5px 0;overflow-wrap:anywhere}
 .info .meta{color:#5d7466}
 .info strong{color:#006b40}
-.map-key{position:absolute;left:10px;bottom:10px;z-index:2;background:#fff;padding:7px 10px;border-radius:7px;box-shadow:0 1px 5px #0002;font:12px Arial;color:#456b57}
+.map-note{position:absolute;left:8px;bottom:8px;z-index:2;background:#fffc;padding:3px 8px;border-radius:6px;font:11px Arial;color:#456b57}
 </style>
 </head>
 <body>
 <div id="map"><div class="map-message">Loading saved travel locations…</div></div>
 <script>
-/* This file is hosted separately on GitHub Pages.
-   It receives a bounded list of the 8 most recent trips from the script-free Zoho dashboard iframe URL. */
+/* Hosted on GitHub Pages and embedded in the Zoho Creator dashboard iframe.
+   Accepted data formats (in the URL query string OR the #hash):
+   1) ?trips=<JSON array>                      (raw or URL-encoded)
+   2) ?d=<base64 of JSON array>                (URL-safe base64 allowed)
+   3) ?t=emp|date|start|end|km|mode|cost~emp|date|...   (compact, records split by ~ , fields by |)
+   JSON keys used: employee, date, start, end, distance, mode, cost  */
 const MAPS_API_KEY = "AIzaSyCUT-r7jJAO_J84KRlqfuXJCXuEwthTPgo";
+const MAX_TRIPS = 8;
 
-function showMessage(message){
-  const el=document.getElementById("map");
-  if(el) el.innerHTML='<div class="map-message">'+escapeHtml(message)+'</div>';
+function escapeHtml(v){
+  return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-function escapeHtml(value){
-  return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[c]));
+function showMessage(message, detail){
+  const el=document.getElementById("map");
+  if(el) el.innerHTML='<div class="map-message">'+escapeHtml(message)+(detail?'<small>'+escapeHtml(detail)+'</small>':'')+'</div>';
+}
+function safeDecode(s){
+  try{ return decodeURIComponent(s.replace(/\+/g," ")); }catch(e){ return s; }
+}
+function getParams(){
+  const p=new URLSearchParams(window.location.search);
+  const h=new URLSearchParams((window.location.hash||"").replace(/^#/,""));
+  const get=k=>p.get(k)||h.get(k)||"";
+  return {trips:get("trips"), d:get("d"), t:get("t")};
+}
+function normalise(t){
+  t=t||{};
+  return {
+    employee:t.employee||t.emp||t.name||"",
+    date:t.date||"",
+    start:t.start||t.from||"",
+    end:t.end||t.to||t.destination||"",
+    distance:t.distance||t.km||"0",
+    mode:t.mode||t.vehicle||"",
+    cost:t.cost||"0"
+  };
+}
+function parseJsonLoose(raw){
+  const tries=[raw, safeDecode(raw)];
+  for(const s of tries){
+    try{
+      const v=JSON.parse(s);
+      if(Array.isArray(v)) return v;
+      if(v && Array.isArray(v.trips)) return v.trips;
+    }catch(e){}
+  }
+  /* Deluge-style text such as [{employee=A, start=B}] cannot be parsed reliably */
+  return null;
 }
 function readTrips(){
-  try{
-    const raw=new URLSearchParams(window.location.search).get("trips");
-    if(!raw) return [];
-    const parsed=JSON.parse(raw);
-    return Array.isArray(parsed)?parsed:[];
-  }catch(err){
-    showMessage("Travel data could not be read. Check the dashboard data format.");
-    return [];
+  const {trips,d,t}=getParams();
+  let list=null;
+  if(trips){ list=parseJsonLoose(trips); }
+  if(!list && d){
+    try{
+      let b=d.replace(/-/g,"+").replace(/_/g,"/");
+      while(b.length%4) b+="=";
+      const json=decodeURIComponent(escape(atob(b)));
+      list=parseJsonLoose(json);
+    }catch(e){}
   }
+  if(!list && t){
+    list=safeDecode(t).split("~").filter(Boolean).map(rec=>{
+      const f=rec.split("|").map(x=>x.trim());
+      return {employee:f[0],date:f[1],start:f[2],end:f[3],distance:f[4],mode:f[5],cost:f[6]};
+    });
+  }
+  return (list||[]).map(normalise).filter(x=>x.start&&x.end).slice(0,MAX_TRIPS);
 }
 function infoHtml(trip,kind){
   return '<div class="info">'+
@@ -56,10 +102,13 @@ function infoHtml(trip,kind){
     '<strong>Cost:</strong> ₹'+escapeHtml(trip.cost || "0")+'</div>'+
     '</div>';
 }
+
 function initMap(){
   const trips=readTrips();
   if(!trips.length){
-    showMessage("No saved travel records were found for the last six months.");
+    const q=(window.location.search||"")+(window.location.hash||"");
+    showMessage("No usable trip data was received by the map.",
+      "Received "+q.length+" characters in the URL. Make sure each trip has a start and destination address.");
     return;
   }
 
@@ -82,100 +131,71 @@ function initMap(){
   const infoWindow=new google.maps.InfoWindow();
   const addressCache=new Map();
   const routeColors=["#007342","#00A85A","#168C72","#398B58","#0B6B53","#4A9B72"];
-  let plottedTrips=0;
-  let completedTrips=0;
+  let plotted=0, lastStatus="";
 
-  /* Cache repeated addresses so the same location is geocoded only once per map load. */
   function locate(address){
-    const key=String(address || "").trim().toLowerCase();
+    const key=String(address||"").trim().toLowerCase();
     if(!key) return Promise.resolve(null);
     if(addressCache.has(key)) return addressCache.get(key);
-
-    const request=new Promise(resolve=>{
+    const req=new Promise(resolve=>{
       geocoder.geocode({address:address},(results,status)=>{
-        if(status==="OK" && results && results[0]){
-          resolve(results[0].geometry.location);
-        }else{
-          resolve(null);
-        }
+        if(status==="OK" && results && results[0]) resolve(results[0].geometry.location);
+        else { lastStatus=status; resolve(null); }
       });
     });
-    addressCache.set(key,request);
-    return request;
+    addressCache.set(key,req);
+    return req;
   }
 
   function addMarker(position,trip,kind){
     const isStart=kind==="start";
     const marker=new google.maps.Marker({
-      map:map,
-      position:position,
-      title:(isStart?"Start":"Destination")+" · "+(trip.employee || "Employee trip"),
-      icon:{
-        path:google.maps.SymbolPath.CIRCLE,
-        scale:9,
-        fillColor:isStart?"#007342":"#E65B50",
-        fillOpacity:1,
-        strokeColor:"#ffffff",
-        strokeWeight:2
-      },
+      map:map, position:position,
+      title:(isStart?"Start":"Destination")+" · "+(trip.employee||"Employee trip"),
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:9,fillColor:isStart?"#007342":"#E65B50",fillOpacity:1,strokeColor:"#ffffff",strokeWeight:2},
       zIndex:isStart?2:3
     });
-    const openDetails=()=>{
-      infoWindow.setContent(infoHtml(trip,kind));
-      infoWindow.open({map:map,anchor:marker});
-    };
-    marker.addListener("mouseover",openDetails);
-    marker.addListener("click",openDetails);
+    const open=()=>{ infoWindow.setContent(infoHtml(trip,kind)); infoWindow.open({map:map,anchor:marker}); };
+    marker.addListener("mouseover",open);
+    marker.addListener("click",open);
     bounds.extend(position);
-    return marker;
-  }
-
-  /* Process trips with a small pause between records to avoid flooding geocoding requests. */
-  async function plotTrip(trip,index){
-    if(!trip.start || !trip.end) return;
-    const startLoc=await locate(trip.start);
-    const endLoc=await locate(trip.end);
-
-    if(startLoc && endLoc){
-      addMarker(startLoc,trip,"start");
-      addMarker(endLoc,trip,"end");
-      new google.maps.Polyline({
-        path:[startLoc,endLoc],
-        geodesic:true,
-        strokeColor:routeColors[index%routeColors.length],
-        strokeOpacity:.72,
-        strokeWeight:3,
-        map:map
-      });
-      plottedTrips++;
-    }
   }
 
   async function plotAll(){
     for(let i=0;i<trips.length;i++){
-      await plotTrip(trips[i],i);
-      completedTrips++;
-      if(i<trips.length-1){
-        await new Promise(resolve=>setTimeout(resolve,120));
+      const trip=trips[i];
+      const s=await locate(trip.start);
+      const e=await locate(trip.end);
+      if(s && e){
+        addMarker(s,trip,"start");
+        addMarker(e,trip,"end");
+        new google.maps.Polyline({path:[s,e],geodesic:true,strokeColor:routeColors[i%routeColors.length],strokeOpacity:.72,strokeWeight:3,map:map});
+        plotted++;
       }
+      if(i<trips.length-1) await new Promise(r=>setTimeout(r,120));
     }
-    if(plottedTrips>0){
+    if(plotted>0){
       map.fitBounds(bounds,35);
-      if(plottedTrips===1) map.setZoom(12);
+      if(plotted===1) map.setZoom(12);
     }else{
-      showMessage("The saved start and destination addresses could not be located.");
+      showMessage("Trip data was received, but the addresses could not be located.",
+        lastStatus?("Geocoder status: "+lastStatus+(lastStatus==="REQUEST_DENIED"?" – enable the Geocoding API and check key restrictions.":"")):"");
     }
   }
   plotAll();
 }
 
+/* Google calls this if the key is rejected (billing, referrer restriction, API not enabled) */
+window.gm_authFailure=function(){
+  showMessage("Google Maps rejected the API key.","Check: Maps JavaScript API + Geocoding API enabled, billing on, and https://saryam-source.github.io/* allowed in the key's HTTP referrer list.");
+};
+
 (function loadMaps(){
-  const script=document.createElement("script");
-  script.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(MAPS_API_KEY)+"&loading=async&callback=initMap&v=beta";
-  script.async=true;
-  script.defer=true;
-  script.onerror=()=>showMessage("Google Maps could not be loaded. Check the existing Maps API key restrictions and network connection.");
-  document.head.appendChild(script);
+  const s=document.createElement("script");
+  s.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(MAPS_API_KEY)+"&callback=initMap";
+  s.async=true; s.defer=true;
+  s.onerror=()=>showMessage("Google Maps could not be loaded.","Check network connection and the API key restrictions.");
+  document.head.appendChild(s);
 })();
 </script>
 </body>
